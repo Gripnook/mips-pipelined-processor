@@ -9,7 +9,7 @@ entity cache_controller is
         s_read         : in  std_logic;
         s_write        : in  std_logic;
         m_waitrequest  : in  std_logic;
-        -- Cache Logic Inteface 
+        -- Cache logic interface 
         tag_hit        : in  std_logic;
         byte_done      : in  std_logic;
         word_done      : in  std_logic;
@@ -27,7 +27,7 @@ entity cache_controller is
         c_write_sel    : out std_logic;
         c_write_reg_en : out std_logic;
         c_dirty_clr    : out std_logic;
-        -- Cache Logic Inteface
+        -- Cache Logic interface
         tag_sel        : out std_logic;
         word_sel       : out std_logic;
         word_en        : out std_logic;
@@ -40,8 +40,7 @@ architecture arch of cache_controller is
     type state_type is (S0, S1, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11);
     signal state : state_type;
 begin
-    -- Asynchronous outputs
-    process(s_read, s_write, m_waitrequest, tag_hit, byte_done, word_done, valid, dirty, dirty_data, state)
+    output_process : process(s_read, s_write, m_waitrequest, tag_hit, byte_done, word_done, valid, dirty, dirty_data, state)
     begin
         -- Default outputs
         m_read         <= '0';
@@ -176,8 +175,7 @@ begin
         end case;
     end process;
 
-    -- Synchronous state transitions
-    process(clk)
+    state_transition_process : process(clk)
     begin
         if rising_edge(clk) then
             case state is
