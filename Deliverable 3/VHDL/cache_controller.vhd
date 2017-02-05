@@ -4,122 +4,221 @@ use ieee.numeric_std.all;
 
 entity cache_controller is
     port(
-        iClock        : in  std_logic;
-        iReset        : in  std_logic;
+        clk            : in  std_logic;
         -- Avalon interface
-        iSRead        : in  std_logic;
-        iSWrite       : in  std_logic;
-        iMWaitRequest : in  std_logic;
+        s_read         : in  std_logic;
+        s_write        : in  std_logic;
+        m_waitrequest  : in  std_logic;
         -- Cache Logic Inteface 
-        iTagHit       : in  std_logic;
-        iByteDone     : in  std_logic;
-        iWordDone     : in  std_logic;
+        tag_hit        : in  std_logic;
+        byte_done      : in  std_logic;
+        word_done      : in  std_logic;
         -- Cache storage interface
-        iValid        : in  std_logic;
-        iDirty        : in  std_logic;
-        iDirtyData    : in  std_logic;
+        valid          : in  std_logic;
+        dirty          : in  std_logic;
+        dirty_data     : in  std_logic;
         -- Avalon interface
-        oMRead        : out std_logic;
-        oMWrite       : out std_logic;
-        oSWaitrequest : out std_logic;
+        m_read         : out std_logic;
+        m_write        : out std_logic;
+        s_waitrequest  : out std_logic;
         -- Cache storage interface
-        oCRead        : out std_logic;
-        oCWrite       : out std_logic;
-        oCWriteSel    : out std_logic;
-        oCWriteRegEn  : out std_logic;
-        oCDirtyClr    : out std_logic;
+        c_read         : out std_logic;
+        c_write        : out std_logic;
+        c_write_sel    : out std_logic;
+        c_write_reg_en : out std_logic;
+        c_dirty_clr    : out std_logic;
         -- Cache Logic Inteface
-        oTagSel       : out std_logic;
-        oWordSel      : out std_logic;
-        oWordEn       : out std_logic;
-        oWordClr      : out std_logic;
-        oByteEn       : out std_logic;
-        oByteClr      : out std_logic);
+        tag_sel        : out std_logic;
+        word_sel       : out std_logic;
+        word_en        : out std_logic;
+        word_clr       : out std_logic;
+        byte_en        : out std_logic;
+        byte_clr       : out std_logic);
 end cache_controller;
 
 architecture arch of cache_controller is
     type state_type is (S0, S1, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11);
     signal state : state_type;
 begin
-    process(iClock, iReset)
+    -- Asynchronous outputs
+    process(s_read, s_write, m_waitrequest, tag_hit, byte_done, word_done, valid, dirty, dirty_data, state)
     begin
-        if (iReset = '1') then
-            state <= S0;
-        elsif rising_edge(iClock) then
-            -- Default outputs
-            oMRead        <= '0';
-            oMWrite       <= '0';
-            oSWaitrequest <= '0';
-            oCRead        <= '0';
-            oCWrite       <= '0';
-            oCWriteSel    <= '0';
-            oCWriteRegEn  <= '0';
-            oCDirtyClr    <= '0';
-            oTagSel       <= '0';
-            oWordSel      <= '0';
-            oWordEn       <= '0';
-            oWordClr      <= '0';
-            oByteEn       <= '0';
-            oByteClr      <= '0';
+        -- Default outputs
+        m_read         <= '0';
+        m_write        <= '0';
+        s_waitrequest  <= '0';
+        c_read         <= '0';
+        c_write        <= '0';
+        c_write_sel    <= '0';
+        c_write_reg_en <= '0';
+        c_dirty_clr    <= '0';
+        tag_sel        <= '0';
+        word_sel       <= '0';
+        word_en        <= '0';
+        word_clr       <= '0';
+        byte_en        <= '0';
+        byte_clr       <= '0';
 
+        case state is
+            when S0 =>
+                if s_read = '1' or s_write = '1' then
+                    s_waitrequest <= '1';
+                    c_read        <= '1';
+                end if;
+            when S1 =>
+                if valid = '0' then
+                    s_waitrequest <= '1';
+                    word_sel      <= '1';
+                    m_read        <= '1';
+                else
+                    if tag_hit = '0' then
+                        s_waitrequest <= '1';
+                        word_sel      <= '1';
+                        if dirty = '0' then
+                            m_read <= '1';
+                        else
+                            tag_sel <= '1';
+                            if dirty_data = '0' then
+                                word_en <= '1';
+                            else
+                                m_write <= '1';
+                            end if;
+                        end if;
+                    else
+                        if s_read = '1' then
+                        else
+                            s_waitrequest <= '1';
+                            c_write       <= '1';
+                            c_write_sel   <= '1';
+                        end if;
+                    end if;
+                end if;
+            when S2 =>
+            when S3 =>
+                s_waitrequest <= '1';
+                word_sel      <= '1';
+                if m_waitrequest = '1' then
+                    m_read <= '1';
+                else
+                    c_write_reg_en <= '1';
+                    if byte_done = '0' then
+                        byte_en <= '1';
+                    end if;
+                end if;
+            when S4 =>
+                s_waitrequest <= '1';
+                word_sel      <= '1';
+                m_read        <= '1';
+            when S5 =>
+                s_waitrequest <= '1';
+                c_write       <= '1';
+                byte_clr      <= '1';
+                word_sel      <= '1';
+                word_en       <= '1';
+                c_dirty_clr   <= '1';
+            when S6 =>
+                s_waitrequest <= '1';
+                c_write       <= '1';
+                word_sel      <= '1';
+                word_clr      <= '1';
+                byte_clr      <= '1';
+                c_dirty_clr   <= '1';
+            when S7 =>
+                s_waitrequest <= '1';
+                if s_read = '1' then
+                    c_read <= '1';
+                else
+                    c_write     <= '1';
+                    c_write_sel <= '1';
+                end if;
+            when S8 =>
+                s_waitrequest <= '1';
+                word_sel      <= '1';
+                tag_sel       <= '1';
+                if m_waitrequest = '1' then
+                    m_write <= '1';
+                else
+                    if byte_done = '0' then
+                        byte_en <= '1';
+                    else
+                        byte_clr    <= '1';
+                        c_dirty_clr <= '1';
+                        if word_done = '0' then
+                            word_en <= '1';
+                        else
+                            word_clr <= '1';
+                        end if;
+                    end if;
+                end if;
+            when S9 =>
+                s_waitrequest <= '1';
+                word_sel      <= '1';
+                tag_sel       <= '1';
+                m_write       <= '1';
+            when S10 =>
+                s_waitrequest <= '1';
+                word_sel      <= '1';
+                tag_sel       <= '1';
+                if dirty_data = '1' then
+                    m_write <= '1';
+                else
+                    if word_done = '1' then
+                        byte_clr <= '1';
+                        word_clr <= '1';
+                    else
+                        word_en <= '1';
+                    end if;
+                end if;
+            when S11 =>
+                s_waitrequest <= '1';
+                word_sel      <= '1';
+                m_read        <= '1';
+        end case;
+    end process;
+
+    -- Synchronous state transitions
+    process(clk)
+    begin
+        if rising_edge(clk) then
             case state is
                 when S0 =>
-                    if iSRead = '1' or iSWrite = '1' then
-                        oSWaitrequest <= '1';
-                        oCRead        <= '1';
-                        state         <= S1;
+                    if s_read = '1' or s_write = '1' then
+                        state <= S1;
                     else
                         state <= S0;
                     end if;
                 when S1 =>
-                    if iValid = '0' then
-                        oSWaitrequest <= '1';
-                        oWordSel      <= '1';
-                        oMRead        <= '1';
-                        state         <= S3;
+                    if valid = '0' then
+                        state <= S3;
                     else
-                        if iTagHit = '0' then
-                            oSWaitrequest <= '1';
-                            oWordSel      <= '1';
-                            if iDirty = '0' then
-                                oMRead <= '1';
-                                state  <= S3;
+                        if tag_hit = '0' then
+                            if dirty = '0' then
+                                state <= S3;
                             else
-                                oTagSel <= '1';
-                                if iDirtyData = '0' then
-                                    oWordEn <= '1';
-                                    state   <= S10;
+                                if dirty_data = '0' then
+                                    state <= S10;
                                 else
-                                    oMWrite <= '1';
-                                    state   <= S8;
+                                    state <= S8;
                                 end if;
                             end if;
                         else
-                            if iSRead = '1' then
+                            if s_read = '1' then
                                 state <= S0;
                             else
-                                oSWaitrequest <= '1';
-                                oCWrite       <= '1';
-                                oCWriteSel    <= '1';
-                                state         <= S2;
+                                state <= S2;
                             end if;
                         end if;
                     end if;
                 when S2 =>
                     state <= S0;
                 when S3 =>
-                    oSWaitrequest <= '1';
-                    oWordSel      <= '1';
-                    if iMWaitRequest = '1' then
-                        oMRead <= '1';
-                        state  <= S3;
+                    if m_waitrequest = '1' then
+                        state <= S3;
                     else
-                        oCWriteRegEn <= '1';
-                        if iByteDone = '0' then
-                            oByteEn <= '1';
-                            state   <= S4;
+                        if byte_done = '0' then
+                            state <= S4;
                         else
-                            if iWordDone = '0' then
+                            if word_done = '0' then
                                 state <= S5;
                             else
                                 state <= S6;
@@ -127,86 +226,41 @@ begin
                         end if;
                     end if;
                 when S4 =>
-                    oSWaitrequest <= '1';
-                    oWordSel      <= '1';
-                    oMRead        <= '1';
-                    state         <= S3;
+                    state <= S3;
                 when S5 =>
-                    oSWaitrequest <= '1';
-                    oCWrite       <= '1';
-                    oByteClr      <= '1';
-                    oWordSel      <= '1';
-                    oWordEn       <= '1';
-                    oCDirtyClr    <= '1';
-                    state         <= S4;
+                    state <= S4;
                 when S6 =>
-                    oSWaitrequest <= '1';
-                    oCWrite       <= '1';
-                    oWordSel      <= '1';
-                    oWordClr      <= '1';
-                    oByteClr      <= '1';
-                    oCDirtyClr    <= '1';
-                    state         <= S7;
+                    state <= S7;
                 when S7 =>
-                    oSWaitrequest <= '1';
-                    state         <= S2;
-                    if iSRead = '1' then
-                        oCRead <= '1';
-                    else
-                        oCWrite    <= '1';
-                        oCWriteSel <= '1';
-                    end if;
+                    state <= S2;
                 when S8 =>
-                    oSWaitrequest <= '1';
-                    oWordSel      <= '1';
-                    oTagSel       <= '1';
-                    if iMWaitRequest = '1' then
-                        oMWrite <= '1';
-                        state   <= S8;
+                    if m_waitrequest = '1' then
+                        state <= S8;
                     else
-                        if iByteDone = '0' then
-                            oByteEn <= '1';
-                            state   <= S9;
+                        if byte_done = '0' then
+                            state <= S9;
                         else
-                            oByteClr   <= '1';
-                            oCDirtyClr <= '1';
-                            if iWordDone = '0' then
-                                oWordEn <= '1';
-                                state   <= S10;
+                            if word_done = '0' then
+                                state <= S10;
                             else
-                                oWordClr <= '1';
-                                state    <= S11;
+                                state <= S11;
                             end if;
                         end if;
                     end if;
                 when S9 =>
-                    oSWaitrequest <= '1';
-                    oWordSel      <= '1';
-                    oTagSel       <= '1';
-                    oMWrite       <= '1';
-                    state         <= S8;
+                    state <= S8;
                 when S10 =>
-                    oSWaitrequest <= '1';
-                    oWordSel      <= '1';
-                    oTagSel       <= '1';
-                    if iDirtyData = '1' then
-                        oMWrite <= '1';
-                        state   <= S8;
+                    if dirty_data = '1' then
+                        state <= S8;
                     else
-                        if iWordDone = '1' then
-                            oByteClr <= '1';
-                            oWordClr <= '1';
-                            state    <= S11;
+                        if word_done = '1' then
+                            state <= S11;
                         else
-                            oWordEn <= '1';
-                            state   <= S10;
+                            state <= S10;
                         end if;
                     end if;
                 when S11 =>
-                    oSWaitrequest <= '1';
-                    oWordSel      <= '1';
-                    oMRead        <= '1';
-                    state         <= S3;
+                    state <= S3;
             end case;
         end if;
     end process;
