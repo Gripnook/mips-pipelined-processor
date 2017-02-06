@@ -1,0 +1,74 @@
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+entity datapath is
+    port(
+        clk            : in  std_logic;
+        -- Avalon interface
+        s_read         : out  std_logic;
+        s_write        : out  std_logic;
+        m_waitrequest  : out  std_logic;
+        -- Cache logic interface 
+        tag_hit        : out  std_logic;
+        byte_done      : out  std_logic;
+        word_done      : out  std_logic;
+        -- Cache storage interface
+        valid          : out  std_logic;
+        dirty          : out  std_logic;
+        dirty_data     : out  std_logic;
+        -- Avalon interface
+        m_read         : in std_logic;
+        m_write        : in std_logic;
+        s_waitrequest  : in std_logic;
+        -- Cache storage interface
+        c_read         : out std_logic;
+        c_write        : out std_logic;
+        c_write_sel    : out std_logic;
+        c_write_reg_en : out std_logic;
+        c_dirty_clr    : out std_logic;
+        -- Cache Logic interface
+        tag_sel        : out std_logic;
+        word_sel       : out std_logic;
+        word_en        : out std_logic;
+        word_clr       : out std_logic;
+        byte_en        : out std_logic;
+        byte_clr       : out std_logic);
+end datapath;
+
+architecture a1 of datapath is
+	component cache_controller is
+		port(        
+		  clk            : in  std_logic;
+        -- Avalon interface
+        s_read         : in  std_logic;
+        s_write        : in  std_logic;
+        m_waitrequest  : in  std_logic;
+        -- Cache logic interface 
+        tag_hit        : in  std_logic;
+        byte_done      : in  std_logic;
+        word_done      : in  std_logic;
+        -- Cache storage interface
+        valid          : in  std_logic;
+        dirty          : in  std_logic;
+        dirty_data     : in  std_logic;
+        -- Avalon interface
+        m_read         : out std_logic;
+        m_write        : out std_logic;
+        s_waitrequest  : out std_logic;
+        -- Cache storage interface
+        c_read         : out std_logic;
+        c_write        : out std_logic;
+        c_write_sel    : out std_logic;
+        c_write_reg_en : out std_logic;
+        c_dirty_clr    : out std_logic;
+        -- Cache Logic interface
+        tag_sel        : out std_logic;
+        word_sel       : out std_logic;
+        word_en        : out std_logic;
+        word_clr       : out std_logic;
+        byte_en        : out std_logic;
+        byte_clr       : out std_logic);
+
+
+end a1;
