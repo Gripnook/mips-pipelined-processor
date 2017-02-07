@@ -5,6 +5,9 @@ library lpm;
 use lpm.lpm_components.all;
 
 entity datapath is
+    generic(
+        ram_size : INTEGER := 32768
+	 );
     port(
         clk            : in  std_logic;
         s_read         : in  std_logic;
@@ -13,10 +16,10 @@ entity datapath is
         m_read         : out std_logic;
         m_write        : out std_logic;
         s_waitrequest  : out std_logic;
-		  s_adr			  	: in std_logic_vector(31 downto 0); --additional I/O needed for Cache
+		  s_addr			  	: in std_logic_vector(31 downto 0); --additional I/O needed for Cache
 		  s_readdata		: out std_logic_vector(31 downto 0);
 		  s_writedata		: in std_logic_vector(31 downto 0);
-		  m_adr				: out std_logic_vector(31 downto 0);
+        m_addr        : out integer range 0 to ram_size - 1;
 		  m_readdata      : in std_logic_vector(7 downto 0);
 		  m_writedata     : out std_logic_vector(7 downto 0));
 end datapath;
@@ -36,6 +39,7 @@ architecture a1 of datapath is
 	signal block_index: std_logic_vector(4 downto 0);
 	signal tag_hit, byte_done, word_done: std_logic;
 	signal tag_sel, word_sel, word_en, word_clr, byte_en, byte_clr: std_logic;
+	signal m_adr: std_logic_vector(31 downto 0);
 -- data_out related
 	signal data_out: std_logic_vector(131 downto 0);
 	signal s_readdataline: std_logic_vector(31 downto 0);
@@ -94,9 +98,10 @@ architecture a1 of datapath is
 -----------------------------------------------------------
 --	Matching signals and Components
 -----------------------------------------------------------
+	m_addr <= to_integer(unsigned(m_adr));
 	clock <= clk;
 	byte_offset <= byte_cnt;
-	block_index <= s_adr(8 downto 4);
+	block_index <= s_addr(8 downto 4);
 	s_readdata  <= s_readdataline;
 	
 	controller: cache_controller 
@@ -207,14 +212,14 @@ architecture a1 of datapath is
 	
 	word_done <= (word_cnt(1) and word_cnt(0)); --outputs relating to block
 	byte_done <= (byte_cnt(1) and byte_cnt(0));
-	tag_hit <= '1' when (s_adr(8 downto 4) = tag_out); -- tag_hit
+	tag_hit <= '1' when (s_addr(8 downto 4) = tag_out); -- tag_hit
 	
 	with word_sel select block_offset <= -- block_offset selector
-		s_adr(3 downto 2) when '0',
+		s_addr(3 downto 2) when '0',
 		word_cnt          when '1';
 		
 	with tag_sel select tag <= -- tag selector
-		s_adr(14 downto 9) when '0',
+		s_addr(14 downto 9) when '0',
 		tag_out				when '1';
 		
 	--m_adr(31 downto 15) <= '; -- m_adr TODO:
