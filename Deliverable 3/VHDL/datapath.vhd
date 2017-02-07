@@ -1,8 +1,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-library lpm;
-use lpm.lpm_components.all;
 
 entity datapath is
     generic(
@@ -202,13 +200,35 @@ architecture a1 of datapath is
 --	Block Related
 -------------------------------------------------------
 	
-	word_counter: lpm_counter -- word counter
-		generic map(LPM_WIDTH => 2)
-		port map (clock => clk, aclr => word_clr, q => word_cnt, cnt_en => word_en);
+	word_counter: process(clock)
+	begin
+		if(clock'event and clock = '1' and word_en = '1') then
+			if(word_cnt = "00") then
+				word_cnt <= "01";
+			elsif(word_cnt = "01") then
+				word_cnt <= "10";
+			elsif(word_cnt = "10") then
+				word_cnt <= "11";
+			elsif(word_cnt = "11") then
+				word_cnt <= "00";			
+			end if;
+		end if;
+	end process;
 	
-	byte_counter: lpm_counter -- byte counter
-		generic map(LPM_WIDTH => 2)
-		port map (clock => clk, aclr => byte_clr, q => byte_cnt, cnt_en => byte_en);
+	byte_counter: process(clock)
+	begin
+		if(clock'event and clock = '1' and byte_en = '1') then
+			if(byte_cnt = "00") then
+				byte_cnt <= "01";
+			elsif(byte_cnt = "01") then
+				byte_cnt <= "10";
+			elsif(byte_cnt = "10") then
+				byte_cnt <= "11";
+			elsif(byte_cnt = "11") then
+				byte_cnt <= "00";
+			end if;
+		end if;
+	end process;
 	
 	word_done <= (word_cnt(1) and word_cnt(0)); --outputs relating to block
 	byte_done <= (byte_cnt(1) and byte_cnt(0));

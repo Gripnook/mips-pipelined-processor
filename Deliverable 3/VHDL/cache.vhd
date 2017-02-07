@@ -1,8 +1,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-library lpm;
-use lpm.lpm_components.all;
 
 entity cache is
     generic(
@@ -187,9 +185,9 @@ architecture arch of cache is
 		end if;
 	end process;
 	
-	m_readdata_to_reg: process(clk) --enabled registers to take in m_readdata
+	m_readdata_to_reg: process(clock) --enabled registers to take in m_readdata
 	begin
-		if(clk'event and clk = '1') then
+		if(clock'event and clock = '1') then
 			if(en1 = '1') then
 				reg1 <= m_readdata;
 			elsif(en2 = '1') then
@@ -206,13 +204,35 @@ architecture arch of cache is
 --	Block Related
 -------------------------------------------------------
 	
-	word_counter: lpm_counter -- word counter
-		generic map(LPM_WIDTH => 2)
-		port map (clock => clk, aclr => word_clr, q => word_cnt, cnt_en => word_en);
+	word_counter: process(clock)
+	begin
+		if(clock'event and clock = '1' and word_en = '1') then
+			if(word_cnt = "00") then
+				word_cnt <= "01";
+			elsif(word_cnt = "01") then
+				word_cnt <= "10";
+			elsif(word_cnt = "10") then
+				word_cnt <= "11";
+			elsif(word_cnt = "11") then
+				word_cnt <= "00";			
+			end if;
+		end if;
+	end process;
 	
-	byte_counter: lpm_counter -- byte counter
-		generic map(LPM_WIDTH => 2)
-		port map (clock => clk, aclr => byte_clr, q => byte_cnt, cnt_en => byte_en);
+	byte_counter: process(clock)
+	begin
+		if(clock'event and clock = '1' and byte_en = '1') then
+			if(byte_cnt = "00") then
+				byte_cnt <= "01";
+			elsif(byte_cnt = "01") then
+				byte_cnt <= "10";
+			elsif(byte_cnt = "10") then
+				byte_cnt <= "11";
+			elsif(byte_cnt = "11") then
+				byte_cnt <= "00";
+			end if;
+		end if;
+	end process;
 	
 	word_done <= (word_cnt(1) and word_cnt(0)); --outputs relating to block
 	byte_done <= (byte_cnt(1) and byte_cnt(0));
@@ -259,9 +279,9 @@ architecture arch of cache is
 	--	Component Related
 	------------------------------------------------------------------------
 	
-	component_datapath: process(clk) -- 'component' in data_path
+	component_datapath: process(clock) -- 'component' in data_path
 	begin
-		if(clk'event and clk = '1') then
+		if(clock'event and clock = '1') then
 			read <= c_read; -- taking in inputs on clk cycle
 			write <= c_write;
 			data_in_comp <= data_in;
