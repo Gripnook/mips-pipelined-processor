@@ -53,7 +53,7 @@ architecture arch of cache is
     signal data_in_comp                                              : std_logic_vector(31 downto 0);
     signal c_read, c_write, c_write_sel, c_write_reg_en, c_dirty_clr : std_logic;
     -- Miscellanious connecting signals
-    signal clk           : std_logic;
+    signal clk                                                       : std_logic;
 
     -------------------------------------------------------------
     --	Components
@@ -90,21 +90,21 @@ architecture arch of cache is
              byte_en        : out std_logic;
              byte_clr       : out std_logic);
     end component;
-	 
-	 component cache_block
-		port(reset      : in  std_logic;
-		clock           : in  std_logic;
-		read            : in  std_logic;
-		write           : in  std_logic;
-		data_in         : in  std_logic_vector(31 downto 0);
-		tag_in          : in  std_logic_vector(5 downto 0);
-		block_index_in  : in  std_logic_vector(4 downto 0);
-		block_offset_in : in  std_logic_vector(1 downto 0);
-		dirty_clr       : in  std_logic;
-		data_out        : out std_logic_vector(131 downto 0);
-		tag_out         : out std_logic_vector(5 downto 0);
-		valid_out       : out std_logic);
-	 end component;
+
+    component cache_block
+        port(reset           : in  std_logic;
+             clock           : in  std_logic;
+             read            : in  std_logic;
+             write           : in  std_logic;
+             data_in         : in  std_logic_vector(31 downto 0);
+             tag_in          : in  std_logic_vector(5 downto 0);
+             block_index_in  : in  std_logic_vector(4 downto 0);
+             block_offset_in : in  std_logic_vector(1 downto 0);
+             dirty_clr       : in  std_logic;
+             data_out        : out std_logic_vector(131 downto 0);
+             tag_out         : out std_logic_vector(5 downto 0);
+             valid_out       : out std_logic);
+    end component;
 
 begin                                   -- BEGIN
     -----------------------------------------------------------
@@ -149,23 +149,23 @@ begin                                   -- BEGIN
             byte_en        => byte_en,
             byte_clr       => byte_clr
         );
-		  
-		  cache_memory: cache_block
-			port map(
-			   reset           => reset,
-				clock           => clk,          
-				read            => c_read,         
-				write           => c_write,
-				data_in         => data_in,
-				tag_in          => tag,
-				block_index_in  => block_index,
-				block_offset_in => block_offset,
-				dirty_clr       => c_dirty_clr,
-				data_out        => data_out,
-				tag_out         => tag_out,
-				valid_out       => valid
-			);
-			
+
+    cache_memory : cache_block
+        port map(
+            reset           => reset,
+            clock           => clk,
+            read            => c_read,
+            write           => c_write,
+            data_in         => data_in,
+            tag_in          => tag,
+            block_index_in  => block_index,
+            block_offset_in => block_offset,
+            dirty_clr       => c_dirty_clr,
+            data_out        => data_out,
+            tag_out         => tag_out,
+            valid_out       => valid
+        );
+
     ------------------------------------------------------------
     -- data_in related
     ------------------------------------------------------------
@@ -173,8 +173,7 @@ begin                                   -- BEGIN
     with c_write_sel select data_in <=  --c_write_sel MUX
         regdata when '0',
         s_writedata when '1',
-		  regdata when others;
-		  
+        regdata when others;
 
     regdata(31 downto 24) <= reg4;      --readdata placed
     regdata(23 downto 16) <= reg3;
@@ -235,59 +234,59 @@ begin                                   -- BEGIN
     word_counter : process(clock)
     begin
         if (clock'event and clock = '1') then
-				if(word_clr = '1') then
-					word_cnt <= "00";
-				end if;
-				
-				if(word_en = '1') then
-					if (word_cnt = "00") then
-						word_cnt <= "01";
-					elsif (word_cnt = "01") then
-						word_cnt <= "10";
-					elsif (word_cnt = "10") then
-						word_cnt <= "11";
-					elsif (word_cnt = "11") then
-						word_cnt <= "00";
-					end if;
-				end if;
+            if (word_clr = '1') then
+                word_cnt <= "00";
+            end if;
+
+            if (word_en = '1') then
+                if (word_cnt = "00") then
+                    word_cnt <= "01";
+                elsif (word_cnt = "01") then
+                    word_cnt <= "10";
+                elsif (word_cnt = "10") then
+                    word_cnt <= "11";
+                elsif (word_cnt = "11") then
+                    word_cnt <= "00";
+                end if;
+            end if;
         end if;
     end process;
 
     byte_counter : process(clock)
     begin
         if (clock'event and clock = '1') then
-				if(byte_clr = '1') then
-					byte_cnt <= "00";
-				end if;
-				
-				if(word_en = '1') then
-					if (byte_cnt = "00") then
-						byte_cnt <= "01";
-					elsif (byte_cnt = "01") then
-						byte_cnt <= "10";
-					elsif (byte_cnt = "10") then
-						byte_cnt <= "11";
-					elsif (byte_cnt = "11") then
-						byte_cnt <= "00";
-					end if;
-				end if;
+            if (byte_clr = '1') then
+                byte_cnt <= "00";
+            end if;
+
+            if (word_en = '1') then
+                if (byte_cnt = "00") then
+                    byte_cnt <= "01";
+                elsif (byte_cnt = "01") then
+                    byte_cnt <= "10";
+                elsif (byte_cnt = "10") then
+                    byte_cnt <= "11";
+                elsif (byte_cnt = "11") then
+                    byte_cnt <= "00";
+                end if;
+            end if;
         end if;
     end process;
 
     word_done <= (word_cnt(1) and word_cnt(0)); --outputs relating to block
     byte_done <= (byte_cnt(1) and byte_cnt(0));
     tag_hit   <= '1' when (s_addr(14 downto 9) = tag_out) else -- tag_hit
-				     '0';
+        '0';
 
     with word_sel select block_offset <= -- block_offset selector
         s_addr(3 downto 2) when '0',
         word_cnt when '1',
-		  s_addr(3 downto 2) when others;
+        s_addr(3 downto 2) when others;
 
     with tag_sel select tag <=          -- tag selector
         s_addr(14 downto 9) when '0',
         tag_out when '1',
-		  s_addr(14 downto 9) when others;
+        s_addr(14 downto 9) when others;
 
     --m_adr(31 downto 15) <= '; -- m_adr TODO:
     m_adr(14 downto 9) <= tag;
@@ -305,20 +304,20 @@ begin                                   -- BEGIN
         data_out(33) when "01",
         data_out(66) when "10",
         data_out(99) when "11",
-		  data_out(0) when others;
+        data_out(0) when others;
 
     with block_offset select s_readdataline <= --s_readdata
         data_out(32 downto 1) when "00",
         data_out(65 downto 34) when "01",
         data_out(98 downto 67) when "10",
         data_out(131 downto 100) when "11",
-		  data_out(32 downto 1) when others;
+        data_out(32 downto 1) when others;
 
     with byte_offset select m_writedata <= -- 
         s_readdataline(7 downto 0) when "00",
         s_readdataline(15 downto 8) when "01",
         s_readdataline(23 downto 16) when "10",
         s_readdataline(31 downto 24) when "11",
-		  s_readdataline(7 downto 0) when others;
+        s_readdataline(7 downto 0) when others;
 
 end arch;

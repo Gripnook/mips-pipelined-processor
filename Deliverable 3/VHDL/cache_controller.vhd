@@ -5,6 +5,7 @@ use ieee.numeric_std.all;
 entity cache_controller is
     port(
         clk            : in  std_logic;
+        rst            : in  std_logic;
         -- Avalon interface
         s_read         : in  std_logic;
         s_write        : in  std_logic;
@@ -177,6 +178,10 @@ begin
 
     state_transition_process : process(clk)
     begin
+        if (rst = '1') then
+            state <= S0;
+        end if;
+
         if rising_edge(clk) then
             case state is
                 when S0 =>
