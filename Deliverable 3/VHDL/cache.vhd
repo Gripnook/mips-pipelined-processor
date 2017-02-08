@@ -9,7 +9,6 @@ entity cache is
     port(
         clock         : in  std_logic;
         reset         : in  std_logic;
-
         -- Avalon interface --
         s_addr        : in  std_logic_vector(31 downto 0);
         s_read        : in  std_logic;
@@ -53,10 +52,6 @@ architecture arch of cache is
     signal block_offset_in                                           : std_logic_vector(1 downto 0);
     signal data_in_comp                                              : std_logic_vector(31 downto 0);
     signal c_read, c_write, c_write_sel, c_write_reg_en, c_dirty_clr : std_logic;
-
-    signal data_out_comp : std_logic_vector(131 downto 0);
-    signal tag_out_comp  : std_logic_vector(5 downto 0);
-    signal valid_out     : std_logic;
     -- Miscellanious connecting signals
     signal clk           : std_logic;
 
@@ -95,6 +90,21 @@ architecture arch of cache is
              byte_en        : out std_logic;
              byte_clr       : out std_logic);
     end component;
+	 
+	 component cache_block
+		port(reset      : in  std_logic;
+		clock           : in  std_logic;
+		read            : in  std_logic;
+		write           : in  std_logic;
+		data_in         : in  std_logic_vector(31 downto 0);
+		tag_in          : in  std_logic_vector(5 downto 0);
+		block_index_in  : in  std_logic_vector(4 downto 0);
+		block_offset_in : in  std_logic_vector(1 downto 0);
+		dirty_clr       : in  std_logic;
+		data_out        : out std_logic_vector(131 downto 0);
+		tag_out         : out std_logic_vector(5 downto 0);
+		valid_out       : out std_logic);
+	 end component;
 
 begin                                   -- BEGIN
     -----------------------------------------------------------
@@ -139,14 +149,32 @@ begin                                   -- BEGIN
             byte_en        => byte_en,
             byte_clr       => byte_clr
         );
-
+		  
+		  cache_memory: cache_block
+			port map(
+			   reset           => reset,
+				clock           => clk,          
+				read            => c_read,         
+				write           => c_write,
+				data_in         => data_in,
+				tag_in          => tag,
+				block_index_in  => block_index,
+				block_offset_in => block_offset,
+				dirty_clr       => c_dirty_clr,
+				data_out        => data_out,
+				tag_out         => tag_out,
+				valid_out       => valid
+			);
+			
     ------------------------------------------------------------
     -- data_in related
     ------------------------------------------------------------
 
     with c_write_sel select data_in <=  --c_write_sel MUX
         regdata when '0',
-        s_writedata when '1';
+        s_writedata when '1',
+		  regdata when others;
+		  
 
     regdata(31 downto 24) <= reg4;      --readdata placed
     regdata(23 downto 16) <= reg3;
@@ -206,45 +234,60 @@ begin                                   -- BEGIN
 
     word_counter : process(clock)
     begin
-        if (clock'event and clock = '1' and word_en = '1') then
-            if (word_cnt = "00") then
-                word_cnt <= "01";
-            elsif (word_cnt = "01") then
-                word_cnt <= "10";
-            elsif (word_cnt = "10") then
-                word_cnt <= "11";
-            elsif (word_cnt = "11") then
-                word_cnt <= "00";
-            end if;
+        if (clock'event and clock = '1') then
+				if(word_clr = '1') then
+					word_cnt <= "00";
+				end if;
+				
+				if(word_en = '1') then
+					if (word_cnt = "00") then
+						word_cnt <= "01";
+					elsif (word_cnt = "01") then
+						word_cnt <= "10";
+					elsif (word_cnt = "10") then
+						word_cnt <= "11";
+					elsif (word_cnt = "11") then
+						word_cnt <= "00";
+					end if;
+				end if;
         end if;
     end process;
 
     byte_counter : process(clock)
     begin
-        if (clock'event and clock = '1' and byte_en = '1') then
-            if (byte_cnt = "00") then
-                byte_cnt <= "01";
-            elsif (byte_cnt = "01") then
-                byte_cnt <= "10";
-            elsif (byte_cnt = "10") then
-                byte_cnt <= "11";
-            elsif (byte_cnt = "11") then
-                byte_cnt <= "00";
-            end if;
+        if (clock'event and clock = '1') then
+				if(byte_clr = '1') then
+					byte_cnt <= "00";
+				end if;
+				
+				if(word_en = '1') then
+					if (byte_cnt = "00") then
+						byte_cnt <= "01";
+					elsif (byte_cnt = "01") then
+						byte_cnt <= "10";
+					elsif (byte_cnt = "10") then
+						byte_cnt <= "11";
+					elsif (byte_cnt = "11") then
+						byte_cnt <= "00";
+					end if;
+				end if;
         end if;
     end process;
 
     word_done <= (word_cnt(1) and word_cnt(0)); --outputs relating to block
     byte_done <= (byte_cnt(1) and byte_cnt(0));
-    tag_hit   <= '1' when (s_addr(8 downto 4) = tag_out); -- tag_hit
+    tag_hit   <= '1' when (s_addr(14 downto 9) = tag_out) else -- tag_hit
+				     '0';
 
     with word_sel select block_offset <= -- block_offset selector
         s_addr(3 downto 2) when '0',
-        word_cnt when '1';
+        word_cnt when '1',
+		  s_addr(3 downto 2) when others;
 
     with tag_sel select tag <=          -- tag selector
         s_addr(14 downto 9) when '0',
-        tag_out when '1';
+        tag_out when '1',
+		  s_addr(14 downto 9) when others;
 
     --m_adr(31 downto 15) <= '; -- m_adr TODO:
     m_adr(14 downto 9) <= tag;
@@ -261,78 +304,21 @@ begin                                   -- BEGIN
         data_out(0) when "00",
         data_out(33) when "01",
         data_out(66) when "10",
-        data_out(99) when "11";
+        data_out(99) when "11",
+		  data_out(0) when others;
 
     with block_offset select s_readdataline <= --s_readdata
         data_out(32 downto 1) when "00",
         data_out(65 downto 34) when "01",
         data_out(98 downto 67) when "10",
-        data_out(131 downto 100) when "11";
+        data_out(131 downto 100) when "11",
+		  data_out(32 downto 1) when others;
 
     with byte_offset select m_writedata <= -- 
         s_readdataline(7 downto 0) when "00",
         s_readdataline(15 downto 8) when "01",
         s_readdataline(23 downto 16) when "10",
-        s_readdataline(31 downto 24) when "11";
+        s_readdataline(31 downto 24) when "11",
+		  s_readdataline(7 downto 0) when others;
 
-    ------------------------------------------------------------------------
-    -- Component Related
-    ------------------------------------------------------------------------
-
-    component_datapath : process(clock) -- 'component' in data_path
-    begin
-        if (clock'event and clock = '1') then
-            read            <= c_read;  -- taking in inputs on clk cycle
-            write           <= c_write;
-            data_in_comp    <= data_in;
-            tag_in          <= tag;
-            block_index_in  <= block_index;
-            block_offset_in <= block_offset;
-            dirty_clr       <= c_dirty_clr;
-
-            if (block_offset_in = "00") then --block offset to determine data_out data postition
-                data_out_comp(32 downto 1) <= data_in_comp;
-            elsif (block_offset_in = "01") then
-                data_out_comp(65 downto 34) <= data_in_comp;
-            elsif (block_offset_in = "10") then
-                data_out_comp(98 downto 67) <= data_in_comp;
-            elsif (block_offset_in = "11") then
-                data_out_comp(131 downto 100) <= data_in_comp;
-            end if;
-
-            if (dirty_clr = '1') then   --dirty bit clear 1 -> 0 dirty, controlled by controller
-                if (block_offset_in = "00") then
-                    data_out_comp(0) <= '0';
-                elsif (block_offset_in = "01") then
-                    data_out_comp(33) <= '0';
-                elsif (block_offset_in = "10") then
-                    data_out_comp(66) <= '0';
-                elsif (block_offset_in = "11") then
-                    data_out_comp(99) <= '0';
-                end if;
-            elsif (dirty_clr = '0') then -- 0 -> 1 dirty, 
-                if (block_offset_in = "00") then
-                    data_out_comp(0) <= '1';
-                elsif (block_offset_in = "01") then
-                    data_out_comp(33) <= '1';
-                elsif (block_offset_in = "10") then
-                    data_out_comp(66) <= '1';
-                elsif (block_offset_in = "11") then
-                    data_out_comp(99) <= '1';
-                end if;
-            end if;
-
-            if (tag_in = data_in_comp(14 downto 9)) then --if tags match - valid
-                valid_out <= '1';
-            elsif (tag_in /= data_in_comp(14 downto 9)) then
-                valid_out <= '0';
-            end if;
-
-            if (read = '1' or write = '1') then -- 'release' data upon read or write signal
-                data_out <= data_out_comp;
-                tag_out  <= tag_in;
-                valid    <= valid_out;
-            end if;
-        end if;
-    end process;
 end arch;
