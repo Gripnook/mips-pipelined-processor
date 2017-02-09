@@ -30,6 +30,8 @@ Temporary Items
 .apdisk
 
 ### ModelSim ###
+*.mpf
+
 # ignore ModelSim generated files and directories (temp files and so on)
 [_@]*
 
