@@ -39,7 +39,7 @@ end cache_controller;
 
 architecture arch of cache_controller is
     type state_type is (S0, S1, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11);
-    signal state : state_type;
+    signal state : state_type := S0;
 begin
     output_process : process(s_read, s_write, m_waitrequest, tag_hit, byte_done, word_done, valid, dirty, dirty_data, state)
     begin
@@ -85,8 +85,7 @@ begin
                             end if;
                         end if;
                     else
-                        if s_read = '1' then
-                        else
+                        if s_read = '0' then
                             s_waitrequest <= '1';
                             c_write       <= '1';
                             c_write_sel   <= '1';
@@ -176,13 +175,11 @@ begin
         end case;
     end process;
 
-    state_transition_process : process(clk)
+    state_transition_process : process(clk, rst)
     begin
         if (rst = '1') then
             state <= S0;
-        end if;
-
-        if rising_edge(clk) then
+        elsif rising_edge(clk) then
             case state is
                 when S0 =>
                     if s_read = '1' or s_write = '1' then
