@@ -45,7 +45,6 @@ Temporary Items
 *.jpg
 *.html
 *.bsf
-*.tcl
 *.prw
 
 # ignore simulation output of ModelSim
