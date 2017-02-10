@@ -52,7 +52,7 @@ architecture behavior of cache_tb is
     signal reset          : std_logic := '0';
     constant clock_period : time      := 1 ns;
 
-    signal s_addr        : std_logic_vector(31 downto 0);
+    signal s_addr        : std_logic_vector(31 downto 0) := (others => '0');
     signal s_read        : std_logic;
     signal s_readdata    : std_logic_vector(31 downto 0);
     signal s_write       : std_logic;
@@ -70,10 +70,10 @@ architecture behavior of cache_tb is
         variable addr : std_logic_vector(31 downto 0);
     begin
         addr(31 downto 15) := (others => '0');
-        addr(14 downto 9) := std_logic_vector(to_unsigned(tag, 6));
-        addr(8 downto 4) := std_logic_vector(to_unsigned(block_index, 5));
-        addr(3 downto 2) := std_logic_vector(to_unsigned(block_offset, 2));
-        addr(1 downto 0) := (others => '0');
+        addr(14 downto 9)  := std_logic_vector(to_unsigned(tag, 6));
+        addr(8 downto 4)   := std_logic_vector(to_unsigned(block_index, 5));
+        addr(3 downto 2)   := std_logic_vector(to_unsigned(block_offset, 2));
+        addr(1 downto 0)   := (others => '0');
         return addr;
     end to_address;
 
@@ -124,9 +124,8 @@ begin
 
     test_process : process
     begin
-
         s_write <= '0';
-        s_read <= '0';
+        s_read  <= '0';
 
         reset <= '1';
         wait for clock_period;
@@ -137,9 +136,9 @@ begin
         ---------------------Test#1: Write-------------------
         --This test performs the first write operation
 
-        s_addr <= to_address(1, 1, 0);
+        s_addr      <= to_address(1, 1, 0);
         s_writedata <= x"FFFFFFFF";
-        s_write <= '1';
+        s_write     <= '1';
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
         s_write <= '0';
@@ -162,9 +161,9 @@ begin
         --This test attempts to overwrite the data stored from Test#1
         --with different data. This checks that writeback works
 
-        s_addr <= to_address(1, 1, 0);
+        s_addr      <= to_address(1, 1, 0);
         s_writedata <= x"00000057";
-        s_write <= '1';
+        s_write     <= '1';
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
         s_write <= '0';
@@ -189,21 +188,21 @@ begin
 
         s_write <= '1';
 
-        s_addr <= to_address(1, 1, 1);
+        s_addr      <= to_address(1, 1, 1);
         s_writedata <= x"00000058";
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
 
-        s_addr <= to_address(1, 1, 2);
+        s_addr      <= to_address(1, 1, 2);
         s_writedata <= x"00000059";
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
 
-        s_addr <= to_address(1, 1, 3);
+        s_addr      <= to_address(1, 1, 3);
         s_writedata <= x"0000005A";
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
-        
+
         s_write <= '0';
 
         -----------------------------------------------------
@@ -228,7 +227,7 @@ begin
         s_addr <= to_address(1, 1, 3);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
-        
+
         assert_equal(s_readdata, x"0000005A");
 
         s_read <= '0';

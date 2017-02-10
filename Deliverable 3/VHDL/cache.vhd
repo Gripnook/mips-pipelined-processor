@@ -26,22 +26,23 @@ entity cache is
 end cache;
 
 architecture arch of cache is
-
     signal tag_hit, byte_done, word_done        : std_logic;
     signal tag_sel, word_sel                    : std_logic;
     signal word_en, word_clr, byte_en, byte_clr : std_logic;
     signal tag_out, tag                         : std_logic_vector(5 downto 0);
     signal block_index                          : std_logic_vector(4 downto 0);
-    signal word_cnt, block_offset               : std_logic_vector(1 downto 0);
-    signal byte_cnt, byte_offset                : std_logic_vector(1 downto 0);
-    
+    signal word_cnt                             : std_logic_vector(1 downto 0) := (others => '0');
+    signal block_offset                         : std_logic_vector(1 downto 0);
+    signal byte_cnt                             : std_logic_vector(1 downto 0) := (others => '0');
+    signal byte_offset                          : std_logic_vector(1 downto 0);
+
     signal en1, en2, en3, en4     : std_logic;
     signal reg1, reg2, reg3, reg4 : std_logic_vector(7 downto 0);
-    
+
     signal c_read, c_write, c_dirty_clr : std_logic;
     signal c_write_sel, c_write_reg_en  : std_logic;
     signal data_in                      : std_logic_vector(31 downto 0);
-    
+
     signal data_out                 : std_logic_vector(131 downto 0);
     signal dirty, dirty_data, valid : std_logic;
     signal s_readdata_internal      : std_logic_vector(31 downto 0);
@@ -144,11 +145,11 @@ begin
         );
 
     tag_hit <= '1' when (s_addr(14 downto 9) = tag_out) else '0';
-    
+
     with tag_sel select tag <=
         tag_out when '1',
         s_addr(14 downto 9) when others;
-    block_index <= s_addr(8 downto 4);
+    block_index                       <= s_addr(8 downto 4);
     with word_sel select block_offset <=
         word_cnt when '1',
         s_addr(3 downto 2) when others;
@@ -199,16 +200,16 @@ begin
 
         if (c_write_reg_en = '1') then
             case byte_offset is
-            when "00" =>
-                en1 <= '1';
-            when "01" =>
-                en2 <= '1';
-            when "10" =>
-                en3 <= '1';
-            when "11" =>
-                en4 <= '1';
-            when others =>
-                null;
+                when "00" =>
+                    en1 <= '1';
+                when "01" =>
+                    en2 <= '1';
+                when "10" =>
+                    en3 <= '1';
+                when "11" =>
+                    en4 <= '1';
+                when others =>
+                    null;
             end case;
         end if;
     end process;

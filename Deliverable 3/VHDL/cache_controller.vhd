@@ -4,8 +4,8 @@ use ieee.numeric_std.all;
 
 entity cache_controller is
     port(
-        clock            : in  std_logic;
-        reset            : in  std_logic;
+        clock          : in  std_logic;
+        reset          : in  std_logic;
         -- Avalon interface
         s_read         : in  std_logic;
         s_write        : in  std_logic;
@@ -156,11 +156,11 @@ begin
                 if valid = '1' then
                     if tag_hit = '1' then
                         if s_write = '1' then
-                            c_write       <= '1';
-                            c_write_sel   <= '1';
+                            c_write     <= '1';
+                            c_write_sel <= '1';
                         end if;
                     else
-                        word_sel      <= '1';
+                        word_sel <= '1';
                         if dirty = '1' then
                             tag_sel <= '1';
                             if dirty_data = '1' then
