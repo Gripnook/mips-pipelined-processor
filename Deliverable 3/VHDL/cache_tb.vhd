@@ -48,9 +48,9 @@ architecture behavior of cache_tb is
     end component;
 
     -- test signals
-    signal reset        : std_logic := '0';
-    signal clk          : std_logic := '0';
-    constant clk_period : time      := 1 ns;
+    signal clock          : std_logic := '0';
+    signal reset          : std_logic := '0';
+    constant clock_period : time      := 1 ns;
 
     signal s_addr        : std_logic_vector(31 downto 0);
     signal s_read        : std_logic;
@@ -66,13 +66,28 @@ architecture behavior of cache_tb is
     signal m_writedata   : std_logic_vector(7 downto 0);
     signal m_waitrequest : std_logic;
 
+    function to_address(tag, block_index, block_offset : integer) return std_logic_vector is
+        variable addr : std_logic_vector(31 downto 0);
+    begin
+        addr(31 downto 15) := (others => '0');
+        addr(14 downto 9) := std_logic_vector(to_unsigned(tag, 6));
+        addr(8 downto 4) := std_logic_vector(to_unsigned(block_index, 5));
+        addr(3 downto 2) := std_logic_vector(to_unsigned(block_offset, 2));
+        addr(1 downto 0) := (others => '0');
+        return addr;
+    end to_address;
+
+    procedure assert_equal(actual, expected : in std_logic_vector(31 downto 0)) is
+    begin
+        ASSERT (actual = expected) REPORT "The data should be " & integer'image(to_integer(signed(expected))) & " but was " & integer'image(to_integer(signed(actual))) SEVERITY ERROR;
+    end assert_equal;
+
 begin
 
-    -- Connect the components which we instantiated above to their
-    -- respective signals.
+    --dut => Device Under Test
     dut : cache
         port map(
-            clock         => clk,
+            clock         => clock,
             reset         => reset,
             s_addr        => s_addr,
             s_read        => s_read,
@@ -90,7 +105,7 @@ begin
 
     MEM : memory
         port map(
-            clock       => clk,
+            clock       => clock,
             writedata   => m_writedata,
             address     => m_addr,
             memwrite    => m_write,
@@ -99,142 +114,127 @@ begin
             waitrequest => m_waitrequest
         );
 
-    clk_process : process
+    clock_process : process
     begin
-        clk <= '0';
-        wait for clk_period / 2;
-        clk <= '1';
-        wait for clk_period / 2;
+        clock <= '0';
+        wait for clock_period / 2;
+        clock <= '1';
+        wait for clock_period / 2;
     end process;
 
     test_process : process
     begin
 
-      wait for clk_period;
-      reset <= '1';
-      wait for clk_period;
-      reset <= '0';
-      wait for clk_period;
+        s_write <= '0';
+        s_read <= '0';
 
-      -----------------------------------------------------
-      ---------------------Test#1: Write-------------------
-      --This test performs the first write operation
-      --Tag:1 -Index:1 -Block: 0 -Byte: 0
+        reset <= '1';
+        wait for clock_period;
+        reset <= '0';
+        wait for clock_period;
 
-      s_addr <= "00000000000000000000001000010000";
-      s_writedata <= x"FFFFFFFF";
-      s_write <= '1';
-      wait until rising_edge(s_waitrequest);
-      wait until falling_edge(s_waitrequest);
-      s_write <= '0';
+        -----------------------------------------------------
+        ---------------------Test#1: Write-------------------
+        --This test performs the first write operation
 
+        s_addr <= to_address(1, 1, 0);
+        s_writedata <= x"FFFFFFFF";
+        s_write <= '1';
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+        s_write <= '0';
 
-      -----------------------------------------------------
-      ---------------------Test#2: Read--------------------
-      --This test confirms that Test#1 was sucessfull and checks
-      --the ability to read from an address
-      --Tag: 1 -Index: 1 -Block: 0 -Byte: 0
+        -----------------------------------------------------
+        ---------------------Test#2: Read--------------------
+        --This test confirms that Test#1 was successful and checks
+        --the ability to read from an address
 
-      s_addr <= "00000000000000000000001000010000";
-      s_read <= '1';
-      wait until rising_edge(s_waitrequest);
-      wait until falling_edge(s_waitrequest);
-      s_read <= '0';
-      wait for clk_period;
-      ASSERT (s_readdata = x"FFFFFFFF") REPORT "The data should be 0xFFFFFFFF" SEVERITY ERROR;
+        s_addr <= to_address(1, 1, 0);
+        s_read <= '1';
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+        s_read <= '0';
 
+        assert_equal(s_readdata, x"FFFFFFFF");
 
-      -----------------------------------------------------
-      ---------------------Test#3: Write-------------------
-      --This test attempts to overwrite the data stored from Test#1
-      --with different data. This checks that writeback works
-      --Tag:1 -Index:1 -Block: 0 -Byte: 0
+        -----------------------------------------------------
+        ---------------------Test#3: Write-------------------
+        --This test attempts to overwrite the data stored from Test#1
+        --with different data. This checks that writeback works
 
-      s_addr <= "00000000000000000000001000010000";
-      s_writedata <= x"00000057";
-      s_write <= '1';
-      wait until rising_edge(s_waitrequest);
-      wait until falling_edge(s_waitrequest);
-      s_write <= '0';
+        s_addr <= to_address(1, 1, 0);
+        s_writedata <= x"00000057";
+        s_write <= '1';
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+        s_write <= '0';
 
-      -----------------------------------------------------
-      ---------------------Test#4: Read--------------------
-      --This test ensures that the data written in Test#1 was successfully
-      --overwritten with the data from Test#3
-      --Tag: 1 -Index: 1 -Block: 1 -Byte: 0
+        -----------------------------------------------------
+        ---------------------Test#4: Read--------------------
+        --This test ensures that the data written in Test#1 was successfully
+        --overwritten with the data from Test#3
 
-      s_addr <= "00000000000000000000001000010000";
-      s_read <= '1';
-      wait until rising_edge(s_waitrequest);
-      wait until falling_edge(s_waitrequest);
-      s_read <= '0';
-      wait for clk_period;
-      ASSERT (s_readdata = x"00000057") REPORT "The data should be 0x00000057" SEVERITY ERROR;
+        s_addr <= to_address(1, 1, 0);
+        s_read <= '1';
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+        s_read <= '0';
 
+        assert_equal(s_readdata, x"00000057");
 
-      -----------------------------------------------------
-      ---------------------Test#5: Write-------------------
-      --This test fills up the remaining 3 word blocks
-      --in the line ensuring that we can write to full 16B lines
-      --Tag:1 -Index:1 -Block: 2 -Byte: 0
-      --Tag:1 -Index:1 -Block: 3 -Byte: 0
-      --Tag:1 -Index:1 -Block: 4 -Byte: 0
+        -----------------------------------------------------
+        ---------------------Test#5: Write-------------------
+        --This test fills up the remaining 3 word blocks
+        --in the line ensuring that we can write to full 16B lines
 
-      s_addr <= "00000000000000000000001000010100";
-      s_writedata <= x"00000058";
-      s_write <= '1';
-      wait until rising_edge(s_waitrequest);
-      wait until falling_edge(s_waitrequest);
-      wait for clk_period;
+        s_write <= '1';
 
-      s_addr <= "00000000000000000000001000011000";
-      s_writedata <= x"00000059";
-      s_write <= '1';
-      wait until rising_edge(s_waitrequest);
-      wait until falling_edge(s_waitrequest);
-      wait for clk_period;
+        s_addr <= to_address(1, 1, 1);
+        s_writedata <= x"00000058";
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
 
-      s_addr <= "00000000000000000000001000011100";
-      s_writedata <= x"0000005A";
-      s_write <= '1';
-      wait until rising_edge(s_waitrequest);
-      wait until falling_edge(s_waitrequest);
-      wait for clk_period;
+        s_addr <= to_address(1, 1, 2);
+        s_writedata <= x"00000059";
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
 
-      -----------------------------------------------------
-      ---------------------Test#6: Read--------------------
-      --This test confirms that Test#5 was sucessfull and
-      --ensures that we can address individual words
-      --Tag:1 -Index:1 -Block: 2 -Byte: 0
-      --Tag:1 -Index:1 -Block: 3 -Byte: 0
-      --Tag:1 -Index:1 -Block: 4 -Byte: 0
+        s_addr <= to_address(1, 1, 3);
+        s_writedata <= x"0000005A";
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+        
+        s_write <= '0';
 
-      s_addr <= "00000000000000000000001000010100";
-      s_read <= '1';
-      wait until rising_edge(s_waitrequest);
-      wait until falling_edge(s_waitrequest);
-      s_read <= '0';
-      wait for clk_period;
-      ASSERT (s_readdata = x"00000058") REPORT "The data should be 0x00000058" SEVERITY ERROR;
+        -----------------------------------------------------
+        ---------------------Test#6: Read--------------------
+        --This test confirms that Test#5 was successful and
+        --ensures that we can address individual words
 
-      s_addr <= "00000000000000000000001000011000";
-      s_read <= '1';
-      wait until rising_edge(s_waitrequest);
-      wait until falling_edge(s_waitrequest);
-      s_read <= '0';
-      wait for clk_period;
-      ASSERT (s_readdata = x"00000059") REPORT "The data should be 0x00000059" SEVERITY ERROR;
+        s_read <= '1';
 
-      s_addr <= "00000000000000000000001000011100";
-      s_read <= '1';
-      wait until rising_edge(s_waitrequest);
-      wait until falling_edge(s_waitrequest);
-      s_read <= '0';
-      wait for clk_period;
-      ASSERT (s_readdata = x"00000058") REPORT "The data should be 0x0000005A" SEVERITY ERROR;
+        s_addr <= to_address(1, 1, 1);
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
 
-      wait;
+        assert_equal(s_readdata, x"00000058");
+
+        s_addr <= to_address(1, 1, 2);
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        assert_equal(s_readdata, x"00000059");
+
+        s_addr <= to_address(1, 1, 3);
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+        
+        assert_equal(s_readdata, x"0000005A");
+
+        s_read <= '0';
+
+        wait;
 
     end process;
 
-end;
+end behavior;
