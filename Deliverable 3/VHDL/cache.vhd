@@ -29,12 +29,12 @@ architecture arch of cache is
     signal tag_hit, byte_done, word_done        : std_logic;
     signal tag_sel, word_sel                    : std_logic;
     signal word_en, word_clr, byte_en, byte_clr : std_logic;
-    signal tag_out, tag                         : std_logic_vector(5 downto 0);
-    signal block_index                          : std_logic_vector(4 downto 0);
+    signal tag_out, tag                         : std_logic_vector(5 downto 0) := (others => '0');
+    signal block_index                          : std_logic_vector(4 downto 0) := (others => '0');
     signal word_cnt                             : std_logic_vector(1 downto 0) := (others => '0');
-    signal block_offset                         : std_logic_vector(1 downto 0);
+    signal block_offset                         : std_logic_vector(1 downto 0) := (others => '0');
     signal byte_cnt                             : std_logic_vector(1 downto 0) := (others => '0');
-    signal byte_offset                          : std_logic_vector(1 downto 0);
+    signal byte_offset                          : std_logic_vector(1 downto 0) := (others => '0');
 
     signal en1, en2, en3, en4     : std_logic;
     signal reg1, reg2, reg3, reg4 : std_logic_vector(7 downto 0);
