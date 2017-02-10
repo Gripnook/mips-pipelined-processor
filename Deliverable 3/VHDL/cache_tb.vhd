@@ -159,7 +159,7 @@ begin
         -----------------------------------------------------
         ---------------------Test#3: Write-------------------
         --This test attempts to overwrite the data stored from Test#1
-        --with different data. This checks that writeback works
+        --with different data. This checks that we can overwrite data
 
         s_addr      <= to_address(1, 1, 0);
         s_writedata <= x"00000057";
@@ -212,6 +212,12 @@ begin
 
         s_read <= '1';
 
+        s_addr <= to_address(1, 1, 0);
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        assert_equal(s_readdata, x"00000057");
+
         s_addr <= to_address(1, 1, 1);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
@@ -229,6 +235,426 @@ begin
         wait until falling_edge(s_waitrequest);
 
         assert_equal(s_readdata, x"0000005A");
+
+        s_read <= '0';
+
+        -----------------------------------------------------
+        ---------------------Test#7: Write-------------------
+        --This test overwrites the data written in Tests#3,5
+        --with data with a different tag. The whole block must
+        --be then written to memory
+
+        s_write <= '1';
+
+        s_addr      <= to_address(2, 1, 0);
+        s_writedata <= x"0000002C";
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        s_addr      <= to_address(2, 1, 1);
+        s_writedata <= x"0000002D";
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        s_addr      <= to_address(2, 1, 2);
+        s_writedata <= x"0000002E";
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        s_addr      <= to_address(2, 1, 3);
+        s_writedata <= x"0000002F";
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        s_write <= '0';
+
+        -----------------------------------------------------
+        ---------------------Test#8: Read--------------------
+        --This test confirms that Test#7 sucessfully wrote the
+        --data from 5 to memory and was retreived
+
+        s_read <= '1';
+
+        s_addr <= to_address(1, 1, 0);
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        assert_equal(s_readdata, x"00000057");
+
+        s_addr <= to_address(1, 1, 1);
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        assert_equal(s_readdata, x"00000058");
+
+        s_addr <= to_address(1, 1, 2);
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        assert_equal(s_readdata, x"00000059");
+
+        s_addr <= to_address(1, 1, 3);
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        assert_equal(s_readdata, x"0000005A");
+
+        s_read <= '0';
+
+        -----------------------------------------------------
+        ---------------------Test#9: Read--------------------
+        --This test confirms that we can still access the data
+        --we wrote in Test#7 which has a different tag
+
+        s_read <= '1';
+
+        s_addr <= to_address(2, 1, 0);
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        assert_equal(s_readdata, x"0000002C");
+
+        s_addr <= to_address(2, 1, 1);
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        assert_equal(s_readdata, x"0000002D");
+
+        s_addr <= to_address(2, 1, 2);
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        assert_equal(s_readdata, x"0000002E");
+
+        s_addr <= to_address(2, 1, 3);
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        assert_equal(s_readdata, x"0000002F");
+
+        s_read <= '0';
+
+        -----------------------------------------------------
+        ---------------------Test#10: Write-------------------
+        --This test writes data to a line in cache that should
+        --have valid bit but not dirty bit since the data was
+        --retreived from memory in Test#7, hence clean
+
+        s_write <= '1';
+
+        s_addr      <= to_address(3, 1, 0);
+        s_writedata <= x"000003B1";
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        s_addr      <= to_address(3, 1, 1);
+        s_writedata <= x"000003B2";
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        s_addr      <= to_address(3, 1, 2);
+        s_writedata <= x"000003B3";
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        s_addr      <= to_address(3, 1, 3);
+        s_writedata <= x"000003B4";
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        s_write <= '0';
+
+        ------------------------------------------------------
+        ---------------------Test#11: Read--------------------
+        --This test confirms that the write in Test#10 did
+        --indeed overwrite the data in the block and that
+        --it doesn't redundantly write back to memory
+
+        s_read <= '1';
+
+        s_addr <= to_address(3, 1, 0);
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        assert_equal(s_readdata, x"000003B1");
+
+        s_addr <= to_address(3, 1, 1);
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        assert_equal(s_readdata, x"000003B2");
+
+        s_addr <= to_address(3, 1, 2);
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        assert_equal(s_readdata, x"000003B3");
+
+        s_addr <= to_address(3, 1, 3);
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        assert_equal(s_readdata, x"000003B4");
+
+        s_read <= '0';
+
+        ------------------------------------------------------
+        ---------------------Test#12: Read--------------------
+        --This test reads the data written in Test#7, putting
+        --non-dirty data in the cache
+
+        s_read <= '1';
+
+        s_addr <= to_address(2, 1, 0);
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        assert_equal(s_readdata, x"000003B1");
+
+        s_addr <= to_address(2, 1, 1);
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        assert_equal(s_readdata, x"000003B2");
+
+        s_addr <= to_address(2, 1, 2);
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        assert_equal(s_readdata, x"000003B3");
+
+        s_addr <= to_address(2, 1, 3);
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        assert_equal(s_readdata, x"000003B4");
+
+        s_read <= '0';
+
+        -----------------------------------------------------
+        ---------------------Test#13: Write-------------------
+        --This test overwrites one of the words in the block retreived
+        --in Test#12 thus making it dirty and should be written to
+        --memory on the next cache index write
+
+        s_write <= '1';
+
+        s_addr      <= to_address(2, 1, 0);
+        s_writedata <= x"000003B0";
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        s_write <= '0';
+
+        -----------------------------------------------------
+        ---------------------Test#14: Write-------------------
+        --This test writes data to the same index as Test#13,
+        --which should move that data to memory and then replace
+        --it with the data here
+
+        s_write <= '1';
+
+        s_addr      <= to_address(4, 1, 0);
+        s_writedata <= x"00000555";
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        s_write <= '0';
+
+        ------------------------------------------------------
+        ---------------------Test#15: Read--------------------
+        --This test reads the data written in Test#13 which
+        --should be accessed from memory
+
+        s_read <= '1';
+
+        s_addr <= to_address(2, 1, 0);
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        assert_equal(s_readdata, x"000003B0");
+
+        s_read <= '0';
+
+        ------------------------------------------------------
+        ---------------------Test#16: Read--------------------
+        --This test attemps to read the memory written in Test#14
+        --which should now be in memory because of the read in Test#15
+
+        s_read <= '1';
+
+        s_addr <= to_address(4, 1, 0);
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        assert_equal(s_readdata, x"00000555");
+
+        s_read <= '0';
+
+        -----------------------------------------------------
+        ---------------------Test#17: Write-------------------
+        --This test writes some random data to random indices
+
+        s_write <= '1';
+
+        s_addr      <= to_address(5, 2, 0);
+        s_writedata <= x"11111111";
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        s_addr      <= to_address(6, 4, 1);
+        s_writedata <= x"22222222";
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        s_addr      <= to_address(7, 8, 2);
+        s_writedata <= x"33333333";
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        s_addr      <= to_address(8, 12, 3);
+        s_writedata <= x"44444444";
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        s_addr      <= to_address(9, 16, 0);
+        s_writedata <= x"55555555";
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        s_addr      <= to_address(10, 20, 1);
+        s_writedata <= x"66666666";
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        s_addr      <= to_address(11, 24, 2);
+        s_writedata <= x"77777777";
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        s_addr      <= to_address(12, 28, 3);
+        s_writedata <= x"88888888";
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        s_addr      <= to_address(13, 31, 0);
+        s_writedata <= x"99999999";
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        s_write <= '0';
+
+        -----------------------------------------------------
+        ---------------------Test#18: Write-------------------
+        --This test writes data to same indices as in Test#16
+        --but with different data/tags
+        s_addr      <= to_address(14, 2, 0);
+        s_writedata <= x"AAAAAAAA";
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        s_addr      <= to_address(15, 4, 0);
+        s_writedata <= x"BBBBBBBB";
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        s_addr      <= to_address(16, 8, 0);
+        s_writedata <= x"CCCCCCCC";
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        s_addr      <= to_address(17, 12, 0);
+        s_writedata <= x"DDDDDDDD";
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        s_addr      <= to_address(18, 16, 0);
+        s_writedata <= x"EEEEEEEE";
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        s_addr      <= to_address(19, 20, 0);
+        s_writedata <= x"FFFFFFFF";
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        s_addr      <= to_address(20, 24, 0);
+        s_writedata <= x"01234567";
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        s_addr      <= to_address(21, 28, 0);
+        s_writedata <= x"89ABCDEF";
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        s_addr      <= to_address(22, 31, 0);
+        s_writedata <= x"AAAAAAAA";
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        s_write <= '0';
+
+        ------------------------------------------------------
+        ---------------------Test#19: Read--------------------
+        --This test reads the original data that was written in
+        --Test#17, it also moves Test#18 data to memory
+
+        s_read <= '1';
+
+        s_addr      <= to_address(5, 2, 0);
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        assert_equal(s_readdata, x"11111111");
+
+        s_addr      <= to_address(6, 4, 1);
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        assert_equal(s_readdata, x"22222222");
+
+        s_addr      <= to_address(7, 8, 2);
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        assert_equal(s_readdata, x"33333333");
+
+        s_addr      <= to_address(8, 12, 3);
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        assert_equal(s_readdata, x"44444444");
+
+        s_addr      <= to_address(9, 16, 0);
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        assert_equal(s_readdata, x"55555555");
+
+        s_addr      <= to_address(10, 20, 1);
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        assert_equal(s_readdata, x"66666666");
+
+        s_addr      <= to_address(11, 24, 2);
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        assert_equal(s_readdata, x"77777777");
+
+        s_addr      <= to_address(12, 28, 3);
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        assert_equal(s_readdata, x"88888888");
+
+        s_addr      <= to_address(13, 31, 0);
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        assert_equal(s_readdata, x"99999999");
 
         s_read <= '0';
 
