@@ -548,6 +548,9 @@ begin
         ---------------------Test#18: Write-------------------
         --This test writes data to same indices as in Test#16
         --but with different data/tags
+
+        s_write <= '1';
+
         s_addr      <= to_address(14, 2, 0);
         s_writedata <= x"AAAAAAAA";
         wait until rising_edge(s_waitrequest);
@@ -655,6 +658,68 @@ begin
         wait until falling_edge(s_waitrequest);
 
         assert_equal(s_readdata, x"99999999");
+
+        s_read <= '0';
+
+        ------------------------------------------------------
+        ---------------------Test#20: Read--------------------
+        --This test reads the data that was written in Test#18
+
+        s_read <= '1';
+
+        s_addr      <= to_address(14, 2, 0);
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        assert_equal(s_readdata, x"AAAAAAAA");
+
+        s_addr      <= to_address(15, 4, 0);
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        assert_equal(s_readdata, x"BBBBBBBB");
+
+        s_addr      <= to_address(16, 8, 0);
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        assert_equal(s_readdata, x"CCCCCCCC");
+
+        s_addr      <= to_address(17, 12, 0);
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        assert_equal(s_readdata, x"DDDDDDDD");
+
+        s_addr      <= to_address(18, 16, 0);
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        assert_equal(s_readdata, x"EEEEEEEE");
+
+        s_addr      <= to_address(19, 20, 0);
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        assert_equal(s_readdata, x"FFFFFFFF");
+
+        s_addr      <= to_address(20, 24, 0);
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        assert_equal(s_readdata, x"01234567");
+
+        s_addr      <= to_address(21, 28, 0);
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        assert_equal(s_readdata, x"89ABCDEF");
+
+        s_addr      <= to_address(22, 31, 0);
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        assert_equal(s_readdata, x"AAAAAAAA");
 
         s_read <= '0';
 
