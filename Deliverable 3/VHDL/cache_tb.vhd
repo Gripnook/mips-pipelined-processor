@@ -77,9 +77,12 @@ architecture behavior of cache_tb is
         return addr;
     end to_address;
 
-    procedure assert_equal(actual, expected : in std_logic_vector(31 downto 0)) is
+    procedure assert_equal(actual, expected : in std_logic_vector(31 downto 0); error_count : inout integer) is
     begin
-        ASSERT (actual = expected) REPORT "The data should be " & integer'image(to_integer(signed(expected))) & " but was " & integer'image(to_integer(signed(actual))) SEVERITY ERROR;
+        if (actual /= expected) then
+            error_count := error_count + 1;
+        end if;
+        assert (actual = expected) report "The data should be " & integer'image(to_integer(signed(expected))) & " but was " & integer'image(to_integer(signed(actual))) severity error;
     end assert_equal;
 
 begin
@@ -123,6 +126,7 @@ begin
     end process;
 
     test_process : process
+        variable error_count : integer := 0;
     begin
         s_write <= '0';
         s_read  <= '0';
@@ -135,7 +139,8 @@ begin
         -----------------------------------------------------
         ---------------------Test#1: Write-------------------
         --This test performs the first write operation
-        REPORT "Test#1: Write";
+        report "Test#1: Write";
+        report "Covers cases write/invalid/x/x";
 
         s_addr      <= to_address(1, 1, 0);
         s_writedata <= x"FFFFFFFF";
@@ -148,7 +153,8 @@ begin
         ---------------------Test#2: Read--------------------
         --This test confirms that Test#1 was successful and checks
         --the ability to read from an address
-        REPORT "Test#2: Read";
+        report "Test#2: Read";
+        report "Covers cases read/valid/hit/x";
 
         s_addr <= to_address(1, 1, 0);
         s_read <= '1';
@@ -156,13 +162,14 @@ begin
         wait until falling_edge(s_waitrequest);
         s_read <= '0';
 
-        assert_equal(s_readdata, x"FFFFFFFF");
+        assert_equal(s_readdata, x"FFFFFFFF", error_count);
 
         -----------------------------------------------------
         ---------------------Test#3: Write-------------------
         --This test attempts to overwrite the data stored from Test#1
         --with different data. This checks that we can overwrite data
-        REPORT "Test#3: Write";
+        report "Test#3: Write";
+        report "Covers cases write/valid/hit/x";
 
         s_addr      <= to_address(1, 1, 0);
         s_writedata <= x"00000057";
@@ -175,7 +182,8 @@ begin
         ---------------------Test#4: Read--------------------
         --This test ensures that the data written in Test#1 was successfully
         --overwritten with the data from Test#3
-        REPORT "Test#4: Read";
+        report "Test#4: Read";
+        report "Covers cases read/valid/hit/x";
 
         s_addr <= to_address(1, 1, 0);
         s_read <= '1';
@@ -183,13 +191,14 @@ begin
         wait until falling_edge(s_waitrequest);
         s_read <= '0';
 
-        assert_equal(s_readdata, x"00000057");
+        assert_equal(s_readdata, x"00000057", error_count);
 
         -----------------------------------------------------
         ---------------------Test#5: Write-------------------
         --This test fills up the remaining 3 word blocks
         --in the line ensuring that we can write to full 16B lines
-        REPORT "Test#5: Write";
+        report "Test#5: Write";
+        report "Covers cases write/valid/hit/x";
 
         s_write <= '1';
 
@@ -214,7 +223,8 @@ begin
         ---------------------Test#6: Read--------------------
         --This test confirms that Test#5 was successful and
         --ensures that we can address individual words
-        REPORT "Test#6: Read";
+        report "Test#6: Read";
+        report "Covers cases read/valid/hit/x";
 
         s_read <= '1';
 
@@ -222,25 +232,25 @@ begin
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
 
-        assert_equal(s_readdata, x"00000057");
+        assert_equal(s_readdata, x"00000057", error_count);
 
         s_addr <= to_address(1, 1, 1);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
 
-        assert_equal(s_readdata, x"00000058");
+        assert_equal(s_readdata, x"00000058", error_count);
 
         s_addr <= to_address(1, 1, 2);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
 
-        assert_equal(s_readdata, x"00000059");
+        assert_equal(s_readdata, x"00000059", error_count);
 
         s_addr <= to_address(1, 1, 3);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
 
-        assert_equal(s_readdata, x"0000005A");
+        assert_equal(s_readdata, x"0000005A", error_count);
 
         s_read <= '0';
 
@@ -249,7 +259,8 @@ begin
         --This test overwrites the data written in Tests#3,5
         --with data with a different tag. The whole block must
         --be then written to memory
-        REPORT "Test#7: Write";
+        report "Test#7: Write";
+        report "Covers cases write/valid/miss/dirty";
 
         s_write <= '1';
 
@@ -277,9 +288,10 @@ begin
 
         -----------------------------------------------------
         ---------------------Test#8: Read--------------------
-        --This test confirms that Test#7 sucessfully wrote the
-        --data from 5 to memory and was retreived
-        REPORT "Test#8: Read";
+        --This test confirms that Test#7 successfully wrote the
+        --data from 5 to memory and was retrieved
+        report "Test#8: Read";
+        report "Covers cases read/valid/miss/dirty";
 
         s_read <= '1';
 
@@ -287,25 +299,25 @@ begin
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
 
-        assert_equal(s_readdata, x"00000057");
+        assert_equal(s_readdata, x"00000057", error_count);
 
         s_addr <= to_address(1, 1, 1);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
 
-        assert_equal(s_readdata, x"00000058");
+        assert_equal(s_readdata, x"00000058", error_count);
 
         s_addr <= to_address(1, 1, 2);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
 
-        assert_equal(s_readdata, x"00000059");
+        assert_equal(s_readdata, x"00000059", error_count);
 
         s_addr <= to_address(1, 1, 3);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
 
-        assert_equal(s_readdata, x"0000005A");
+        assert_equal(s_readdata, x"0000005A", error_count);
 
         s_read <= '0';
 
@@ -313,7 +325,8 @@ begin
         ---------------------Test#9: Read--------------------
         --This test confirms that we can still access the data
         --we wrote in Test#7 which has a different tag
-        REPORT "Test#9: Read";
+        report "Test#9: Read";
+        report "Covers cases read/valid/miss/clean";
 
         s_read <= '1';
 
@@ -321,25 +334,25 @@ begin
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
 
-        assert_equal(s_readdata, x"0000002C");
+        assert_equal(s_readdata, x"0000002C", error_count);
 
         s_addr <= to_address(2, 1, 1);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
 
-        assert_equal(s_readdata, x"0000002D");
+        assert_equal(s_readdata, x"0000002D", error_count);
 
         s_addr <= to_address(2, 1, 2);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
 
-        assert_equal(s_readdata, x"0000002E");
+        assert_equal(s_readdata, x"0000002E", error_count);
 
         s_addr <= to_address(2, 1, 3);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
 
-        assert_equal(s_readdata, x"0000002F");
+        assert_equal(s_readdata, x"0000002F", error_count);
 
         s_read <= '0';
 
@@ -347,8 +360,9 @@ begin
         ---------------------Test#10: Write-------------------
         --This test writes data to a line in cache that should
         --have valid bit but not dirty bit since the data was
-        --retreived from memory in Test#7, hence clean
-        REPORT "Test#10: Write";
+        --retrieved from memory in Test#9, hence clean
+        report "Test#10: Write";
+        report "Covers cases write/valid/miss/clean";
 
         s_write <= '1';
 
@@ -379,7 +393,8 @@ begin
         --This test confirms that the write in Test#10 did
         --indeed overwrite the data in the block and that
         --it doesn't redundantly write back to memory
-        REPORT "Test#11: Read";
+        report "Test#11: Read";
+        report "Covers cases read/valid/hit/x";
 
         s_read <= '1';
 
@@ -387,25 +402,25 @@ begin
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
 
-        assert_equal(s_readdata, x"000003B1");
+        assert_equal(s_readdata, x"000003B1", error_count);
 
         s_addr <= to_address(3, 1, 1);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
 
-        assert_equal(s_readdata, x"000003B2");
+        assert_equal(s_readdata, x"000003B2", error_count);
 
         s_addr <= to_address(3, 1, 2);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
 
-        assert_equal(s_readdata, x"000003B3");
+        assert_equal(s_readdata, x"000003B3", error_count);
 
         s_addr <= to_address(3, 1, 3);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
 
-        assert_equal(s_readdata, x"000003B4");
+        assert_equal(s_readdata, x"000003B4", error_count);
 
         s_read <= '0';
 
@@ -413,7 +428,8 @@ begin
         ---------------------Test#12: Read--------------------
         --This test reads the data written in Test#7, putting
         --non-dirty data in the cache
-        REPORT "Test#12: Read";
+        report "Test#12: Read";
+        report "Covers cases read/valid/miss/dirty";
 
         s_read <= '1';
 
@@ -421,34 +437,35 @@ begin
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
 
-        assert_equal(s_readdata, x"000003B1");
+        assert_equal(s_readdata, x"0000002C", error_count);
 
         s_addr <= to_address(2, 1, 1);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
 
-        assert_equal(s_readdata, x"000003B2");
+        assert_equal(s_readdata, x"0000002D", error_count);
 
         s_addr <= to_address(2, 1, 2);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
 
-        assert_equal(s_readdata, x"000003B3");
+        assert_equal(s_readdata, x"0000002E", error_count);
 
         s_addr <= to_address(2, 1, 3);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
 
-        assert_equal(s_readdata, x"000003B4");
+        assert_equal(s_readdata, x"0000002F", error_count);
 
         s_read <= '0';
 
         -----------------------------------------------------
         ---------------------Test#13: Write-------------------
-        --This test overwrites one of the words in the block retreived
+        --This test overwrites one of the words in the block retrieved
         --in Test#12 thus making it dirty and should be written to
         --memory on the next cache index write
-        REPORT "Test#13: Write";
+        report "Test#13: Write";
+        report "Covers cases write/valid/hit/x";
 
         s_write <= '1';
 
@@ -464,7 +481,8 @@ begin
         --This test writes data to the same index as Test#13,
         --which should move that data to memory and then replace
         --it with the data here
-        REPORT "Test#14: Write";
+        report "Test#14: Write";
+        report "Covers cases write/valid/miss/dirty";
 
         s_write <= '1';
 
@@ -479,7 +497,8 @@ begin
         ---------------------Test#15: Read--------------------
         --This test reads the data written in Test#13 which
         --should be accessed from memory
-        REPORT "Test#15: Read";
+        report "Test#15: Read";
+        report "Covers cases read/valid/miss/dirty";
 
         s_read <= '1';
 
@@ -487,15 +506,16 @@ begin
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
 
-        assert_equal(s_readdata, x"000003B0");
+        assert_equal(s_readdata, x"000003B0", error_count);
 
         s_read <= '0';
 
         ------------------------------------------------------
         ---------------------Test#16: Read--------------------
-        --This test attemps to read the memory written in Test#14
+        --This test attempts to read the memory written in Test#14
         --which should now be in memory because of the read in Test#15
-        REPORT "Test#16: Read";
+        report "Test#16: Read";
+        report "Covers cases read/valid/miss/clean";
 
         s_read <= '1';
 
@@ -503,14 +523,34 @@ begin
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
 
-        assert_equal(s_readdata, x"00000555");
+        assert_equal(s_readdata, x"00000555", error_count);
+
+        s_read <= '0';
+
+        ------------------------------------------------------
+        ---------------------Test#17: Read--------------------
+        --This test attempts to read a block of memory we haven't accessed
+        --yet, and hence is invalid and should be retrieved from main memory
+        --We assume that the bytes in memory have been initialized to the
+        --address modulo 256.
+        report "Test#17: Read";
+        report "Covers cases read/invalid/x/x";
+
+        s_read <= '1';
+
+        s_addr <= to_address(0, 0, 0);
+        wait until rising_edge(s_waitrequest);
+        wait until falling_edge(s_waitrequest);
+
+        assert_equal(s_readdata, x"03020100", error_count);
 
         s_read <= '0';
 
         -----------------------------------------------------
-        ---------------------Test#17: Write-------------------
+        ---------------------Test#18: Write-------------------
         --This test writes some random data to random indices
-        REPORT "Test#17: Write";
+        report "Test#18: Write";
+        report "Covers cases write/invalid/x/x";
 
         s_write <= '1';
 
@@ -562,10 +602,11 @@ begin
         s_write <= '0';
 
         -----------------------------------------------------
-        ---------------------Test#18: Write-------------------
-        --This test writes data to same indices as in Test#16
+        ---------------------Test#19: Write-------------------
+        --This test writes data to same indices as in Test#18
         --but with different data/tags
-        REPORT "Test#18: Write";
+        report "Test#19: Write";
+        report "Covers cases write/valid/miss/dirty";
 
         s_write <= '1';
 
@@ -617,10 +658,11 @@ begin
         s_write <= '0';
 
         ------------------------------------------------------
-        ---------------------Test#19: Read--------------------
+        ---------------------Test#20: Read--------------------
         --This test reads the original data that was written in
-        --Test#17, it also moves Test#18 data to memory
-        REPORT "Test#19: Read";
+        --Test#18, it also moves Test#19 data to memory
+        report "Test#20: Read";
+        report "Covers cases read/valid/miss/dirty";
 
         s_read <= '1';
 
@@ -628,62 +670,63 @@ begin
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
 
-        assert_equal(s_readdata, x"11111111");
+        assert_equal(s_readdata, x"11111111", error_count);
 
         s_addr <= to_address(6, 4, 1);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
 
-        assert_equal(s_readdata, x"22222222");
+        assert_equal(s_readdata, x"22222222", error_count);
 
         s_addr <= to_address(7, 8, 2);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
 
-        assert_equal(s_readdata, x"33333333");
+        assert_equal(s_readdata, x"33333333", error_count);
 
         s_addr <= to_address(8, 12, 3);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
 
-        assert_equal(s_readdata, x"44444444");
+        assert_equal(s_readdata, x"44444444", error_count);
 
         s_addr <= to_address(9, 16, 0);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
 
-        assert_equal(s_readdata, x"55555555");
+        assert_equal(s_readdata, x"55555555", error_count);
 
         s_addr <= to_address(10, 20, 1);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
 
-        assert_equal(s_readdata, x"66666666");
+        assert_equal(s_readdata, x"66666666", error_count);
 
         s_addr <= to_address(11, 24, 2);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
 
-        assert_equal(s_readdata, x"77777777");
+        assert_equal(s_readdata, x"77777777", error_count);
 
         s_addr <= to_address(12, 28, 3);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
 
-        assert_equal(s_readdata, x"88888888");
+        assert_equal(s_readdata, x"88888888", error_count);
 
         s_addr <= to_address(13, 31, 0);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
 
-        assert_equal(s_readdata, x"99999999");
+        assert_equal(s_readdata, x"99999999", error_count);
 
         s_read <= '0';
 
         ------------------------------------------------------
-        ---------------------Test#20: Read--------------------
-        --This test reads the data that was written in Test#18
-        REPORT "Test#20: Read";
+        ---------------------Test#21: Read--------------------
+        --This test reads the data that was written in Test#19
+        report "Test#21: Read";
+        report "Covers cases read/valid/miss/clean";
 
         s_read <= '1';
 
@@ -691,57 +734,59 @@ begin
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
 
-        assert_equal(s_readdata, x"AAAAAAAA");
+        assert_equal(s_readdata, x"AAAAAAAA", error_count);
 
         s_addr <= to_address(15, 4, 0);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
 
-        assert_equal(s_readdata, x"BBBBBBBB");
+        assert_equal(s_readdata, x"BBBBBBBB", error_count);
 
         s_addr <= to_address(16, 8, 0);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
 
-        assert_equal(s_readdata, x"CCCCCCCC");
+        assert_equal(s_readdata, x"CCCCCCCC", error_count);
 
         s_addr <= to_address(17, 12, 0);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
 
-        assert_equal(s_readdata, x"DDDDDDDD");
+        assert_equal(s_readdata, x"DDDDDDDD", error_count);
 
         s_addr <= to_address(18, 16, 0);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
 
-        assert_equal(s_readdata, x"EEEEEEEE");
+        assert_equal(s_readdata, x"EEEEEEEE", error_count);
 
         s_addr <= to_address(19, 20, 0);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
 
-        assert_equal(s_readdata, x"FFFFFFFF");
+        assert_equal(s_readdata, x"FFFFFFFF", error_count);
 
         s_addr <= to_address(20, 24, 0);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
 
-        assert_equal(s_readdata, x"01234567");
+        assert_equal(s_readdata, x"01234567", error_count);
 
         s_addr <= to_address(21, 28, 0);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
 
-        assert_equal(s_readdata, x"89ABCDEF");
+        assert_equal(s_readdata, x"89ABCDEF", error_count);
 
         s_addr <= to_address(22, 31, 0);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
 
-        assert_equal(s_readdata, x"AAAAAAAA");
+        assert_equal(s_readdata, x"AAAAAAAA", error_count);
 
         s_read <= '0';
+
+        report "Done. Found " & integer'image(error_count) & " error(s).";
 
         wait;
 
