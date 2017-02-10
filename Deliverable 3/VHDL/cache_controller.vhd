@@ -94,7 +94,7 @@ begin
                 when S6 =>
                     state <= S7;
                 when S7 =>
-                    state <= S2;
+                    state <= S1;
                 when S8 =>
                     if m_waitrequest = '1' then
                         state <= S8;
@@ -208,12 +208,7 @@ begin
                 c_dirty_clr   <= '1';
             when S7 =>
                 s_waitrequest <= '1';
-                if s_read = '1' then
-                    c_read <= '1';
-                else
-                    c_write     <= '1';
-                    c_write_sel <= '1';
-                end if;
+                c_read        <= '1';
             when S8 =>
                 s_waitrequest <= '1';
                 word_sel      <= '1';
