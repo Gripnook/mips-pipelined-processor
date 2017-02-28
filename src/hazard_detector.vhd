@@ -12,11 +12,6 @@ entity hazard_detector is
 end entity hazard_detector;
 
 architecture arch of hazard_detector is
-    -- 1 = if_id
-    -- 2 = id_ex
-    -- 3 = ex_mem
-    -- 4 = mem_wb
-
     procedure decode_instruction(instr : in    std_logic_vector(31 downto 0);
                                  ro    : inout std_logic_vector(4 downto 0);
                                  ri1   : inout std_logic_vector(4 downto 0);
@@ -84,13 +79,21 @@ architecture arch of hazard_detector is
 
 begin
     hazard_detection : process(if_id, id_ex, ex_mem, mem_wb)
+        -- Pipe-line registers
+        -- 1 = if_id
+        -- 2 = id_ex
+        -- 3 = ex_mem
+        -- 4 = mem_wb
+
         -- Output registers for each decoded instruction
         variable o1, o2, o3, o4 : std_logic_vector(4 downto 0);
 
         -- Input registers for each decoded instruction
         variable i11, i12, i21, i22 : std_logic_vector(4 downto 0);
         variable i31, i32, i41, i42 : std_logic_vector(4 downto 0);
-        variable b1, b2, b3, b4     : std_logic;
+
+        -- Tell whether an instruction is a branch or not
+        variable b1, b2, b3, b4 : std_logic;
     begin
         decode_instruction(if_id, o1, i11, i12, b1);
         decode_instruction(id_ex, o2, i21, i22, b2);
@@ -101,10 +104,8 @@ begin
 
         if (b1 = '1') then              -- Branch detected, 1 stall cycle
             stall <= '1';
-        end if;
-
         -- Read-After-Write hazards detection (True Dependence)
-        if (o2 /= 5x"0") then
+        elsif (o2 /= 5x"0") then
             if (o2 = i11 or o2 = i12) then -- 3 stall cycles
                 stall <= '1';
             end if;
@@ -113,14 +114,10 @@ begin
                 stall <= '1';
             end if;
         elsif (o4 /= 5x"0") then
-            if (o4 = i11 or o4 = i12) then -- 1 stall cycles
+            if (o4 = i11 or o4 = i12) then -- 1 stall cycle
                 stall <= '1';
             end if;
         end if;
-
-    -- Write After Read hazards detection (Anti-dependence)
-    -- Write After Write hazards detection (Output dependence)
-
     end process;
 
 end architecture arch;
