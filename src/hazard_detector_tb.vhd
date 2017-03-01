@@ -52,8 +52,8 @@ begin
     test_process : process
         variable error_count : integer := 0;
     begin
-        -------------- Structural hazards ---------------
-        report "Testing structural hazards";
+        -------------- Data hazards ---------------
+        report "Testing data hazards";
 
         -----------------------------------------------------
         ---------------------Test#1: X---------------------
@@ -68,9 +68,6 @@ begin
 
         assert_equal_bit(stall, '0', error_count);
         -----------------------------------------------------
-
-        -------------- Data hazards ---------------
-        report "Testing data hazards";
 
         -------------- Control hazards ---------------
         report "Testing control hazards";

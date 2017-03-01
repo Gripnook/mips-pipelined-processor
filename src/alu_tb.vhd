@@ -206,7 +206,7 @@ begin
         -----------------------------------------------------
         ---------------------Test#11: xor---------------------
         --This test performs the xor operation on the alu
-        report "Test#10: xor";
+        report "Test#11: xor";
         a      <= (others => '1');
         b      <= (others => '0');
         opcode <= 6x"0";
