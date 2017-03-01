@@ -50,7 +50,6 @@ architecture arch of hazard_detector is
                 ri1 := rs;
                 ri2 := rt;
             end if;
-
         elsif (op = 6x"2" or op = 6x"3") then -- J-Types
             ro  := 5x"0";
             ri1 := 5x"0";
@@ -60,7 +59,7 @@ architecture arch of hazard_detector is
                 ro  := rt;
                 ri1 := 5x"0";
                 ri2 := 5x"0";
-            elsif (op = 6x"4" and op = 6x"5") then -- beq, bne
+            elsif (op = 6x"4" or op = 6x"5") then -- beq, bne
                 ro  := 5x"0";
                 ri1 := rs;
                 ri2 := rt;
@@ -104,8 +103,7 @@ begin
 
         if (b1 = '1') then              -- Branch detected, 1 stall cycle
             stall <= '1';
-        -- Read-After-Write hazards detection (True Dependence)
-        elsif (o2 /= 5x"0") then
+        elsif (o2 /= 5x"0") then        -- Read-After-Write hazards detection (True Dependence)
             if (o2 = i11 or o2 = i12) then -- 3 stall cycles
                 stall <= '1';
             end if;
