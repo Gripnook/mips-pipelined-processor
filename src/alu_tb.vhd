@@ -19,10 +19,8 @@ architecture arch of alu_tb is
         port(
             a          : in  std_logic_vector(31 downto 0);
             b          : in  std_logic_vector(31 downto 0);
-            opcode     : in  std_logic_vector(5 downto 0);
-            shamt      : in  std_logic_vector(4 downto 0);
-            funct      : in  std_logic_vector(5 downto 0);
-            alu_output : out std_logic_vector(63 downto 0));
+            instr      : in  std_logic_vector(31 downto 0);
+            output     : out std_logic_vector(63 downto 0));
     end component alu;
 
     procedure assert_equal(actual, expected : in std_logic_vector(63 downto 0); error_count : inout integer) is
@@ -38,10 +36,11 @@ begin
         port map(
             a          => a,
             b          => b,
-            opcode     => opcode,
-            shamt      => shamt,
-            funct      => funct,
-            alu_output => alu_output
+            instr(31 downto 26) => opcode,
+            instr(10 downto 6 ) => shamt,
+            instr(5  downto 0 ) => funct,
+            instr(25 downto 11) => "000000000000000", --not used in test
+            output => alu_output
         );
 
     test_process : process
