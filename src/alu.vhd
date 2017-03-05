@@ -40,7 +40,7 @@ begin
                     when 6x"8"  => NULL;                                                                                       -- JR
                     when others => NULL;
                 end case FN;
-            when 6x"2" => output(31 downto 0) <= a;                                                                            -- J
+            when 6x"2" => NULL;                                                                                                -- J
             when 6x"3" => output(31 downto 0) <= a;                                                                            -- JAL
             when 6x"8" => output(31 downto 0) <= std_logic_vector(signed(a) + signed(b));                                      -- ADDI
             when 6x"a" =>                                                                                                      -- SLTI
