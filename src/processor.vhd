@@ -59,7 +59,9 @@ architecture arch of processor is
         port(
             a      : in  std_logic_vector(31 downto 0);
             b      : in  std_logic_vector(31 downto 0);
-            instr  : in  std_logic_vector(31 downto 0);
+            opcode : in  std_logic_vector(5  downto 0);
+            shamt  : in  std_logic_vector(4  downto 0);
+            funct  : in  std_logic_vector(5  downto 0);
             output : out std_logic_vector(63 downto 0));
     end component alu;
 
@@ -127,30 +129,14 @@ begin
     end process;
 
     -- ex
-    alu1 : alu port map(a => a, b => b, instr => ex_instruction, output => ex_alu_result);
+    alu1 : alu port map(a => a, b => b, opcode => ex_instruction(31 downto 26), shamt => ex_instruction(10 downto 6), funct => ex_instruction(5 downto 0), output => ex_alu_result);
     
     a <= ex_rs;
     process(ex_instruction, ex_rt, ex_immediate)
     begin
-        b <= ex_rt; -- default
         OP : case ex_instruction(31 downto 26) is
-            when "001000" =>            -- ADDI
-                b <= ex_immediate;
-            when "001010" =>            -- SLTI
-                b <= ex_immediate;
-            when "001100" =>            -- ANDI
-                b <= ex_immediate;
-            when "001101" =>            -- ORI
-                b <= ex_immediate;
-            when "001110" =>            -- XORI
-                b <= ex_immediate;
-            when "001111" =>            -- LUI
-                b <= ex_immediate;
-            when "100011" =>            -- LW
-                b <= ex_immediate;
-            when "101011" =>            -- SW
-                b <= ex_immediate;
-            when others   => NULL;
+        	when "000000" => b <= ex_rt;
+            when others   => b <= ex_immediate;
         end case OP;
     end process;
 
