@@ -14,11 +14,13 @@ architecture arch of hazard_detector_tb is
     signal mem_wb : std_logic_vector(31 downto 0);
     signal stall  : std_logic;
 
-    constant NOP       : std_logic_vector(31 downto 0) := 6x"0" & 5x"0" & 5x"0" & 5x"0" & 5x"0" & 6x"22"; --R-Type
-    constant ADDR1R0R0 : std_logic_vector(31 downto 0) := 6x"0" & 5x"0" & 5x"0" & 5x"1" & 5x"0" & 6x"22"; --R-Type
-    constant ADDR0R1R1 : std_logic_vector(31 downto 0) := 6x"0" & 5x"1" & 5x"1" & 5x"0" & 5x"0" & 6x"22"; --R-Type
-    constant BEQR0R0L0 : std_logic_vector(31 downto 0) := 6x"4" & 5x"0" & 5x"0" & 16x"0"; -- I-Type
-    constant JL0       : std_logic_vector(31 downto 0) := 6x"2" & 26x"0"; -- J-Type
+    constant NOP         : std_logic_vector(31 downto 0) := 6x"0" & 5x"0" & 5x"0" & 5x"0" & 5x"0" & 6x"22"; --R-Type
+    constant ADDR1R0R0   : std_logic_vector(31 downto 0) := 6x"0" & 5x"0" & 5x"0" & 5x"1" & 5x"0" & 6x"22"; --R-Type
+    constant ADDR0R1R1   : std_logic_vector(31 downto 0) := 6x"0" & 5x"1" & 5x"1" & 5x"0" & 5x"0" & 6x"22"; --R-Type
+    constant ADDR0R31R31 : std_logic_vector(31 downto 0) := 6x"0" & 5x"1f" & 5x"1f" & 5x"0" & 5x"0" & 6x"22"; --R-Type
+    constant BEQR0R0L0   : std_logic_vector(31 downto 0) := 6x"4" & 5x"0" & 5x"0" & 16x"0"; -- I-Type
+    constant JL0         : std_logic_vector(31 downto 0) := 6x"2" & 26x"0"; -- J-Type
+    constant JAL0        : std_logic_vector(31 downto 0) := 6x"3" & 26x"0"; -- J-Type
 
     component hazard_detector
         port(
@@ -128,6 +130,49 @@ begin
         id_ex  <= NOP;
         ex_mem <= NOP;
         mem_wb <= NOP;
+
+        wait for 1 ns;
+
+        assert_equal_bit(stall, '1', error_count);
+        -----------------------------------------------------
+
+        -----------------------------------------------------
+        ---------------------Test#5: JAL1---------------------
+        --This test performs JAL1
+        report "Test#5: JAL1";
+        if_id  <= ADDR0R31R31;
+        id_ex  <= JAL0;
+        ex_mem <= NOP;
+        mem_wb <= NOP;
+
+        wait for 1 ns;
+
+        assert_equal_bit(stall, '1', error_count);
+        -----------------------------------------------------
+
+
+        -----------------------------------------------------
+        ---------------------Test#6: JAL2---------------------
+        --This test performs JAL2
+        report "Test#6: JAL2";
+        if_id  <= ADDR0R31R31;
+        id_ex  <= NOP;
+        ex_mem <= JAL0;
+        mem_wb <= NOP;
+
+        wait for 1 ns;
+
+        assert_equal_bit(stall, '1', error_count);
+        -----------------------------------------------------
+
+        -----------------------------------------------------
+        ---------------------Test#7: JAL3---------------------
+        --This test performs JAL3
+        report "Test#7: JAL3";
+        if_id  <= ADDR0R31R31;
+        id_ex  <= NOP;
+        ex_mem <= NOP;
+        mem_wb <= JAL0;
 
         wait for 1 ns;
 

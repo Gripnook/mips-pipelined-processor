@@ -50,8 +50,12 @@ architecture arch of hazard_detector is
                 ri1 := rs;
                 ri2 := rt;
             end if;
-        elsif (op = 6x"2" or op = 6x"3") then -- J-Types
+        elsif (op = 6x"2") then         -- J-Types, j
             ro  := 5x"0";
+            ri1 := 5x"0";
+            ri2 := 5x"0";
+        elsif (op = 6x"3") then         -- jal
+            ro  := 5x"1f";
             ri1 := 5x"0";
             ri2 := 5x"0";
         else                            -- I-Types
