@@ -91,12 +91,14 @@ begin
             id_instruction <= (others => '0');
             id_npc         <= (others => '0');
         elsif (rising_edge(clock)) then
-            if (if_id_reset = '1') then
-                id_instruction <= (others => '0');
-                id_npc         <= (others => '0');
-            elsif (if_id_enable = '1') then
-                id_instruction <= if_instruction;
-                id_npc         <= if_npc;
+            if (if_id_enable = '1') then
+                if (if_id_reset = '1') then
+                    id_instruction <= (others => '0');
+                    id_npc         <= (others => '0');
+                else
+                    id_instruction <= if_instruction;
+                    id_npc         <= if_npc;
+                end if;
             end if;
         end if;
     end process;
@@ -114,16 +116,18 @@ begin
             ex_rt          <= (others => '0');
             ex_immediate   <= (others => '0');
         elsif (rising_edge(clock)) then
-            if (id_ex_reset = '1') then
-                ex_instruction <= (others => '0');
-                ex_rs          <= (others => '0');
-                ex_rt          <= (others => '0');
-                ex_immediate   <= (others => '0');
-            elsif (id_ex_enable = '1') then
-                ex_instruction <= id_instruction;
-                ex_rs          <= id_rs;
-                ex_rt          <= id_rt;
-                ex_immediate   <= id_immediate;
+            if (id_ex_enable = '1') then
+                if (id_ex_reset = '1') then
+                    ex_instruction <= (others => '0');
+                    ex_rs          <= (others => '0');
+                    ex_rt          <= (others => '0');
+                    ex_immediate   <= (others => '0');
+                else
+                    ex_instruction <= id_instruction;
+                    ex_rs          <= id_rs;
+                    ex_rt          <= id_rt;
+                    ex_immediate   <= id_immediate;
+                end if;
             end if;
         end if;
     end process;
@@ -149,14 +153,16 @@ begin
             mem_rt          <= (others => '0');
             mem_alu_result  <= (others => '0');
         elsif (rising_edge(clock)) then
-            if (ex_mem_reset = '1') then
-                mem_instruction <= (others => '0');
-                mem_rt          <= (others => '0');
-                mem_alu_result  <= (others => '0');
-            elsif (ex_mem_enable = '1') then
-                mem_instruction <= ex_instruction;
-                mem_rt          <= ex_rt;
-                mem_alu_result  <= ex_alu_result;
+            if (ex_mem_enable = '1') then
+                if (ex_mem_reset = '1') then
+                    mem_instruction <= (others => '0');
+                    mem_rt          <= (others => '0');
+                    mem_alu_result  <= (others => '0');
+                else
+                    mem_instruction <= ex_instruction;
+                    mem_rt          <= ex_rt;
+                    mem_alu_result  <= ex_alu_result;
+                end if;
             end if;
         end if;
     end process;
@@ -173,14 +179,16 @@ begin
             wb_alu_result  <= (others => '0');
             wb_memory_load <= (others => '0');
         elsif (rising_edge(clock)) then
-            if (mem_wb_reset = '1') then
-                wb_instruction <= (others => '0');
-                wb_alu_result  <= (others => '0');
-                wb_memory_load <= (others => '0');
-            elsif (mem_wb_enable = '1') then
-                wb_instruction <= mem_instruction;
-                wb_alu_result  <= mem_alu_result;
-                wb_memory_load <= mem_memory_load;
+            if (mem_wb_enable = '1') then
+                if (mem_wb_reset = '1') then
+                    wb_instruction <= (others => '0');
+                    wb_alu_result  <= (others => '0');
+                    wb_memory_load <= (others => '0');
+                else
+                    wb_instruction <= mem_instruction;
+                    wb_alu_result  <= mem_alu_result;
+                    wb_memory_load <= mem_memory_load;
+                end if;
             end if;
         end if;
     end process;
