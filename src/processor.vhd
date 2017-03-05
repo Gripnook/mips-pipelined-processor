@@ -135,15 +135,12 @@ begin
     -- ex
     alu1 : alu port map(a => a, b => b, opcode => ex_instruction(31 downto 26), shamt => ex_instruction(10 downto 6), funct => ex_instruction(5 downto 0), output => ex_alu_result);
     
+    a <= ex_rs;
     process(ex_instruction, ex_rt, ex_immediate)
     begin
         OP : case ex_instruction(31 downto 26) is
-            when "000000" => a <= ex_rs;
-                             b <= ex_rt;
-            when "001111" => a <= ex_rt; --LUI uses rt instead of rs
-                             b <= ex_immediate;    
-            when others   => a <= ex_rs;
-                             b <= ex_immediate;
+        	when "000000" => b <= ex_rt;
+            when others   => b <= ex_immediate;
         end case OP;
     end process;
 
