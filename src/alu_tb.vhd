@@ -50,63 +50,364 @@ begin
         report "Testing arithmetic instructions";
 
         -----------------------------------------------------
-        ---------------------Test#1: add---------------------
+        ---------------------Test#1-1: add---------------------
         --This test performs the add operation on the alu
-        report "Test#1: add";
-        a      <= 32x"0";
-        b      <= 32x"0";
+        report "Test#1-1: add";
+        a      <= std_logic_vector(to_signed(55, 32));
+        b      <= std_logic_vector(to_signed(34, 32));
         opcode <= 6x"0";
         shamt  <= 5x"0";
         funct  <= 6x"20";
 
         wait for 1 ns;
 
-        assert_equal(alu_output, 64x"0", error_count);
+        assert_equal(alu_output, std_logic_vector(to_signed(89, 64)), error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
-        ---------------------Test#2: sub---------------------
+        ---------------------Test#1-2: add---------------------
+        --This test performs the add operation on the alu
+        report "Test#1-2: add";
+        a      <= std_logic_vector(to_signed(2147478597, 32));
+        b      <= std_logic_vector(to_signed(5050, 32));
+        opcode <= 6x"0";
+        shamt  <= 5x"0";
+        funct  <= 6x"20";
+
+        wait for 1 ns;
+
+        assert_equal(alu_output, std_logic_vector(to_signed(2147483647, 64)), error_count);
+        -----------------------------------------------------
+
+        -----------------------------------------------------
+        ---------------------Test#1-3: add---------------------
+        --This test performs the add operation on the alu
+        report "Test#1-3: add";
+        a      <= std_logic_vector(to_signed(2147478597, 32));
+        b      <= std_logic_vector(to_signed(5051, 32));
+        opcode <= 6x"0";
+        shamt  <= 5x"0";
+        funct  <= 6x"20";
+
+        wait for 1 ns;
+
+        assert_equal(alu_output, std_logic_vector(32x"0" & to_signed(-2147483648, 32)), error_count);
+        -----------------------------------------------------
+
+        -----------------------------------------------------
+        ---------------------Test#1-4: add---------------------
+        --This test performs the add operation on the alu
+        report "Test#1-4: add";
+        a      <= std_logic_vector(to_signed(-2147478597, 32));
+        b      <= std_logic_vector(to_signed(-5051, 32));
+        opcode <= 6x"0";
+        shamt  <= 5x"0";
+        funct  <= 6x"20";
+
+        wait for 1 ns;
+
+        assert_equal(alu_output, std_logic_vector(32x"0" & to_signed(-2147483648, 32)), error_count);
+        -----------------------------------------------------
+
+        -----------------------------------------------------
+        ---------------------Test#1-5: add---------------------
+        --This test performs the add operation on the alu
+        report "Test#1-5: add";
+        a      <= std_logic_vector(to_signed(-2147478597, 32));
+        b      <= std_logic_vector(to_signed(-5052, 32));
+        opcode <= 6x"0";
+        shamt  <= 5x"0";
+        funct  <= 6x"20";
+
+        wait for 1 ns;
+
+        assert_equal(alu_output, std_logic_vector(32x"0" & to_signed(2147483647, 32)), error_count);
+        -----------------------------------------------------
+
+        -----------------------------------------------------
+        ---------------------Test#1-6: add---------------------
+        --This test performs the add operation on the alu
+        report "Test#1-6: add";
+        a      <= std_logic_vector(to_signed(-806540, 32));
+        b      <= std_logic_vector(to_signed(-5051, 32));
+        opcode <= 6x"0";
+        shamt  <= 5x"0";
+        funct  <= 6x"20";
+
+        wait for 1 ns;
+
+        assert_equal(alu_output, std_logic_vector(32x"0" & to_signed(-811591, 32)), error_count);
+        -----------------------------------------------------
+
+        -----------------------------------------------------
+        ---------------------Test#2-1: sub---------------------
         --This test performs the sub operation on the alu
-        report "Test#2: sub";
-        a      <= (others => '1');
-        b      <= (others => '1');
+        report "Test#2-1: sub";
+        a      <= std_logic_vector(to_signed(53435, 32));
+        b      <= std_logic_vector(to_signed(334324, 32));
         opcode <= 6x"0";
         shamt  <= 5x"0";
         funct  <= 6x"22";
 
         wait for 1 ns;
 
-        assert_equal(alu_output, 64x"0", error_count);
+        assert_equal(alu_output, std_logic_vector(32x"0" & to_signed(-280889, 32)), error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
-        ---------------------Test#3: addi---------------------
+        ---------------------Test#2-2: sub---------------------
+        --This test performs the sub operation on the alu
+        report "Test#2-2: sub";
+        a      <= std_logic_vector(to_signed(30, 32));
+        b      <= std_logic_vector(to_signed(50, 32));
+        opcode <= 6x"0";
+        shamt  <= 5x"0";
+        funct  <= 6x"22";
+
+        wait for 1 ns;
+
+        assert_equal(alu_output, std_logic_vector(32x"0" & to_signed(-20, 32)), error_count);
+        -----------------------------------------------------
+
+
+        -----------------------------------------------------
+        ---------------------Test#2-3: sub---------------------
+        --This test performs the sub operation on the alu
+        report "Test#2-3: sub";
+        a      <= std_logic_vector(to_signed(2147478597, 32));
+        b      <= std_logic_vector(to_signed(-5050, 32));
+        opcode <= 6x"0";
+        shamt  <= 5x"0";
+        funct  <= 6x"22";
+
+        wait for 1 ns;
+
+        assert_equal(alu_output, std_logic_vector(to_signed(2147483647, 64)), error_count);
+        -----------------------------------------------------
+
+        -----------------------------------------------------
+        ---------------------Test#2-4: sub---------------------
+        --This test performs the sub operation on the alu
+        report "Test#2-4: sub";
+        a      <= std_logic_vector(to_signed(2147478597, 32));
+        b      <= std_logic_vector(to_signed(-5051, 32));
+        opcode <= 6x"0";
+        shamt  <= 5x"0";
+        funct  <= 6x"22";
+
+        wait for 1 ns;
+
+        assert_equal(alu_output, std_logic_vector(32x"0" & to_signed(-2147483648, 32)), error_count);
+        -----------------------------------------------------
+
+        -----------------------------------------------------
+        ---------------------Test#2-5: sub---------------------
+        --This test performs the sub operation on the alu
+        report "Test#2-5: sub";
+        a      <= std_logic_vector(to_signed(-2147478597, 32));
+        b      <= std_logic_vector(to_signed(5052, 32));
+        opcode <= 6x"0";
+        shamt  <= 5x"0";
+        funct  <= 6x"22";
+
+        wait for 1 ns;
+
+        assert_equal(alu_output, std_logic_vector(32x"0" & to_signed(2147483647, 32)), error_count);
+        -----------------------------------------------------
+
+        -----------------------------------------------------
+        ---------------------Test#2-6: sub---------------------
+        --This test performs the sub operation on the alu
+        report "Test#2-6: sub";
+        a      <= std_logic_vector(to_signed(-2147478597, 32));
+        b      <= std_logic_vector(to_signed(5051, 32));
+        opcode <= 6x"0";
+        shamt  <= 5x"0";
+        funct  <= 6x"22";
+
+        wait for 1 ns;
+
+        assert_equal(alu_output, std_logic_vector(32x"0" & to_signed(-2147483648, 32)), error_count);
+        -----------------------------------------------------
+
+        -----------------------------------------------------
+        ---------------------Test#2-7: sub---------------------
+        --This test performs the sub operation on the alu
+        report "Test#2-7: sub";
+        a      <= std_logic_vector(to_signed(-806540, 32));
+        b      <= std_logic_vector(to_signed(5051, 32));
+        opcode <= 6x"0";
+        shamt  <= 5x"0";
+        funct  <= 6x"22";
+
+        wait for 1 ns;
+
+        assert_equal(alu_output, std_logic_vector(32x"0" & to_signed(-811591, 32)), error_count);
+        -----------------------------------------------------
+
+        -----------------------------------------------------
+        ---------------------Test#3-1: addi---------------------
         --This test performs the addi operation on the alu
-        report "Test#3: addi";
-        a      <= (others => '1');
-        b      <= 32x"0";
+        report "Test#3-1: addi";
+        a      <= std_logic_vector(to_signed(55, 32));
+        b      <= std_logic_vector(to_signed(34, 32));
         opcode <= 6x"8";
         shamt  <= 5x"0";
         funct  <= 6x"0";
 
         wait for 1 ns;
 
-        assert_equal(alu_output, x"00000000FFFFFFFF", error_count);
+        assert_equal(alu_output, std_logic_vector(to_signed(89, 64)), error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
-        ---------------------Test#4: mult---------------------
+        ---------------------Test#3-2: addi---------------------
+        --This test performs the addi operation on the alu
+        report "Test#3-2: addi";
+        a      <= std_logic_vector(to_signed(2147478597, 32));
+        b      <= std_logic_vector(to_signed(5050, 32));
+        opcode <= 6x"8";
+        shamt  <= 5x"0";
+        funct  <= 6x"0";
+
+        wait for 1 ns;
+
+        assert_equal(alu_output, std_logic_vector(to_signed(2147483647, 64)), error_count);
+        -----------------------------------------------------
+
+        -----------------------------------------------------
+        ---------------------Test#3-3: addi---------------------
+        --This test performs the addi operation on the alu
+        report "Test#3-3: addi";
+        a      <= std_logic_vector(to_signed(2147478597, 32));
+        b      <= std_logic_vector(to_signed(5051, 32));
+        opcode <= 6x"8";
+        shamt  <= 5x"0";
+        funct  <= 6x"0";
+
+        wait for 1 ns;
+
+        assert_equal(alu_output, std_logic_vector(32x"0" & to_signed(-2147483648, 32)), error_count);
+        -----------------------------------------------------
+
+        -----------------------------------------------------
+        ---------------------Test#3-4: addi---------------------
+        --This test performs the addi operation on the alu
+        report "Test#3-4: addi";
+        a      <= std_logic_vector(to_signed(-2147478597, 32));
+        b      <= std_logic_vector(to_signed(-5051, 32));
+        opcode <= 6x"8";
+        shamt  <= 5x"0";
+        funct  <= 6x"0";
+
+        wait for 1 ns;
+
+        assert_equal(alu_output, std_logic_vector(32x"0" & to_signed(-2147483648, 32)), error_count);
+        -----------------------------------------------------
+
+        -----------------------------------------------------
+        ---------------------Test#3-5: addi---------------------
+        --This test performs the addi operation on the alu
+        report "Test#3-5: addi";
+        a      <= std_logic_vector(to_signed(-2147478597, 32));
+        b      <= std_logic_vector(to_signed(-5052, 32));
+        opcode <= 6x"8";
+        shamt  <= 5x"0";
+        funct  <= 6x"0";
+
+        wait for 1 ns;
+
+        assert_equal(alu_output, std_logic_vector(32x"0" & to_signed(2147483647, 32)), error_count);
+        -----------------------------------------------------
+
+        -----------------------------------------------------
+        ---------------------Test#3-6: addi---------------------
+        --This test performs the addi operation on the alu
+        report "Test#3-4: addi";
+        a      <= std_logic_vector(to_signed(-806540, 32));
+        b      <= std_logic_vector(to_signed(-5051, 32));
+        opcode <= 6x"8";
+        shamt  <= 5x"0";
+        funct  <= 6x"0";
+
+        wait for 1 ns;
+
+        assert_equal(alu_output, std_logic_vector(32x"0" & to_signed(-811591, 32)), error_count);
+        -----------------------------------------------------
+
+        -----------------------------------------------------
+        ---------------------Test#4-1: mult---------------------
         --This test performs the mult operation on the alu
-        report "Test#4: mult";
-        a      <= 32x"8";
-        b      <= 32x"4";
+        report "Test#4-1: mult";
+        a      <= std_logic_vector(to_signed(-806540, 32));
+        b      <= std_logic_vector(to_signed(454, 32));
         opcode <= 6x"0";
         shamt  <= 5x"0";
         funct  <= 6x"18";
 
         wait for 1 ns;
 
-        assert_equal(alu_output, 64x"20", error_count);
+        assert_equal(alu_output, std_logic_vector(to_signed(-366169160, 64)), error_count);
+        -----------------------------------------------------
+
+        -----------------------------------------------------
+        ---------------------Test#4-2: mult---------------------
+        --This test performs the mult operation on the alu
+        report "Test#4-2: mult";
+        a      <= std_logic_vector(to_signed(806540, 32));
+        b      <= std_logic_vector(to_signed(454, 32));
+        opcode <= 6x"0";
+        shamt  <= 5x"0";
+        funct  <= 6x"18";
+
+        wait for 1 ns;
+
+        assert_equal(alu_output, 32x"0" & std_logic_vector(to_signed(366169160, 32)), error_count);
+        -----------------------------------------------------
+
+        -----------------------------------------------------
+        ---------------------Test#4-3: mult---------------------
+        --This test performs the mult operation on the alu
+        report "Test#4-3: mult";
+        a      <= std_logic_vector(to_signed(3976821, 32));
+        b      <= std_logic_vector(to_signed(540, 32));
+        opcode <= 6x"0";
+        shamt  <= 5x"0";
+        funct  <= 6x"18";
+
+        wait for 1 ns;
+
+        assert_equal(alu_output, std_logic_vector(to_signed(2147483340, 64)), error_count);
+        -----------------------------------------------------
+
+        -----------------------------------------------------
+        ---------------------Test#4-4: mult---------------------
+        --This test performs the mult operation on the alu
+        report "Test#4-4: mult";
+        a      <= std_logic_vector(to_signed(1073741823, 32));
+        b      <= std_logic_vector(to_signed(2, 32));
+        opcode <= 6x"0";
+        shamt  <= 5x"0";
+        funct  <= 6x"18";
+
+        wait for 1 ns;
+
+        assert_equal(alu_output, std_logic_vector(to_signed(2147483646, 64)), error_count);
+        -----------------------------------------------------
+
+        -----------------------------------------------------
+        ---------------------Test#4-5: mult---------------------
+        --This test performs the mult operation on the alu
+        report "Test#4-5: mult";
+        a      <= std_logic_vector(to_signed(1073741823, 32));
+        b      <= std_logic_vector(to_signed(-2, 32));
+        opcode <= 6x"0";
+        shamt  <= 5x"0";
+        funct  <= 6x"18";
+
+        wait for 1 ns;
+
+        assert_equal(alu_output, std_logic_vector(to_signed(-2147483646, 64)), error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
