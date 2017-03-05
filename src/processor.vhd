@@ -54,13 +54,13 @@ architecture arch of processor is
     signal wb_instruction : std_logic_vector(31 downto 0);
     signal wb_alu_result  : std_logic_vector(63 downto 0);
     signal wb_memory_load : std_logic_vector(31 downto 0);
-    
+
     component alu
         port(
-            a          : in  std_logic_vector(31 downto 0);
-            b          : in  std_logic_vector(31 downto 0);
-            instr      : in  std_logic_vector(31 downto 0);
-            output     : out std_logic_vector(63 downto 0));
+            a      : in  std_logic_vector(31 downto 0);
+            b      : in  std_logic_vector(31 downto 0);
+            instr  : in  std_logic_vector(31 downto 0);
+            output : out std_logic_vector(63 downto 0));
     end component alu;
 
 begin
@@ -127,43 +127,43 @@ begin
     end process;
 
     -- ex
-    alu1: alu port map(a => a, b => b, instr => ex_instruction, output => ex_alu_result);
+    alu1 : alu port map(a => a, b => b, instr => ex_instruction, output => ex_alu_result);
     process(clock, reset)
     begin
-    OP: case ex_instruction(31 downto 26) is
-      when "000000" =>                                -- rs, rt
-      	a <= ex_rs;
-      	b <= ex_rt;
-      when "000010" => NULL;                          -- J
-      when "000011" => NULL;                          -- JAL
-      when "000100" =>                                -- BEQ
-      	a <= ex_rs;
-      	b <= ex_rt;
-	  when "000101" =>                                -- BNE
-	  	a <= ex_rs;
-	  	b <= ex_rt;
-	  when "001000" =>                                -- ADDI
-	  	a <= ex_rs;
-	  	b <= ex_immediate;
-	  when "001010" =>                                -- SLTI
-	  	a <= ex_rs;
-	  	b <= ex_immediate;
-	  when "001100" =>                                -- ANDI
-	  	a <= ex_rs;
-	  	b <= ex_immediate;
-	  when "001101" =>                                -- ORI
-	  	a <= ex_rs;
-	  	b <= ex_immediate;
-	  when "001110" =>                                -- XORI
-	  	a <= ex_rs;
-	  	b <= ex_immediate;
-      when "001111" =>                                -- LUI
-      	a <= ex_rt;
-      	b <= ex_immediate;
-      when "100011" => NULL;                          -- LW
-      when "101011" => NULL;                          -- SW
-      when others   => NULL;
-    end case OP;
+        OP : case ex_instruction(31 downto 26) is
+            when "000000" =>            -- rs, rt
+                a <= ex_rs;
+                b <= ex_rt;
+            when "000010" => NULL;      -- J
+            when "000011" => NULL;      -- JAL
+            when "000100" =>            -- BEQ
+                a <= ex_rs;
+                b <= ex_rt;
+            when "000101" =>            -- BNE
+                a <= ex_rs;
+                b <= ex_rt;
+            when "001000" =>            -- ADDI
+                a <= ex_rs;
+                b <= ex_immediate;
+            when "001010" =>            -- SLTI
+                a <= ex_rs;
+                b <= ex_immediate;
+            when "001100" =>            -- ANDI
+                a <= ex_rs;
+                b <= ex_immediate;
+            when "001101" =>            -- ORI
+                a <= ex_rs;
+                b <= ex_immediate;
+            when "001110" =>            -- XORI
+                a <= ex_rs;
+                b <= ex_immediate;
+            when "001111" =>            -- LUI
+                a <= ex_rt;
+                b <= ex_immediate;
+            when "100011" => NULL;      -- LW
+            when "101011" => NULL;      -- SW
+            when others   => NULL;
+        end case OP;
     end process;
 
     -- ex/mem
