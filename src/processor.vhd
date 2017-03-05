@@ -142,6 +142,10 @@ begin
                              b <= ex_rt;
             when "001111" => a <= ex_rt; --LUI uses rt instead of rs
                              b <= ex_immediate;    
+            when "100011" => a <= ex_rt; --LW uses rt instead of rs
+                             b <= ex_immediate;
+            when "101011" => a <= ex_rt; --SW uses rt instead of rs
+                             b <= ex_immediate;
             when others   => a <= ex_rs;
                              b <= ex_immediate;
         end case OP;
