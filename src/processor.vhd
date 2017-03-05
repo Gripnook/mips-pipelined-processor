@@ -128,40 +128,28 @@ begin
 
     -- ex
     alu1 : alu port map(a => a, b => b, instr => ex_instruction, output => ex_alu_result);
-    process(clock, reset)
+    
+    a <= ex_rs;
+    process(ex_instruction, ex_rt, ex_immediate)
     begin
+        b <= ex_rt; -- default
         OP : case ex_instruction(31 downto 26) is
-            when "000000" =>            -- rs, rt
-                a <= ex_rs;
-                b <= ex_rt;
-            when "000010" => NULL;      -- J
-            when "000011" => NULL;      -- JAL
-            when "000100" =>            -- BEQ
-                a <= ex_rs;
-                b <= ex_rt;
-            when "000101" =>            -- BNE
-                a <= ex_rs;
-                b <= ex_rt;
             when "001000" =>            -- ADDI
-                a <= ex_rs;
                 b <= ex_immediate;
             when "001010" =>            -- SLTI
-                a <= ex_rs;
                 b <= ex_immediate;
             when "001100" =>            -- ANDI
-                a <= ex_rs;
                 b <= ex_immediate;
             when "001101" =>            -- ORI
-                a <= ex_rs;
                 b <= ex_immediate;
             when "001110" =>            -- XORI
-                a <= ex_rs;
                 b <= ex_immediate;
             when "001111" =>            -- LUI
-                a <= ex_rt;
                 b <= ex_immediate;
-            when "100011" => NULL;      -- LW
-            when "101011" => NULL;      -- SW
+            when "100011" =>            -- LW
+                b <= ex_immediate;
+            when "101011" =>            -- SW
+                b <= ex_immediate;
             when others   => NULL;
         end case OP;
     end process;
