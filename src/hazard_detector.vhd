@@ -12,11 +12,10 @@ entity hazard_detector is
 end entity hazard_detector;
 
 architecture arch of hazard_detector is
-    procedure decode_instruction(instr : in    std_logic_vector(31 downto 0);
-                                 ro    : inout std_logic_vector(4 downto 0);
-                                 ri1   : inout std_logic_vector(4 downto 0);
-                                 ri2   : inout std_logic_vector(4 downto 0);
-                                 b     : inout std_logic) is
+    procedure decode_instruction(instr : in  std_logic_vector(31 downto 0);
+                                 ro    : out std_logic_vector(4 downto 0);
+                                 ri1   : out std_logic_vector(4 downto 0);
+                                 ri2   : out std_logic_vector(4 downto 0)) is
         variable op         : std_logic_vector(5 downto 0);
         variable rs, rt, rd : std_logic_vector(4 downto 0);
         variable funct      : std_logic_vector(5 downto 0);
@@ -26,7 +25,6 @@ architecture arch of hazard_detector is
         rt    := instr(20 downto 16);
         rd    := instr(15 downto 11);
         funct := instr(5 downto 0);
-        b     := '0';
 
         if (op = 6x"0") then            -- R-Types
             if (funct = 6x"18" or funct = 6x"1a") then -- rs, rt format
@@ -67,7 +65,6 @@ architecture arch of hazard_detector is
                 ro  := 5x"0";
                 ri1 := rs;
                 ri2 := rt;
-                b   := '1';
             elsif (op = 6x"2b") then    -- store
                 ro  := 5x"0";
                 ri1 := rt;
@@ -95,19 +92,15 @@ begin
         variable i11, i12, i21, i22 : std_logic_vector(4 downto 0);
         variable i31, i32, i41, i42 : std_logic_vector(4 downto 0);
 
-        -- Tell whether an instruction is a branch or not
-        variable b1, b2, b3, b4 : std_logic;
     begin
-        decode_instruction(if_id, o1, i11, i12, b1);
-        decode_instruction(id_ex, o2, i21, i22, b2);
-        decode_instruction(ex_mem, o3, i31, i32, b3);
-        decode_instruction(mem_wb, o4, i41, i42, b4);
+        decode_instruction(if_id, o1, i11, i12);
+        decode_instruction(id_ex, o2, i21, i22);
+        decode_instruction(ex_mem, o3, i31, i32);
+        decode_instruction(mem_wb, o4, i41, i42);
 
         stall <= '0';                   -- Do not stall
 
-        if (b1 = '1') then              -- Branch detected, 1 stall cycle
-            stall <= '1';
-        elsif (o2 /= 5x"0") then        -- Read-After-Write hazards detection (True Dependence)
+        if (o2 /= 5x"0") then           -- Read-After-Write hazards detection (True Dependence)
             if (o2 = i11 or o2 = i12) then -- 3 stall cycles
                 stall <= '1';
             end if;

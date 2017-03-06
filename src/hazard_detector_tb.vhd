@@ -18,7 +18,7 @@ architecture arch of hazard_detector_tb is
     constant ADDR1R0R0   : std_logic_vector(31 downto 0) := 6x"0" & 5x"0" & 5x"0" & 5x"1" & 5x"0" & 6x"22"; --R-Type
     constant ADDR0R1R1   : std_logic_vector(31 downto 0) := 6x"0" & 5x"1" & 5x"1" & 5x"0" & 5x"0" & 6x"22"; --R-Type
     constant ADDR0R31R31 : std_logic_vector(31 downto 0) := 6x"0" & 5x"1f" & 5x"1f" & 5x"0" & 5x"0" & 6x"22"; --R-Type
-    constant BEQR0R0L0   : std_logic_vector(31 downto 0) := 6x"4" & 5x"0" & 5x"0" & 16x"0"; -- I-Type
+    constant BEQR1R0L0   : std_logic_vector(31 downto 0) := 6x"4" & 5x"1" & 5x"0" & 16x"0"; -- I-Type
     constant JL0         : std_logic_vector(31 downto 0) := 6x"2" & 26x"0"; -- J-Type
     constant JAL0        : std_logic_vector(31 downto 0) := 6x"3" & 26x"0"; -- J-Type
 
@@ -78,9 +78,9 @@ begin
         -----------------------------------------------------
 
         -----------------------------------------------------
-        ---------------------Test#2: ADD1---------------------
+        ---------------------Test#2-1: ADD1---------------------
         --This test performs ADD1
-        report "Test#2: ADD1";
+        report "Test#2-1: ADD1";
         if_id  <= ADDR0R1R1;
         id_ex  <= ADDR1R0R0;
         ex_mem <= NOP;
@@ -92,9 +92,9 @@ begin
         -----------------------------------------------------
 
         -----------------------------------------------------
-        ---------------------Test#3: ADD2---------------------
+        ---------------------Test#2-2: ADD2---------------------
         --This test performs ADD2
-        report "Test#3: ADD2";
+        report "Test#2-2: ADD2";
         if_id  <= ADDR0R1R1;
         id_ex  <= NOP;
         ex_mem <= ADDR1R0R0;
@@ -106,9 +106,9 @@ begin
         -----------------------------------------------------
 
         -----------------------------------------------------
-        ---------------------Test#3: ADD3---------------------
+        ---------------------Test#2-3: ADD3---------------------
         --This test performs ADD3
-        report "Test#3: ADD3";
+        report "Test#2-3: ADD3";
         if_id  <= ADDR0R1R1;
         id_ex  <= NOP;
         ex_mem <= NOP;
@@ -123,11 +123,53 @@ begin
         report "Testing control hazards";
 
         -----------------------------------------------------
-        ---------------------Test#4: BEQ---------------------
+        ---------------------Test#3-1: BEQ---------------------
         --This test performs BEQ
-        report "Test#4: BEQ";
-        if_id  <= BEQR0R0L0;
+        report "Test#3-1: BEQ";
+        if_id  <= BEQR1R0L0;
         id_ex  <= NOP;
+        ex_mem <= NOP;
+        mem_wb <= NOP;
+
+        wait for 1 ns;
+
+        assert_equal_bit(stall, '0', error_count);
+        -----------------------------------------------------
+
+        -----------------------------------------------------
+        ---------------------Test#3-2: BEQ---------------------
+        --This test performs BEQ
+        report "Test#3-2: BEQ";
+        if_id  <= ADDR1R0R0;
+        id_ex  <= BEQR1R0L0;
+        ex_mem <= NOP;
+        mem_wb <= NOP;
+
+        wait for 1 ns;
+
+        assert_equal_bit(stall, '0', error_count);
+        -----------------------------------------------------
+
+        -----------------------------------------------------
+        ---------------------Test#3-3: BEQ---------------------
+        --This test performs BEQ
+        report "Test#3-3: BEQ";
+        if_id  <= ADDR0R1R1;
+        id_ex  <= BEQR1R0L0;
+        ex_mem <= NOP;
+        mem_wb <= NOP;
+
+        wait for 1 ns;
+
+        assert_equal_bit(stall, '0', error_count);
+        -----------------------------------------------------
+
+        -----------------------------------------------------
+        ---------------------Test#3-4: BEQ---------------------
+        --This test performs BEQ
+        report "Test#3-4: BEQ";
+        if_id  <= BEQR1R0L0;
+        id_ex  <= ADDR1R0R0;
         ex_mem <= NOP;
         mem_wb <= NOP;
 
@@ -137,9 +179,37 @@ begin
         -----------------------------------------------------
 
         -----------------------------------------------------
-        ---------------------Test#5: JAL1---------------------
+        ---------------------Test#3-5: BEQ---------------------
+        --This test performs BEQ
+        report "Test#3-5: BEQ";
+        if_id  <= BEQR1R0L0;
+        id_ex  <= NOP;
+        ex_mem <= ADDR1R0R0;
+        mem_wb <= NOP;
+
+        wait for 1 ns;
+
+        assert_equal_bit(stall, '1', error_count);
+        -----------------------------------------------------
+
+        -----------------------------------------------------
+        ---------------------Test#3-6: BEQ---------------------
+        --This test performs BEQ
+        report "Test#3-6: BEQ";
+        if_id  <= BEQR1R0L0;
+        id_ex  <= NOP;
+        ex_mem <= NOP;
+        mem_wb <= ADDR1R0R0;
+
+        wait for 1 ns;
+
+        assert_equal_bit(stall, '1', error_count);
+        -----------------------------------------------------
+
+        -----------------------------------------------------
+        ---------------------Test#4-1: JAL1---------------------
         --This test performs JAL1
-        report "Test#5: JAL1";
+        report "Test#4-1: JAL1";
         if_id  <= ADDR0R31R31;
         id_ex  <= JAL0;
         ex_mem <= NOP;
@@ -150,11 +220,10 @@ begin
         assert_equal_bit(stall, '1', error_count);
         -----------------------------------------------------
 
-
         -----------------------------------------------------
-        ---------------------Test#6: JAL2---------------------
+        ---------------------Test#4-2: JAL2---------------------
         --This test performs JAL2
-        report "Test#6: JAL2";
+        report "Test#4-2: JAL2";
         if_id  <= ADDR0R31R31;
         id_ex  <= NOP;
         ex_mem <= JAL0;
@@ -166,9 +235,9 @@ begin
         -----------------------------------------------------
 
         -----------------------------------------------------
-        ---------------------Test#7: JAL3---------------------
+        ---------------------Test#4-3: JAL3---------------------
         --This test performs JAL3
-        report "Test#7: JAL3";
+        report "Test#4-3: JAL3";
         if_id  <= ADDR0R31R31;
         id_ex  <= NOP;
         ex_mem <= NOP;
