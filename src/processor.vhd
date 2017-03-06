@@ -54,6 +54,8 @@ architecture arch of processor is
     signal wb_instruction : std_logic_vector(31 downto 0);
     signal wb_alu_result  : std_logic_vector(63 downto 0);
     signal wb_memory_load : std_logic_vector(31 downto 0);
+    signal wb_data        : std_logic_vector(31 downto 0);
+    signal wb_regWrite    : std_logic;
 
     component alu
         port(
@@ -64,6 +66,18 @@ architecture arch of processor is
             funct  : in  std_logic_vector(5 downto 0);
             output : out std_logic_vector(63 downto 0));
     end component alu;
+
+    component registers
+      port(
+            clock         : IN  std_logic;
+            rs_adr        : IN  std_logic_vector(4 downto 0);
+            rt_adr        : IN  std_logic_vector(4 downto 0);
+            wb_instruction: IN  std_logic_vector(31 downto 0);
+            wb_data       : IN  std_logic_vector(63 downto 0);
+            id_rs         : OUT std_logic_vector(31 downto 0);
+            id_rt         : OUT std_logic_vector(31 downto 0)
+          );
+    end component registers;
 
 begin
 
@@ -105,6 +119,16 @@ begin
 
     -- id
 
+    registers1 : registers port map(  clock => clock,
+                                      regWrite => wb_regWrite,
+                                      rs_adr => id_instruction(25 downto 21),
+                                      rt_adr => id_strunction(20 downto 16),
+                                      instruction => wb_instruction, 
+                                      wb_data => wb_data,
+                                      id_rs => id_rs,
+                                      id_rt => id_rt);
+
+    id_immediate <= std_logic_vector(resize(signed(id_instruction(15 downto 0)), 32)); --sign extend
 
     -- id/ex
 

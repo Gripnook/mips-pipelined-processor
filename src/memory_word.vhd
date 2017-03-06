@@ -6,7 +6,7 @@ USE ieee.numeric_std.all;
 ENTITY memory IS
     GENERIC(
         ram_size     : INTEGER := 32768;
-        mem_delay    : time    := 10 ns;
+        mem_delay    : time    := 0 ns;
         clock_period : time    := 1 ns
     );
     PORT(
@@ -51,15 +51,14 @@ BEGIN
     --Read and write should never happen at the same time.
     waitreq_w_proc : PROCESS(memwrite)
     BEGIN
-        IF (memwrite'event AND memwrite = '1') THEN
+        IF (rising_edge(clock)) THEN
             write_waitreq_reg <= '0' after mem_delay, '1' after mem_delay + clock_period;
-
         END IF;
     END PROCESS;
 
     waitreq_r_proc : PROCESS(memread)
     BEGIN
-        IF (memread'event AND memread = '1') THEN
+        IF (falling_edge(clock)) THEN
             read_waitreq_reg <= '0' after mem_delay, '1' after mem_delay + clock_period;
         END IF;
     END PROCESS;
