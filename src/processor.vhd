@@ -68,15 +68,15 @@ architecture arch of processor is
     end component alu;
 
     component registers
-      port(
-            clock         : IN  std_logic;
+      port (clock         : IN  std_logic;
+            regWrite      : IN  std_logic;
             rs_adr        : IN  std_logic_vector(4 downto 0);
             rt_adr        : IN  std_logic_vector(4 downto 0);
-            wb_instruction: IN  std_logic_vector(31 downto 0);
-            wb_data       : IN  std_logic_vector(63 downto 0);
+            instruction   : IN  std_logic_vector(31 downto 0);
+            wb_data       : IN  std_logic_vector(31 downto 0);
             id_rs         : OUT std_logic_vector(31 downto 0);
             id_rt         : OUT std_logic_vector(31 downto 0)
-          );
+            );
     end component registers;
 
 begin
@@ -123,7 +123,7 @@ begin
                                       regWrite => wb_regWrite,
                                       rs_adr => id_instruction(25 downto 21),
                                       rt_adr => id_strunction(20 downto 16),
-                                      instruction => wb_instruction, 
+                                      instruction => wb_instruction,
                                       wb_data => wb_data,
                                       id_rs => id_rs,
                                       id_rt => id_rt);
