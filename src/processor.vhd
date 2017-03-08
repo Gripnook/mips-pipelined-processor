@@ -38,8 +38,8 @@ architecture arch of processor is
     signal ex_alu_result  : std_logic_vector(63 downto 0); -- 64 bit for mult and div results
     signal a, b           : std_logic_vector(31 downto 0);
     signal mflo, mfhi     : std_logic_vector(31 downto 0);
-    signal ex_mf_result   : std_logic_vector(63 downto 0);
-    signal ex_output      : std_logic_vector(63 downto 0); -- After MUX, must be able to hold mult and div
+    signal ex_mf_result   : std_logic_vector(31 downto 0);
+    signal ex_output      : std_logic_vector(31 downto 0); 
     signal mf_write_en    : std_logic;
     signal mf_read        : std_logic_vector(1  downto 0);
 
@@ -49,7 +49,7 @@ architecture arch of processor is
     -- mem
     signal mem_instruction : std_logic_vector(31 downto 0);
     signal mem_rt          : std_logic_vector(31 downto 0);
-    signal mem_alu_result  : std_logic_vector(63 downto 0);
+    signal mem_alu_result  : std_logic_vector(31 downto 0);
     signal mem_memory_load : std_logic_vector(31 downto 0);
 
     -- mem/wb
@@ -57,7 +57,7 @@ architecture arch of processor is
 
     -- wb
     signal wb_instruction : std_logic_vector(31 downto 0);
-    signal wb_alu_result  : std_logic_vector(63 downto 0);
+    signal wb_alu_result  : std_logic_vector(31 downto 0);
     signal wb_memory_load : std_logic_vector(31 downto 0);
     signal wb_data        : std_logic_vector(31 downto 0);
     signal wb_regWrite    : std_logic;
@@ -202,17 +202,17 @@ begin
     		end if;
     	elsif (falling_edge(clock)) then
     		if (mf_read = "01") then
-    			ex_mf_result(31 downto 0) <= mflo;
+    			ex_mf_result <= mflo;
     		elsif (mf_read = "10") then
-    			ex_mf_result(31 downto 0) <= mfhi;
+    			ex_mf_result <= mfhi;
     		end if;
     	end if;
     end process;
 
     with mf_read select ex_output <=
-    	ex_mf_result  when "01",
-    	ex_mf_result  when "10",
-    	ex_alu_result when others;
+    	ex_mf_result               when "01",
+    	ex_mf_result               when "10",
+    	ex_alu_result(31 downto 0) when others;
 
     -- ex/mem
 
