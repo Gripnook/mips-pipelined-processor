@@ -37,6 +37,11 @@ architecture arch of processor is
     signal ex_immediate   : std_logic_vector(31 downto 0);
     signal ex_alu_result  : std_logic_vector(63 downto 0); -- 64 bit for mult and div results
     signal a, b           : std_logic_vector(31 downto 0);
+    signal mflo, mfhi     : std_logic_vector(31 downto 0);
+    signal ex_mf_result   : std_logic_vector(63 downto 0);
+    signal ex_output      : std_logic_vector(63 downto 0); -- After MUX, must be able to hold mult and div
+    signal mf_write_en    : std_logic;
+    signal mf_read        : std_logic_vector(1  downto 0);
 
     -- ex/mem
     signal ex_mem_reset, ex_mem_enable : std_logic;
@@ -122,7 +127,7 @@ begin
     registers1 : registers port map(  clock => clock,
                                       regWrite => wb_regWrite,
                                       rs_adr => id_instruction(25 downto 21),
-                                      rt_adr => id_strunction(20 downto 16),
+                                      rt_adr => id_instruction(20 downto 16),
                                       instruction => wb_instruction,
                                       wb_data => wb_data,
                                       id_rs => id_rs,
@@ -155,18 +160,59 @@ begin
             end if;
         end if;
     end process;
+    
+    --ex
 
-    -- ex
     alu1 : alu port map(a => a, b => b, opcode => ex_instruction(31 downto 26), shamt => ex_instruction(10 downto 6), funct => ex_instruction(5 downto 0), output => ex_alu_result);
-
+    
     a <= ex_rs;
-    process(ex_instruction, ex_rt, ex_immediate)
+    alu_input : process(ex_instruction, ex_rt, ex_immediate)
     begin
-        OP : case ex_instruction(31 downto 26) is
-            when "000000" => b <= ex_rt;
-            when others   => b <= ex_immediate;
-        end case OP;
+    	OP_input : case ex_instruction(31 downto 26) is
+    		when "000000" => b <= ex_rt;
+    			fn_mf_write_en : case ex_instruction(5 downto 0) is
+    				when "011000" => mf_write_en <= '1'; --mult
+    				when "011010" => mf_write_en <= '1'; --div
+    				when others   => mf_write_en <= '0';
+    			end case fn_mf_write_en;
+    			fn_mf_read : case ex_instruction(5 downto 0) is
+    				when "010010" => mf_read <= "01"; --mflo
+    				when "010000" => mf_read <= "10"; --mfhi
+    				when others   => mf_read <= "00"; --default
+    			end case fn_mf_read;
+    		when others => b <= ex_immediate; -- default values
+    			mf_write_en <= '0';
+    			mf_read     <= "00";
+    	end case OP_input;
     end process;
+
+    mf_fns : process(clock, reset)
+    begin
+    	if (reset = '1') then
+    		mflo      <= (others => '0');
+    		mfhi      <= (others => '0');
+    		ex_output <= (others => '0');
+    	elsif (rising_edge(clock)) then
+    		if (mf_write_en = '1') then
+    			mflo <= ex_alu_result(31 downto 0);
+    			mfhi <= ex_alu_result(63 downto 32);
+    		else
+    			mflo <= mflo;
+    			mfhi <= mfhi;
+    		end if;
+    	elsif (falling_edge(clock)) then
+    		if (mf_read = "01") then
+    			ex_mf_result(31 downto 0) <= mflo;
+    		elsif (mf_read = "10") then
+    			ex_mf_result(31 downto 0) <= mfhi;
+    		end if;
+    	end if;
+    end process;
+
+    with mf_read select ex_output <=
+    	ex_mf_result  when "01",
+    	ex_mf_result  when "10",
+    	ex_alu_result when others;
 
     -- ex/mem
 
@@ -185,7 +231,7 @@ begin
                 else
                     mem_instruction <= ex_instruction;
                     mem_rt          <= ex_rt;
-                    mem_alu_result  <= ex_alu_result;
+                    mem_alu_result  <= ex_output;
                 end if;
             end if;
         end if;
