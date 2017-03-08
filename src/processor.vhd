@@ -249,12 +249,7 @@ begin
     			end case fn_mf_write_en;
     		when others => b <= ex_immediate; -- default values
     			mf_write_en <= '0';
-<<<<<<< HEAD
-    			mf_read     <= "00";
     	end case op_input;
-=======
-    	end case OP_input;
->>>>>>> 6f56c36034e37f9065144aa54fffa4f95cfb1957
     end process;
     
     mf_reading: process(clock, ex_instruction)
