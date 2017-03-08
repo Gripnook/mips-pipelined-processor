@@ -38,27 +38,31 @@ BEGIN
         end if;
 
         --This is the actual synthesizable SRAM block
-        IF (clock'event AND clock = '1') THEN
+        IF (rising_edge(clock)) THEN
             IF (memwrite = '1') THEN
                 ram_block(address) <= writedata;
             END IF;
             read_address_reg <= address;
         END IF;
+
+        IF (falling_edge(clock)) THEN
+         readdata <= ram_block(read_address_reg);
+        END IF;
+
     END PROCESS;
-    readdata <= ram_block(read_address_reg);
 
     --The waitrequest signal is used to vary response time in simulation
     --Read and write should never happen at the same time.
     waitreq_w_proc : PROCESS(memwrite)
     BEGIN
-        IF (rising_edge(clock)) THEN
+        IF (rising_edge(memwrite)) THEN
             write_waitreq_reg <= '0' after mem_delay, '1' after mem_delay + clock_period;
         END IF;
     END PROCESS;
 
     waitreq_r_proc : PROCESS(memread)
     BEGIN
-        IF (falling_edge(clock)) THEN
+        IF (rising_edge(memread)) THEN
             read_waitreq_reg <= '0' after mem_delay, '1' after mem_delay + clock_period;
         END IF;
     END PROCESS;
