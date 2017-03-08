@@ -175,15 +175,24 @@ begin
     				when "011010" => mf_write_en <= '1'; --div
     				when others   => mf_write_en <= '0';
     			end case fn_mf_write_en;
-    			fn_mf_read : case ex_instruction(5 downto 0) is
-    				when "010010" => mf_read <= "01"; --mflo
-    				when "010000" => mf_read <= "10"; --mfhi
-    				when others   => mf_read <= "00"; --default
-    			end case fn_mf_read;
     		when others => b <= ex_immediate; -- default values
     			mf_write_en <= '0';
-    			mf_read     <= "00";
     	end case OP_input;
+    end process;
+    
+    mf_reading: process(clock, ex_instruction)
+    begin
+    	if(ex_instruction(31 downto 26) = "000000") then
+    		if(ex_instruction(5 downto 0) = "010010") then
+    			mf_read <= "01"; --mflo
+    		elsif(ex_instruction(5 downto 0) = "010000") then
+    			mf_read <= "10"; --mfhi
+    		else
+    			mf_read <= "00"; --default - alu
+    		end if;
+    	else
+    		mf_read <= "00";
+    	end if;
     end process;
 
     mf_fns : process(clock, reset)
