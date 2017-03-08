@@ -1,6 +1,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use work.MIPS_encoding.all;
 
 entity alu is
     port(a      : in  std_logic_vector(31 downto 0);
@@ -11,50 +12,70 @@ entity alu is
          output : out std_logic_vector(63 downto 0));
 end alu;
 
-architecture a1 of alu is
+architecture arch of alu is
 begin
     alu : process(a, b, opcode, shamt, funct)
     begin
         output <= (others => '0');
-        OP : case opcode is
-            when 6x"0" =>
-                FN : case funct is
-                    when 6x"20" => output(31 downto 0) <= std_logic_vector(signed(a) + signed(b)); -- ADD
-                    when 6x"22" => output(31 downto 0) <= std_logic_vector(signed(a) - signed(b)); -- SUB
-                    when 6x"18" => output <= std_logic_vector(signed(a) * signed(b)); -- MULT
-                    when 6x"1a" => -- DIV
+        case opcode is
+            when OP_R_TYPE =>
+                case funct is
+                    when FUNCT_ADD =>
+                        output(31 downto 0) <= std_logic_vector(signed(a) + signed(b));
+                    when FUNCT_SUB =>
+                        output(31 downto 0) <= std_logic_vector(signed(a) - signed(b));
+                    when FUNCT_MULT =>
+                        output <= std_logic_vector(signed(a) * signed(b));
+                    when FUNCT_DIV =>
                         output(63 downto 32) <= std_logic_vector(signed(a) mod signed(b));
                         output(31 downto 0) <= std_logic_vector(signed(a) / signed(b));
-                    when 6x"2a" => -- SLT
+                    when FUNCT_SLT =>
                         if signed(a) < signed(b) then
                             output(31 downto 0) <= std_logic_vector(to_signed(1, 32));
                         else
                             output(31 downto 0) <= std_logic_vector(to_signed(0, 32));
                         end if;
-                    when 6x"24" => output(31 downto 0) <= a and b; -- AND
-                    when 6x"25" => output(31 downto 0) <= a or b; -- OR
-                    when 6x"27" => output(31 downto 0) <= a nor b; -- NOR
-                    when 6x"26" => output(31 downto 0) <= a xor b; -- XOR
-                    when 6x"0"  => output(31 downto 0) <= std_logic_vector(unsigned(b) sll to_integer(unsigned(shamt))); -- SLL
-                    when 6x"2"  => output(31 downto 0) <= std_logic_vector(unsigned(b) srl to_integer(unsigned(shamt))); -- SRL
-                    when 6x"3"  => output(31 downto 0) <= to_stdlogicvector(to_bitvector(b) sra to_integer(unsigned(shamt))); -- SRA
-                    when others => NULL;
-                end case FN;
-            when 6x"3" => output(31 downto 0) <= a; -- JAL
-            when 6x"8" => output(31 downto 0) <= std_logic_vector(signed(a) + signed(b)); -- ADDI
-            when 6x"a" => -- SLTI
+                    when FUNCT_AND =>
+                        output(31 downto 0) <= a and b;
+                    when FUNCT_OR =>
+                        output(31 downto 0) <= a or b;
+                    when FUNCT_NOR =>
+                        output(31 downto 0) <= a nor b;
+                    when FUNCT_XOR =>
+                        output(31 downto 0) <= a xor b;
+                    when FUNCT_SLL =>
+                        output(31 downto 0) <= std_logic_vector(unsigned(b) sll to_integer(unsigned(shamt)));
+                    when FUNCT_SRL =>
+                        output(31 downto 0) <= std_logic_vector(unsigned(b) srl to_integer(unsigned(shamt)));
+                    when FUNCT_SRA =>
+                        output(31 downto 0) <= to_stdlogicvector(to_bitvector(b) sra to_integer(unsigned(shamt)));
+                    when others =>
+                        null;
+                end case;
+            when OP_JAL =>
+                output(31 downto 0) <= a;
+            when OP_ADDI =>
+                output(31 downto 0) <= std_logic_vector(signed(a) + signed(b));
+            when OP_SLTI =>
                 if signed(a) < signed(b) then
                     output(31 downto 0) <= std_logic_vector(to_unsigned(1, 32));
                 else
                     output(31 downto 0) <= std_logic_vector(to_unsigned(0, 32));
                 end if;
-            when 6x"c"  => output(31 downto 0) <= a and b; -- ANDI
-            when 6x"d"  => output(31 downto 0) <= a or b; -- ORI
-            when 6x"e"  => output(31 downto 0) <= a xor b; -- XORI
-            when 6x"f"  => output(31 downto 0) <= std_logic_vector(unsigned(b) sll 16); -- LUI 
-            when 6x"23" => output(31 downto 0) <= std_logic_vector(signed(a) + signed(b)); -- LW
-            when 6x"2b" => output(31 downto 0) <= std_logic_vector(signed(a) + signed(b)); -- SW
-            when others => NULL;
-        end case OP;
+            when OP_ANDI =>
+                output(31 downto 0) <= a and b;
+            when OP_ORI =>
+                output(31 downto 0) <= a or b;
+            when OP_XORI =>
+                output(31 downto 0) <= a xor b;
+            when OP_LUI =>
+                output(31 downto 0) <= std_logic_vector(unsigned(b) sll 16);
+            when OP_LW =>
+                output(31 downto 0) <= std_logic_vector(signed(a) + signed(b));
+            when OP_SW =>
+                output(31 downto 0) <= std_logic_vector(signed(a) + signed(b));
+            when others =>
+                null;
+        end case;
     end process;
-end a1;
+end arch;
