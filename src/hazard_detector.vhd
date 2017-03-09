@@ -104,11 +104,13 @@ begin
             if (o2 = i11 or o2 = i12) then -- 3 stall cycles
                 stall <= '1';
             end if;
-        elsif (o3 /= 5x"0") then
+        end if;
+        if (o3 /= 5x"0") then
             if (o3 = i11 or o3 = i12) then -- 2 stall cycles
                 stall <= '1';
             end if;
-        elsif (o4 /= 5x"0") then
+        end if;
+        if (o4 /= 5x"0") then
             if (o4 = i11 or o4 = i12) then -- 1 stall cycle
                 stall <= '1';
             end if;
