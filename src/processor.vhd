@@ -155,6 +155,7 @@ begin
              readdata => if_instruction,
              waitrequest => if_waitrequest);
     if_address <= to_integer(unsigned(pc(31 downto 2)));
+    if_read_en <= '1';
 
     with id_branch_taken select if_npc <=
         std_logic_vector(unsigned(pc) + 4) when '0', -- predict taken
