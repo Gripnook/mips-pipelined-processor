@@ -15,7 +15,7 @@ entity memory is
 end memory;
 
 architecture rtl of memory is
-    type mem_type is array (ram_size - 1 downto 0) of std_logic_vector(31 downto 0);
+    type mem_type is array (0 to ram_size - 1) of std_logic_vector(31 downto 0);
     signal ram_block : mem_type;
 begin
     waitrequest <= '0'; -- Not needed since the memory simulates instant cache hits

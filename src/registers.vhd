@@ -16,7 +16,7 @@ end registers;
 
 architecture arch of registers is
 
-    type reg_type is array (31 downto 0) of std_logic_vector(31 downto 0);
+    type reg_type is array (0 to 31) of std_logic_vector(31 downto 0);
     signal registers : reg_type;
 
 begin
@@ -26,7 +26,7 @@ begin
     process(clock, reset)
     begin
         if (reset = '1') then
-            for i in 1 to 31 loop
+            for i in 0 to 31 loop
                 registers(i) <= (others => '0');
             end loop;
         elsif (rising_edge(clock)) then
