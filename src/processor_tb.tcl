@@ -45,7 +45,7 @@ force -deposit clock 0 0 ns, 1 0.5 ns -repeat 1 ns
 AddWaves
 
 ;# Run
-run 1024.5ns
+run 1us
 
 ;# Save the memory and register file to files
 mem save -outfile memory.txt -format bin -wordsperline 1 -noaddress /processor_tb/dut/data_cache/ram_block

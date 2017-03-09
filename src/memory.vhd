@@ -31,7 +31,8 @@ begin
 
     mem_process : process(clock)
         -- generates deterministic pseudo-random miss sequence for benchmark simulation
-        variable seed1, seed2 : positive;
+        variable seed1 : positive := 1024;
+        variable seed2 : positive := 8192;
         variable rand : real;
     begin
         if (falling_edge(clock)) then
