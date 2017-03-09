@@ -76,6 +76,8 @@ architecture arch of processor is
     signal id_npc           : std_logic_vector(31 downto 0);
     signal id_rs            : std_logic_vector(31 downto 0);
     signal id_rt            : std_logic_vector(31 downto 0);
+    signal id_rs_output     : std_logic_vector(31 downto 0);
+    signal id_rt_output     : std_logic_vector(31 downto 0);
     signal id_immediate     : std_logic_vector(31 downto 0);
     signal id_branch_taken  : std_logic;
     signal id_branch_target : std_logic_vector(31 downto 0);
@@ -176,7 +178,6 @@ begin
     end process;
 
     -- id
-    -- TODO: JAL
 
     id_opcode <= id_instruction(31 downto 26);
     id_funct <= id_instruction(5 downto 0);
@@ -194,6 +195,11 @@ begin
              writedata => wb_writedata,
              rs => id_rs,
              rt => id_rt);
+
+    with id_opcode select id_rs_output <=
+        id_npc when OP_JAL,
+        id_rs when others;
+    id_rt_output <= id_rt;
 
     id_immediate <= std_logic_vector(resize(signed(id_instruction(15 downto 0)), 32)); -- sign extend
 
@@ -246,8 +252,8 @@ begin
                     ex_immediate   <= (others => '0');
                 else
                     ex_instruction <= id_instruction;
-                    ex_rs          <= id_rs;
-                    ex_rt          <= id_rt;
+                    ex_rs          <= id_rs_output;
+                    ex_rt          <= id_rt_output;
                     ex_immediate   <= id_immediate;
                 end if;
             end if;
