@@ -27,7 +27,7 @@ begin
                     when FUNCT_MULT =>
                         output <= std_logic_vector(signed(a) * signed(b));
                     when FUNCT_DIV =>
-                        output(63 downto 32) <= std_logic_vector(signed(a) mod signed(b));
+                        output(63 downto 32) <= std_logic_vector(signed(a) rem signed(b));
                         output(31 downto 0) <= std_logic_vector(signed(a) / signed(b));
                     when FUNCT_SLT =>
                         if signed(a) < signed(b) then

@@ -411,24 +411,84 @@ begin
         -----------------------------------------------------
 
         -----------------------------------------------------
-        ---------------------Test#5: div---------------------
+        ---------------------Test#5-1: div---------------------
         --This test performs the div operation on the alu
-        report "Test#5: div";
-        a      <= (others => '1');
-        b      <= 32x"1";
+        report "Test#5-1: div";
+        a      <= std_logic_vector(to_signed(1073741823, 32));
+        b      <= std_logic_vector(to_signed(194892, 32));
         opcode <= 6x"0";
         shamt  <= 5x"0";
         funct  <= 6x"1a";
 
         wait for 1 ns;
 
-        assert_equal(alu_output, x"00000000FFFFFFFF", error_count);
+        assert_equal(alu_output, std_logic_vector(to_signed(81795, 32) & to_signed(5509, 32)), error_count);
         -----------------------------------------------------
+        
+        -----------------------------------------------------
+        ---------------------Test#5-2: div---------------------
+        --This test performs the div operation on the alu
+        report "Test#5-2: div";
+        a      <= std_logic_vector(to_signed(1073741823, 32));
+        b      <= std_logic_vector(to_signed(-194892, 32));
+        opcode <= 6x"0";
+        shamt  <= 5x"0";
+        funct  <= 6x"1a";
 
+        wait for 1 ns;
+
+        assert_equal(alu_output, std_logic_vector(to_signed(81795, 32) & to_signed(-5509, 32)), error_count);
         -----------------------------------------------------
-        ---------------------Test#6: slt---------------------
+        
+        -----------------------------------------------------
+        ---------------------Test#5-3: div---------------------
+        --This test performs the div operation on the alu
+        report "Test#5-3: div";
+        a      <= std_logic_vector(to_signed(-1073741823, 32));
+        b      <= std_logic_vector(to_signed(194892, 32));
+        opcode <= 6x"0";
+        shamt  <= 5x"0";
+        funct  <= 6x"1a";
+
+        wait for 1 ns;
+
+        assert_equal(alu_output, std_logic_vector(to_signed(-81795, 32) & to_signed(-5509, 32)), error_count);
+        -----------------------------------------------------
+        
+        -----------------------------------------------------
+        ---------------------Test#5-4: div---------------------
+        --This test performs the div operation on the alu
+        report "Test#5-4: div";
+        a      <= std_logic_vector(to_signed(12, 32));
+        b      <= std_logic_vector(to_signed(-5, 32));
+        opcode <= 6x"0";
+        shamt  <= 5x"0";
+        funct  <= 6x"1a";
+
+        wait for 1 ns;
+
+        assert_equal(alu_output, std_logic_vector(to_signed(2, 32) & to_signed(-2, 32)), error_count);
+        -----------------------------------------------------
+        
+        -----------------------------------------------------
+        ---------------------Test#5-5: div---------------------
+        --This test performs the div operation on the alu
+        report "Test#5-5: div";
+        a      <= std_logic_vector(to_signed(-12, 32));
+        b      <= std_logic_vector(to_signed(5, 32));
+        opcode <= 6x"0";
+        shamt  <= 5x"0";
+        funct  <= 6x"1a";
+
+        wait for 1 ns;
+
+        assert_equal(alu_output, std_logic_vector(to_signed(-2, 32) & to_signed(-2, 32)), error_count);
+        -----------------------------------------------------
+        
+        -----------------------------------------------------
+        ---------------------Test#6-1: slt---------------------
         --This test performs the slt operation on the alu
-        report "Test#6: slt";
+        report "Test#6-1: slt";
         a      <= 32x"0";
         b      <= 32x"1";
         opcode <= 6x"0";
@@ -438,6 +498,21 @@ begin
         wait for 1 ns;
 
         assert_equal(alu_output, 64x"1", error_count);
+        -----------------------------------------------------
+        
+        -----------------------------------------------------
+        ---------------------Test#6-2: slt---------------------
+        --This test performs the slt operation on the alu
+        report "Test#6-2: slt";
+        a      <= 32x"0";
+        b      <= std_logic_vector(to_signed(-2147483648, 32));
+        opcode <= 6x"0";
+        shamt  <= 5x"1";
+        funct  <= 6x"2a";
+
+        wait for 1 ns;
+
+        assert_equal(alu_output, 64x"0", error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
