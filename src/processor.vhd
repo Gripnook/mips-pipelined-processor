@@ -13,50 +13,43 @@ architecture arch of processor is
     -- components
 
     component memory is
-        generic(
-            ram_size     : integer := 8192
-        );
-        port(
-            clock       : in  std_logic;
-            writedata   : in  std_logic_vector(31 downto 0) := (others => '0');
-            address     : in  integer range 0 to ram_size - 1;
-            memwrite    : in  std_logic := '0';
-            memread     : in  std_logic;
-            readdata    : out std_logic_vector(31 downto 0);
-            waitrequest : out std_logic
-        );
+        generic(ram_size : integer := 8192);
+        port(clock       : in  std_logic;
+             writedata   : in  std_logic_vector(31 downto 0) := (others => '0');
+             address     : in  integer range 0 to ram_size - 1;
+             memwrite    : in  std_logic := '0';
+             memread     : in  std_logic;
+             readdata    : out std_logic_vector(31 downto 0);
+             waitrequest : out std_logic);
     end component;
 
-    component registers
-      port (clock         : in  std_logic;
-            reset         : in  std_logic;
-            regWrite      : in  std_logic;
-            rs_adr        : in  std_logic_vector(4 downto 0);
-            rt_adr        : in  std_logic_vector(4 downto 0);
-            instruction   : in  std_logic_vector(31 downto 0);
-            wb_data       : in  std_logic_vector(31 downto 0);
-            id_rs         : out std_logic_vector(31 downto 0);
-            id_rt         : out std_logic_vector(31 downto 0)
-            );
-    end component registers;
+    component registers is
+        port(clock      : in  std_logic;
+             reset      : in  std_logic;
+             rs_addr    : in  std_logic_vector(4 downto 0);
+             rt_addr    : in  std_logic_vector(4 downto 0);
+             write_en   : in  std_logic;
+             write_addr : in  std_logic_vector(4 downto 0);
+             writedata  : in  std_logic_vector(31 downto 0);
+             rs         : out std_logic_vector(31 downto 0);
+             rt         : out std_logic_vector(31 downto 0));
+    end component;
 
-    component alu
-        port(
-            a      : in  std_logic_vector(31 downto 0);
-            b      : in  std_logic_vector(31 downto 0);
-            opcode : in  std_logic_vector(5 downto 0);
-            shamt  : in  std_logic_vector(4 downto 0);
-            funct  : in  std_logic_vector(5 downto 0);
-            output : out std_logic_vector(63 downto 0));
-    end component alu;
+    component alu is
+        port(a      : in  std_logic_vector(31 downto 0);
+             b      : in  std_logic_vector(31 downto 0);
+             opcode : in  std_logic_vector(5 downto 0);
+             shamt  : in  std_logic_vector(4 downto 0);
+             funct  : in  std_logic_vector(5 downto 0);
+             output : out std_logic_vector(63 downto 0));
+    end component;
 
     component hazard_detector is
-        port(
-            if_id  : in  std_logic_vector(31 downto 0);
-            id_ex  : in  std_logic_vector(31 downto 0);
-            ex_mem : in  std_logic_vector(31 downto 0);
-            mem_wb : in  std_logic_vector(31 downto 0);
-            stall  : out std_logic);
+        port(if_id  : in  std_logic_vector(31 downto 0);
+             id_ex  : in  std_logic_vector(31 downto 0);
+             ex_mem : in  std_logic_vector(31 downto 0);
+             mem_wb : in  std_logic_vector(31 downto 0);
+             stall  : out std_logic);
     end component;
 
     -- pc
@@ -78,6 +71,8 @@ architecture arch of processor is
     signal id_opcode        : std_logic_vector(5 downto 0);
     signal id_funct         : std_logic_vector(5 downto 0);
     signal id_target        : std_logic_vector(25 downto 0);
+    signal id_rs_addr       : std_logic_vector(4 downto 0);
+    signal id_rt_addr       : std_logic_vector(4 downto 0);
     signal id_npc           : std_logic_vector(31 downto 0);
     signal id_rs            : std_logic_vector(31 downto 0);
     signal id_rt            : std_logic_vector(31 downto 0);
@@ -123,8 +118,9 @@ architecture arch of processor is
     signal wb_instruction : std_logic_vector(31 downto 0);
     signal wb_alu_result  : std_logic_vector(31 downto 0);
     signal wb_memory_load : std_logic_vector(31 downto 0);
-    signal wb_data        : std_logic_vector(31 downto 0);
-    signal wb_regWrite    : std_logic;
+    signal wb_write_en    : std_logic;
+    signal wb_write_addr  : std_logic_vector(4 downto 0);
+    signal wb_writedata   : std_logic_vector(31 downto 0);
 
     -- stalls and flushes
     signal data_hazard_stall : std_logic;
@@ -180,21 +176,26 @@ begin
     end process;
 
     -- id
+    -- TODO: JAL
 
     id_opcode <= id_instruction(31 downto 26);
     id_funct <= id_instruction(5 downto 0);
     id_target <= id_instruction(25 downto 0);
+    id_rs_addr <= id_instruction(25 downto 21);
+    id_rt_addr <= id_instruction(20 downto 16);
 
-    registers1 : registers port map(  clock => clock,
-                                      regWrite => wb_regWrite,
-                                      rs_adr => id_instruction(25 downto 21),
-                                      rt_adr => id_instruction(20 downto 16),
-                                      instruction => wb_instruction,
-                                      wb_data => wb_data,
-                                      id_rs => id_rs,
-                                      id_rt => id_rt);
+    register_file : registers
+    port map(clock => clock,
+             reset => reset,
+             rs_addr => id_rs_addr,
+             rt_addr => id_rt_addr,
+             write_en => wb_write_en,
+             write_addr => wb_write_addr,
+             writedata => wb_writedata,
+             rs => id_rs,
+             rt => id_rt);
 
-    id_immediate <= std_logic_vector(resize(signed(id_instruction(15 downto 0)), 32)); --sign extend
+    id_immediate <= std_logic_vector(resize(signed(id_instruction(15 downto 0)), 32)); -- sign extend
 
     branch_resolution : process(id_opcode, id_funct, id_target, id_npc, id_rs, id_rt, id_immediate)
     begin
@@ -378,6 +379,7 @@ begin
     end process;
 
     -- wb
+    -- TODO
 
     -- stalls and flushes
 

@@ -2,60 +2,41 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-ENTITY registers IS
-  port (clock         : IN  std_logic;
-        reset         : IN  std_logic;
-        regWrite      : IN  std_logic;
-        rs_adr        : IN  std_logic_vector(4 downto 0);
-        rt_adr        : IN  std_logic_vector(4 downto 0);
-        instruction   : IN  std_logic_vector(31 downto 0);
-        wb_data       : IN  std_logic_vector(31 downto 0);
-        id_rs         : OUT std_logic_vector(31 downto 0);
-        id_rt         : OUT std_logic_vector(31 downto 0)
-        );
+entity registers is
+    port(clock      : in  std_logic;
+         reset      : in  std_logic;
+         rs_addr    : in  std_logic_vector(4 downto 0);
+         rt_addr    : in  std_logic_vector(4 downto 0);
+         write_en   : in  std_logic;
+         write_addr : in  std_logic_vector(4 downto 0);
+         writedata  : in  std_logic_vector(31 downto 0);
+         rs         : out std_logic_vector(31 downto 0);
+         rt         : out std_logic_vector(31 downto 0));
 end registers;
 
-ARCHITECTURE registers_arc OF registers IS
+architecture arch of registers is
 
-  TYPE REG IS ARRAY (31 downto 0) OF std_logic_vector(31 downto 0);
+    type reg_type is array (31 downto 0) of std_logic_vector(31 downto 0);
+    signal registers : reg_type;
 
-  signal registers : REG;
-
-BEGIN
-
-registers(0) <= x"00000000";
-
-reset : process(reset)
 begin
 
-  if(reset = '1') then
+    registers(0) <= (others => '0'); -- $0 is hard wired to 0
 
-    For i in 0 to 31 LOOP
-        registers(i) <= std_logic_vector(to_unsigned(0, 32));
-    END LOOP;
+    process(clock, reset)
+    begin
+        if (reset = '1') then
+            for i in 1 to 31 loop
+                registers(i) <= (others => '0');
+            end loop;
+        elsif (rising_edge(clock)) then
+            if (write_en = '1') then
+                registers(to_integer(unsigned(write_addr))) <= writedata;
+            end if;
+        elsif (falling_edge(clock)) then
+            rs <= registers(to_integer(unsigned(rs_addr)));
+            rt <= registers(to_integer(unsigned(rt_addr)));
+        end if;
+    end process;
 
-  end if;
-end process reset;
-
-write : process(clock)
-BEGIN
-
-  if(rising_edge(clock)) then
-    if(regWrite = '1') then
-      registers(to_integer(unsigned(instruction(20 downto 16)))) <= wb_data;
-    end if;
-  end if;
-
-END process;
-
-read : process(clock)
-BEGIN
-
-  if(falling_edge(clock)) then
-    id_rs <= registers(to_integer(unsigned(rs_adr)));
-    id_rt <= registers(to_integer(unsigned(rt_adr)));
-  end if;
-
-END process;
-
-END registers_arc;
+end arch;
