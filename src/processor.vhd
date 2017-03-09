@@ -13,43 +13,50 @@ architecture arch of processor is
     -- components
 
     component memory is
-        generic(ram_size : integer := 8192);
-        port(clock       : in  std_logic;
-             writedata   : in  std_logic_vector(31 downto 0) := (others => '0');
-             address     : in  integer range 0 to ram_size - 1;
-             memwrite    : in  std_logic := '0';
-             memread     : in  std_logic;
-             readdata    : out std_logic_vector(31 downto 0);
-             waitrequest : out std_logic);
+        generic(
+            ram_size     : integer := 8192
+        );
+        port(
+            clock       : in  std_logic;
+            writedata   : in  std_logic_vector(31 downto 0) := (others => '0');
+            address     : in  integer range 0 to ram_size - 1;
+            memwrite    : in  std_logic := '0';
+            memread     : in  std_logic;
+            readdata    : out std_logic_vector(31 downto 0);
+            waitrequest : out std_logic
+        );
     end component;
 
-    component registers is
-        port(clock      : in  std_logic;
-             reset      : in  std_logic;
-             rs_addr    : in  std_logic_vector(4 downto 0);
-             rt_addr    : in  std_logic_vector(4 downto 0);
-             write_en   : in  std_logic;
-             write_addr : in  std_logic_vector(4 downto 0);
-             writedata  : in  std_logic_vector(31 downto 0);
-             rs         : out std_logic_vector(31 downto 0);
-             rt         : out std_logic_vector(31 downto 0));
-    end component;
+    component registers
+      port (clock         : in  std_logic;
+            reset         : in  std_logic;
+            rs_adr        : in  std_logic_vector(4 downto 0);
+            rt_adr        : in  std_logic_vector(4 downto 0);
+            write_en      : in  std_logic;
+            write_addr    : in  std_logic_vector(4 downto 0);
+            writedata     : in  std_logic_vector(31 downto 0);
+            rs         : out std_logic_vector(31 downto 0);
+            rt         : out std_logic_vector(31 downto 0)
+            );
+    end component registers;
 
-    component alu is
-        port(a      : in  std_logic_vector(31 downto 0);
-             b      : in  std_logic_vector(31 downto 0);
-             opcode : in  std_logic_vector(5 downto 0);
-             shamt  : in  std_logic_vector(4 downto 0);
-             funct  : in  std_logic_vector(5 downto 0);
-             output : out std_logic_vector(63 downto 0));
-    end component;
+    component alu
+        port(
+            a      : in  std_logic_vector(31 downto 0);
+            b      : in  std_logic_vector(31 downto 0);
+            opcode : in  std_logic_vector(5 downto 0);
+            shamt  : in  std_logic_vector(4 downto 0);
+            funct  : in  std_logic_vector(5 downto 0);
+            output : out std_logic_vector(63 downto 0));
+    end component alu;
 
     component hazard_detector is
-        port(if_id  : in  std_logic_vector(31 downto 0);
-             id_ex  : in  std_logic_vector(31 downto 0);
-             ex_mem : in  std_logic_vector(31 downto 0);
-             mem_wb : in  std_logic_vector(31 downto 0);
-             stall  : out std_logic);
+        port(
+            if_id  : in  std_logic_vector(31 downto 0);
+            id_ex  : in  std_logic_vector(31 downto 0);
+            ex_mem : in  std_logic_vector(31 downto 0);
+            mem_wb : in  std_logic_vector(31 downto 0);
+            stall  : out std_logic);
     end component;
 
     -- pc
@@ -71,13 +78,9 @@ architecture arch of processor is
     signal id_opcode        : std_logic_vector(5 downto 0);
     signal id_funct         : std_logic_vector(5 downto 0);
     signal id_target        : std_logic_vector(25 downto 0);
-    signal id_rs_addr       : std_logic_vector(4 downto 0);
-    signal id_rt_addr       : std_logic_vector(4 downto 0);
     signal id_npc           : std_logic_vector(31 downto 0);
     signal id_rs            : std_logic_vector(31 downto 0);
     signal id_rt            : std_logic_vector(31 downto 0);
-    signal id_rs_output     : std_logic_vector(31 downto 0);
-    signal id_rt_output     : std_logic_vector(31 downto 0);
     signal id_immediate     : std_logic_vector(31 downto 0);
     signal id_branch_taken  : std_logic;
     signal id_branch_target : std_logic_vector(31 downto 0);
@@ -105,6 +108,7 @@ architecture arch of processor is
     -- mem
     signal mem_instruction : std_logic_vector(31 downto 0);
     signal mem_opcode      : std_logic_vector(5 downto 0);
+    signal mem_funct       : std_logic_vector(5 downto 0);
     signal mem_rt          : std_logic_vector(31 downto 0);
     signal mem_alu_result  : std_logic_vector(31 downto 0);
     signal mem_memory_load : std_logic_vector(31 downto 0);
@@ -118,11 +122,13 @@ architecture arch of processor is
 
     -- wb
     signal wb_instruction : std_logic_vector(31 downto 0);
+    signal wb_opcode      : std_logic_vector(5 downto 0);
+    signal wb_funct       : std_logic_vector(5 downto 0);
     signal wb_alu_result  : std_logic_vector(31 downto 0);
     signal wb_memory_load : std_logic_vector(31 downto 0);
-    signal wb_write_en    : std_logic;
+    signal wb_data        : std_logic_vector(31 downto 0);
     signal wb_write_addr  : std_logic_vector(4 downto 0);
-    signal wb_writedata   : std_logic_vector(31 downto 0);
+    signal wb_regWrite    : std_logic;
 
     -- stalls and flushes
     signal data_hazard_stall : std_logic;
@@ -182,26 +188,18 @@ begin
     id_opcode <= id_instruction(31 downto 26);
     id_funct <= id_instruction(5 downto 0);
     id_target <= id_instruction(25 downto 0);
-    id_rs_addr <= id_instruction(25 downto 21);
-    id_rt_addr <= id_instruction(20 downto 16);
 
-    register_file : registers
-    port map(clock => clock,
-             reset => reset,
-             rs_addr => id_rs_addr,
-             rt_addr => id_rt_addr,
-             write_en => wb_write_en,
-             write_addr => wb_write_addr,
-             writedata => wb_writedata,
-             rs => id_rs,
-             rt => id_rt);
+    registers1 : registers port map(  clock => clock,
+                                      reset => reset,
+                                      rs_adr => id_instruction(25 downto 21),
+                                      rt_adr => id_instruction(20 downto 16),
+                                      write_en => wb_regWrite,
+                                      write_addr => wb_write_addr,
+                                      writedata => wb_data,
+                                      rs => id_rs,
+                                      rt => id_rt);
 
-    with id_opcode select id_rs_output <=
-        id_npc when OP_JAL,
-        id_rs when others;
-    id_rt_output <= id_rt;
-
-    id_immediate <= std_logic_vector(resize(signed(id_instruction(15 downto 0)), 32)); -- sign extend
+    id_immediate <= std_logic_vector(resize(signed(id_instruction(15 downto 0)), 32)); --sign extend
 
     branch_resolution : process(id_opcode, id_funct, id_target, id_npc, id_rs, id_rt, id_immediate)
     begin
@@ -252,8 +250,8 @@ begin
                     ex_immediate   <= (others => '0');
                 else
                     ex_instruction <= id_instruction;
-                    ex_rs          <= id_rs_output;
-                    ex_rt          <= id_rt_output;
+                    ex_rs          <= id_rs;
+                    ex_rt          <= id_rt;
                     ex_immediate   <= id_immediate;
                 end if;
             end if;
@@ -329,10 +327,12 @@ begin
                     mem_instruction <= (others => '0');
                     mem_rt          <= (others => '0');
                     mem_alu_result  <= (others => '0');
+                    mem_funct       <= (others => '0');
                 else
                     mem_instruction <= ex_instruction;
                     mem_rt          <= ex_rt;
                     mem_alu_result  <= ex_output;
+                    mem_funct       <= ex_funct;
                 end if;
             end if;
         end if;
@@ -375,17 +375,45 @@ begin
                     wb_instruction <= (others => '0');
                     wb_alu_result  <= (others => '0');
                     wb_memory_load <= (others => '0');
+                    wb_opcode      <= (others => '0');
+                    wb_funct       <= (others => '0');
                 else
                     wb_instruction <= mem_instruction;
                     wb_alu_result  <= mem_alu_result;
                     wb_memory_load <= mem_memory_load;
+                    wb_opcode      <= mem_opcode;
+                    wb_funct       <= mem_funct;
                 end if;
             end if;
         end if;
     end process;
 
     -- wb
-    -- TODO
+    process(wb_opcode, wb_funct) is
+      begin
+        case wb_opcode is
+          when OP_LW =>   wb_data <= wb_memory_load;
+                          wb_write_addr <= wb_instruction(20 downto 16);--rt
+                          wb_regWrite <= '1';
+
+          when  OP_ADDI | OP_SLTI | OP_ANDI  |
+                OP_ORI   | OP_XORI | OP_LUI  |  OP_JAL  =>  wb_data <= wb_alu_result;
+                                                            wb_write_addr <= wb_instruction(20 downto 16);--rt
+                                                            wb_regWrite <= '1';
+          when others => wb_regWrite <= '0';
+
+        end case;
+
+        case wb_funct is
+          when  FUNCT_ADD   | FUNCT_SUB | FUNCT_SLT | FUNCT_AND  |
+                FUNCT_OR    | FUNCT_NOR | FUNCT_XOR | FUNCT_MFHI |
+                FUNCT_MFLO  | FUNCT_SLL | FUNCT_SRL | FUNCT_SRA  => wb_data <= wb_alu_result;
+                                                                    wb_write_addr <= wb_instruction(15 downto 11);--rd
+                                                                    wb_regWrite <= '1';
+          when others => wb_regWrite <= '0';
+
+        end case;
+      end process;
 
     -- stalls and flushes
 
