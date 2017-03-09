@@ -2,6 +2,16 @@ proc AddWaves {} {
     ;#Add waves we're interested in to the Wave window
     add wave -position end sim:/processor_tb/clock
     add wave -position end sim:/processor_tb/reset
+    add wave -position end sim:/processor_tb/dut/pc
+    add wave -position end sim:/processor_tb/dut/if_npc
+    add wave -position end sim:/processor_tb/dut/id_opcode
+    add wave -position end sim:/processor_tb/dut/id_funct
+    add wave -position end sim:/processor_tb/dut/id_target
+    add wave -position end sim:/processor_tb/dut/id_rs_addr
+    add wave -position end sim:/processor_tb/dut/id_rt_addr
+    add wave -position end sim:/processor_tb/dut/id_immediate
+    add wave -position end sim:/processor_tb/dut/id_branch_taken
+    add wave -position end sim:/processor_tb/dut/id_branch_target
 }
 
 vlib work
@@ -36,3 +46,6 @@ run 1024.5ns
 ;# Save the memory and register file to files
 mem save -outfile memory.txt -format bin -wordsperline 1 -noaddress /processor_tb/dut/data_cache/ram_block
 mem save -outfile register_file.txt -format bin -wordsperline 1 -noaddress /processor_tb/dut/register_file/registers
+
+;# Display performance counters
+examine -name -radix 10 /processor_tb/dut/stall_count
