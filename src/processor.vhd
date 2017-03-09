@@ -226,12 +226,12 @@ begin
             when OP_BEQ =>
                 if (id_rs = id_rt) then
                     id_branch_taken <= '1';
-                    id_branch_target <= std_logic_vector(signed(id_npc) + signed(id_immediate));
+                    id_branch_target <= std_logic_vector(signed(id_npc) + signed(id_immediate(29 downto 0) & "00"));
                 end if;
             when OP_BNE =>
                 if (id_rs /= id_rt) then
                     id_branch_taken <= '1';
-                    id_branch_target <= std_logic_vector(signed(id_npc) + signed(id_immediate));
+                    id_branch_target <= std_logic_vector(signed(id_npc) + signed(id_immediate(29 downto 0) & "00"));
                 end if;
             when others =>
                 null;
