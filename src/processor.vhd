@@ -77,16 +77,17 @@ architecture arch of processor is
 
     -- ex
     signal ex_instruction : std_logic_vector(31 downto 0);
+    signal ex_opcode      : std_logic_vector(5 downto 0);
+    signal ex_funct       : std_logic_vector(5 downto 0);
+    signal ex_shamt       : std_logic_vector(4 downto 0);
     signal ex_rs          : std_logic_vector(31 downto 0);
     signal ex_rt          : std_logic_vector(31 downto 0);
     signal ex_immediate   : std_logic_vector(31 downto 0);
     signal ex_alu_result  : std_logic_vector(63 downto 0); -- 64 bit for mult and div results
-    signal a, b           : std_logic_vector(31 downto 0);
-    signal mflo, mfhi     : std_logic_vector(31 downto 0);
-    signal ex_mf_result   : std_logic_vector(31 downto 0);
+    signal ex_a, ex_b     : std_logic_vector(31 downto 0);
     signal ex_output      : std_logic_vector(31 downto 0); 
-    signal mf_write_en    : std_logic;
-    signal mf_read        : std_logic_vector(1  downto 0);
+
+    signal hi, lo : std_logic_vector(31 downto 0);
 
     -- ex/mem
     signal ex_mem_reset, ex_mem_enable : std_logic;
@@ -203,7 +204,8 @@ begin
                     id_branch_taken <= '1';
                     id_branch_target <= std_logic_vector(signed(id_npc) + signed(id_immediate));
                 end if;
-            when others => null;
+            when others =>
+                null;
         end case;
     end process;
 
@@ -235,65 +237,58 @@ begin
     
     --ex
 
-    alu1 : alu port map(a => a, b => b, opcode => ex_instruction(31 downto 26), shamt => ex_instruction(10 downto 6), funct => ex_instruction(5 downto 0), output => ex_alu_result);
-    
-    a <= ex_rs;
-    alu_input : process(ex_instruction, ex_rt, ex_immediate)
+    ex_opcode <= ex_instruction(31 downto 26);
+    ex_funct  <= ex_instruction(5 downto 0);
+    ex_shamt  <= ex_instruction(10 downto 6);
+
+    alu_input_1 : process(ex_rs)
     begin
-    	op_input : case ex_instruction(31 downto 26) is
-    		when "000000" => b <= ex_rt;
-    			fn_mf_write_en : case ex_instruction(5 downto 0) is
-    				when "011000" => mf_write_en <= '1'; --mult
-    				when "011010" => mf_write_en <= '1'; --div
-    				when others   => mf_write_en <= '0';
-    			end case fn_mf_write_en;
-    		when others => b <= ex_immediate; -- default values
-    			mf_write_en <= '0';
-    	end case op_input;
+        ex_a <= ex_rs;
     end process;
-    
-    mf_reading: process(clock, ex_instruction)
+    alu_input_2 : process(ex_opcode, ex_rt, ex_immediate)
     begin
-    	if(ex_instruction(31 downto 26) = "000000") then
-    		if(ex_instruction(5 downto 0) = "010010") then
-    			mf_read <= "01"; --mflo
-    		elsif(ex_instruction(5 downto 0) = "010000") then
-    			mf_read <= "10"; --mfhi
-    		else
-    			mf_read <= "00"; --default - alu
-    		end if;
-    	else
-    		mf_read <= "00";
-    	end if;
+    	case ex_opcode is
+    		when OP_R_TYPE =>
+                ex_b <= ex_rt;
+    		when others =>
+                ex_b <= ex_immediate;
+    	end case;
     end process;
 
-    mf_fns : process(clock, reset)
+    ex_alu : alu
+    port map(a => ex_a,
+             b => ex_b,
+             opcode => ex_opcode,
+             shamt => ex_shamt,
+             funct => ex_funct,
+             output => ex_alu_result);
+    
+    hi_lo_registers : process(clock, reset)
     begin
-    	if (reset = '1') then
-    		mflo      <= (others => '0');
-    		mfhi      <= (others => '0');
-    		ex_output <= (others => '0');
-    	elsif (rising_edge(clock)) then
-    		if (mf_write_en = '1') then
-    			mflo <= ex_alu_result(31 downto 0);
-    			mfhi <= ex_alu_result(63 downto 32);
-    		else
-    			mflo <= mflo;
-    			mfhi <= mfhi;
-    		end if;
-    	elsif (falling_edge(clock)) then
-    		if (mf_read = "01") then
-    			ex_mf_result <= mflo;
-    		elsif (mf_read = "10") then
-    			ex_mf_result <= mfhi;
-    		end if;
-    	end if;
+        if (reset = '1') then
+            hi <= (others => '0');
+            lo <= (others => '0');
+        elsif (rising_edge(clock)) then
+            if (ex_opcode = OP_R_TYPE) then
+                if ((ex_funct = FUNCT_MULT) or (ex_funct = FUNCT_DIV)) then
+                    hi <= ex_alu_result(63 downto 32);
+                    lo <= ex_alu_result(31 downto 0);
+                end if;
+            end if;
+        end if;
     end process;
 
-    with mf_read select ex_output <=
-    	ex_mf_result               when "01",
-    	ex_mf_result               when "10",
-    	ex_alu_result(31 downto 0) when others;
+    ex_output_mux : process(ex_opcode, ex_funct, ex_alu_result, hi, lo)
+    begin
+        ex_output <= ex_alu_result(31 downto 0);
+        if (ex_opcode = OP_R_TYPE) then
+            if (ex_funct = FUNCT_MFHI) then
+                ex_output <= hi;
+            elsif (ex_funct = FUNCT_MFLO) then
+                ex_output <= lo;
+            end if;
+        end if;
+    end process;
 
     -- ex/mem
 
@@ -346,16 +341,16 @@ begin
 
     -- wb
 
-    -- stalls
+    -- stalls and flushes
 
-    pc_enable <= not if_waitrequest;
-    if_id_enable <= not if_waitrequest;
-    if_id_reset <= id_branch_taken;
-    id_ex_enable <= '1';
-    id_ex_reset <= if_waitrequest;
+    pc_enable     <= not if_waitrequest;
+    if_id_enable  <= not if_waitrequest;
+    if_id_reset   <= id_branch_taken;
+    id_ex_enable  <= '1';
+    id_ex_reset   <= if_waitrequest;
     ex_mem_enable <= '1';
-    ex_mem_reset <= '0';
+    ex_mem_reset  <= '0';
     mem_wb_enable <= '1';
-    mem_wb_reset <= '0';
+    mem_wb_reset  <= '0';
 
 end architecture;
