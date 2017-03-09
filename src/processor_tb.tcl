@@ -2,8 +2,6 @@ proc AddWaves {} {
     ;#Add waves we're interested in to the Wave window
     add wave -position end sim:/processor_tb/clock
     add wave -position end sim:/processor_tb/reset
-    add wave -position end sim:/processor_tb/dut/pc
-    add wave -position end sim:/processor_tb/dut/pc_enable
 }
 
 vlib work
@@ -20,6 +18,12 @@ vcom -2008 processor_tb.vhd
 ;# Start simulation
 vsim -t ps processor_tb
 
+;# Load program.txt into the instruction memory
+mem load -infile program.txt -format bin -filldata 0 /processor_tb/dut/instruction_cache/ram_block
+
+;# Initialize data memory with zeros
+mem load -filldata 0 /processor_tb/dut/data_cache/ram_block
+
 ;# Generate a clock with 1 ns period
 force -deposit clock 0 0 ns, 1 0.5 ns -repeat 1 ns
 
@@ -27,4 +31,8 @@ force -deposit clock 0 0 ns, 1 0.5 ns -repeat 1 ns
 AddWaves
 
 ;# Run
-run 10us
+run 1024.5ns
+
+;# Save the memory and register file to files
+mem save -outfile memory.txt -format bin -wordsperline 1 -noaddress /processor_tb/dut/data_cache/ram_block
+mem save -outfile register_file.txt -format bin -wordsperline 1 -noaddress /processor_tb/dut/register_file/registers
