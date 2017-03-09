@@ -130,8 +130,10 @@ architecture arch of processor is
     -- stalls and flushes
     signal data_hazard_stall : std_logic;
 
-    -- performance counters 
-    signal stall_count : integer := 0;
+    -- performance counters
+    signal memory_access_stall_count : integer := 0;
+    signal data_hazard_stall_count   : integer := 0;
+    signal branch_hazard_stall_count : integer := 0;
 
 begin
 
@@ -453,10 +455,16 @@ begin
     stall_counter : process(clock, reset)
     begin
         if (reset = '1') then
-            stall_count <= 0;
+            memory_access_stall_count <= 0;
+            data_hazard_stall_count <= 0;
+            branch_hazard_stall_count <= 0;
         elsif (rising_edge(clock)) then
-            if (if_waitrequest or mem_waitrequest or data_hazard_stall or id_branch_taken) then
-                stall_count <= stall_count + 1;
+            if (if_waitrequest = '1' or mem_waitrequest = '1') then
+                memory_access_stall_count <= memory_access_stall_count + 1;
+            elsif (data_hazard_stall = '1') then
+                data_hazard_stall_count <= data_hazard_stall_count + 1;
+            elsif (id_branch_taken = '1') then
+                branch_hazard_stall_count <= branch_hazard_stall_count + 1;
             end if;
         end if;
     end process;

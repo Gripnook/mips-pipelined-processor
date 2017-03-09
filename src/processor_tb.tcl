@@ -12,6 +12,10 @@ proc AddWaves {} {
     add wave -position end sim:/processor_tb/dut/id_immediate
     add wave -position end sim:/processor_tb/dut/id_branch_taken
     add wave -position end sim:/processor_tb/dut/id_branch_target
+    # Performance counters
+    add wave -position end -radix 10 sim:/processor_tb/dut/memory_access_stall_count
+    add wave -position end -radix 10 sim:/processor_tb/dut/data_hazard_stall_count
+    add wave -position end -radix 10 sim:/processor_tb/dut/branch_hazard_stall_count
 }
 
 vlib work
@@ -46,6 +50,3 @@ run 1024.5ns
 ;# Save the memory and register file to files
 mem save -outfile memory.txt -format bin -wordsperline 1 -noaddress /processor_tb/dut/data_cache/ram_block
 mem save -outfile register_file.txt -format bin -wordsperline 1 -noaddress /processor_tb/dut/register_file/registers
-
-;# Display performance counters
-examine -name -radix 10 /processor_tb/dut/stall_count
