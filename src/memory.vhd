@@ -5,7 +5,7 @@ use ieee.numeric_std.all;
 
 entity memory is
     generic(
-        ram_size     : integer := 32768
+        ram_size     : integer := 8192
     );
     port(
         clock       : in  std_logic;

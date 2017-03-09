@@ -14,7 +14,7 @@ architecture arch of processor is
 
     component memory is
         generic(
-            ram_size     : integer := 32768
+            ram_size     : integer := 8192
         );
         port(
             clock       : in  std_logic;
@@ -97,9 +97,14 @@ architecture arch of processor is
 
     -- mem
     signal mem_instruction : std_logic_vector(31 downto 0);
+    signal mem_opcode      : std_logic_vector(5 downto 0);
     signal mem_rt          : std_logic_vector(31 downto 0);
     signal mem_alu_result  : std_logic_vector(31 downto 0);
     signal mem_memory_load : std_logic_vector(31 downto 0);
+    signal mem_address     : integer;
+    signal mem_write_en    : std_logic;
+    signal mem_read_en     : std_logic;
+    signal mem_waitrequest : std_logic;
 
     -- mem/wb
     signal mem_wb_reset, mem_wb_enable : std_logic;
@@ -315,6 +320,26 @@ begin
 
     -- mem
 
+    mem_opcode <= mem_instruction(31 downto 26);
+
+    data_cache : memory
+    generic map(ram_size => 8192)
+    port map(clock => clock,
+             writedata => mem_rt,
+             address => mem_address,
+             memwrite => mem_write_en,
+             memread => mem_read_en,
+             readdata => mem_memory_load,
+             waitrequest => mem_waitrequest);
+    mem_address <= to_integer(unsigned(mem_alu_result));
+
+    with mem_opcode select mem_write_en <=
+        '1' when OP_SW,
+        '0' when others;
+
+    with mem_opcode select mem_read_en <=
+        '1' when OP_LW,
+        '0' when others;
 
     -- mem/wb
 
@@ -343,14 +368,14 @@ begin
 
     -- stalls and flushes
 
-    pc_enable     <= not if_waitrequest;
-    if_id_enable  <= not if_waitrequest;
+    pc_enable     <= (not if_waitrequest) and (not mem_waitrequest);
+    if_id_enable  <= (not if_waitrequest) and (not mem_waitrequest);
     if_id_reset   <= id_branch_taken;
-    id_ex_enable  <= '1';
+    id_ex_enable  <= not mem_waitrequest;
     id_ex_reset   <= if_waitrequest;
-    ex_mem_enable <= '1';
+    ex_mem_enable <= not mem_waitrequest;
     ex_mem_reset  <= '0';
     mem_wb_enable <= '1';
-    mem_wb_reset  <= '0';
+    mem_wb_reset  <= mem_waitrequest;
 
 end architecture;
