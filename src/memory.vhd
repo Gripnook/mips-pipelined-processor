@@ -18,17 +18,15 @@ architecture rtl of memory is
     type mem_type is array (ram_size - 1 downto 0) of std_logic_vector(31 downto 0);
     signal ram_block : mem_type;
 begin
+    waitrequest <= '0'; -- Not needed since the memory simulates instant cache hits
+
     mem_process : process(clock)
     begin
         if (falling_edge(clock)) then
             if (memread = '1') then
-                waitrequest <= '1';
                 readdata <= ram_block(address);
-                waitrequest <= '0';
             elsif (memwrite = '1') then
-                waitrequest <= '1';
                 ram_block(address) <= writedata;
-                waitrequest <= '0';
             end if;
         end if;
     end process;
