@@ -49,6 +49,15 @@ architecture arch of processor is
             output : out std_logic_vector(63 downto 0));
     end component alu;
 
+    component hazard_detector is
+        port(
+            if_id  : in  std_logic_vector(31 downto 0);
+            id_ex  : in  std_logic_vector(31 downto 0);
+            ex_mem : in  std_logic_vector(31 downto 0);
+            mem_wb : in  std_logic_vector(31 downto 0);
+            stall  : out std_logic);
+    end component;
+
     -- pc
     signal pc        : std_logic_vector(31 downto 0);
     signal pc_enable : std_logic;
@@ -115,6 +124,9 @@ architecture arch of processor is
     signal wb_memory_load : std_logic_vector(31 downto 0);
     signal wb_data        : std_logic_vector(31 downto 0);
     signal wb_regWrite    : std_logic;
+
+    -- stalls and flushes
+    signal data_hazard_stall : std_logic;
 
 begin
 
@@ -368,11 +380,18 @@ begin
 
     -- stalls and flushes
 
-    pc_enable     <= (not if_waitrequest) and (not mem_waitrequest);
-    if_id_enable  <= (not if_waitrequest) and (not mem_waitrequest);
+    data_hazard_detector : hazard_detector
+    port map(if_id => id_instruction,
+             id_ex => ex_instruction,
+             ex_mem => mem_instruction,
+             mem_wb => wb_instruction,
+             stall => data_hazard_stall);
+
+    pc_enable     <= (not if_waitrequest) and (not mem_waitrequest) and (not data_hazard_stall);
+    if_id_enable  <= (not if_waitrequest) and (not mem_waitrequest) and (not data_hazard_stall);
     if_id_reset   <= id_branch_taken;
     id_ex_enable  <= not mem_waitrequest;
-    id_ex_reset   <= if_waitrequest;
+    id_ex_reset   <= if_waitrequest or data_hazard_stall;
     ex_mem_enable <= not mem_waitrequest;
     ex_mem_reset  <= '0';
     mem_wb_enable <= '1';
