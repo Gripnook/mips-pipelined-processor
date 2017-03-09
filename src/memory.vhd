@@ -33,12 +33,12 @@ begin
         -- generates deterministic pseudo-random miss sequence for benchmark simulation
         variable seed1 : positive := 1024;
         variable seed2 : positive := 8192;
-        variable rand : real;
+        variable rand : real := 1.0;
     begin
         if (falling_edge(clock)) then
             if (state = ready) then
                 waitrequest <= '0';
-                uniform(seed1, seed2, rand);
+                -- uniform(seed1, seed2, rand);
                 if (rand < miss_rate) then
                     state <= stall;
                     miss_countdown <= miss_penalty - 1;
