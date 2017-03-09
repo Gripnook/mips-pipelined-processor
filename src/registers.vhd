@@ -30,7 +30,7 @@ begin
                 registers(i) <= (others => '0');
             end loop;
         elsif (rising_edge(clock)) then
-            if (write_en = '1') then
+            if (write_en = '1' and write_addr /= "00000") then
                 registers(to_integer(unsigned(write_addr))) <= writedata;
             end if;
         elsif (falling_edge(clock)) then
