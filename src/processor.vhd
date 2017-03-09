@@ -65,6 +65,9 @@ architecture arch of processor is
 
     -- id
     signal id_instruction   : std_logic_vector(31 downto 0);
+    signal id_opcode        : std_logic_vector(5 downto 0);
+    signal id_funct         : std_logic_vector(5 downto 0);
+    signal id_target        : std_logic_vector(25 downto 0);
     signal id_npc           : std_logic_vector(31 downto 0);
     signal id_rs            : std_logic_vector(31 downto 0);
     signal id_rt            : std_logic_vector(31 downto 0);
@@ -160,6 +163,10 @@ begin
 
     -- id
 
+    id_opcode <= id_instruction(31 downto 26);
+    id_funct <= id_instruction(5 downto 0);
+    id_target <= id_instruction(25 downto 0);
+
     registers1 : registers port map(  clock => clock,
                                       regWrite => wb_regWrite,
                                       rs_adr => id_instruction(25 downto 21),
@@ -171,29 +178,22 @@ begin
 
     id_immediate <= std_logic_vector(resize(signed(id_instruction(15 downto 0)), 32)); --sign extend
 
-    branch_resolution : process(id_instruction, id_npc, id_rs, id_rt, id_immediate)
-        variable opcode : std_logic_vector(5 downto 0);
-        variable funct  : std_logic_vector(5 downto 0);
-        variable target : std_logic_vector(25 downto 0);
+    branch_resolution : process(id_opcode, id_funct, id_target, id_npc, id_rs, id_rt, id_immediate)
     begin
-        opcode := id_instruction(31 downto 26);
-        funct  := id_instruction(5 downto 0);
-        target := id_instruction(25 downto 0);
-
         id_branch_taken <= '0';
         id_branch_target <= (others => '0');
-        case opcode is
+        case id_opcode is
             when OP_R_TYPE =>
-                if (funct = FUNCT_JR) then
+                if (id_funct = FUNCT_JR) then
                     id_branch_taken <= '1';
                     id_branch_target <= id_rs;
                 end if;
             when OP_J =>
                 id_branch_taken <= '1';
-                id_branch_target <= (id_npc and x"f0000000") or (x"0" & target & "00");
+                id_branch_target <= id_npc(31 downto 28) & id_target & "00";
             when OP_JAL =>
                 id_branch_taken <= '1';
-                id_branch_target <= (id_npc and x"f0000000") or (x"0" & target & "00");
+                id_branch_target <= id_npc(31 downto 28) & id_target & "00";
             when OP_BEQ =>
                 if (id_rs = id_rt) then
                     id_branch_taken <= '1';
