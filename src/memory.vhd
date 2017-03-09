@@ -1,7 +1,8 @@
--- Simplified memory model simulating cache hits on the falling edge.
+-- Simplified memory model simulating a cache
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use ieee.math_real.all;
 
 entity memory is
     generic(ram_size : integer := 8192);
@@ -17,16 +18,47 @@ end memory;
 architecture rtl of memory is
     type mem_type is array (0 to ram_size - 1) of std_logic_vector(31 downto 0);
     signal ram_block : mem_type;
+
+    type state_type is (ready, stall);
+    signal state : state_type := ready;
+
+    constant miss_rate : real := 0.1;
+    constant miss_penalty : integer := 10;
+
+    signal miss_countdown : integer;
+
 begin
-    waitrequest <= '0'; -- Not needed since the memory simulates instant cache hits
 
     mem_process : process(clock)
+        -- generates deterministic pseudo-random miss sequence for benchmark simulation
+        variable seed1, seed2 : positive;
+        variable rand : real;
     begin
         if (falling_edge(clock)) then
-            if (memread = '1') then
-                readdata <= ram_block(address);
-            elsif (memwrite = '1') then
-                ram_block(address) <= writedata;
+            if (state = ready) then
+                waitrequest <= '0';
+                uniform(seed1, seed2, rand);
+                if (rand < miss_rate) then
+                    state <= stall;
+                    miss_countdown <= miss_penalty - 1;
+                    waitrequest <= '1';
+                elsif (memread = '1') then
+                    readdata <= ram_block(address);
+                elsif (memwrite = '1') then
+                    ram_block(address) <= writedata;
+                end if;
+            else
+                if (miss_countdown = 0) then
+                    state <= ready;
+                    waitrequest <= '0';
+                    if (memread = '1') then
+                        readdata <= ram_block(address);
+                    elsif (memwrite = '1') then
+                        ram_block(address) <= writedata;
+                    end if;
+                else
+                    miss_countdown <= miss_countdown - 1;
+                end if;
             end if;
         end if;
     end process;
