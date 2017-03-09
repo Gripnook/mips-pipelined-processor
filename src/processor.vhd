@@ -29,6 +29,7 @@ architecture arch of processor is
 
     component registers
       port (clock         : in  std_logic;
+            reset         : in  std_logic;
             regWrite      : in  std_logic;
             rs_adr        : in  std_logic_vector(4 downto 0);
             rt_adr        : in  std_logic_vector(4 downto 0);
@@ -97,7 +98,7 @@ architecture arch of processor is
     signal ex_immediate   : std_logic_vector(31 downto 0);
     signal ex_alu_result  : std_logic_vector(63 downto 0); -- 64 bit for mult and div results
     signal ex_a, ex_b     : std_logic_vector(31 downto 0);
-    signal ex_output      : std_logic_vector(31 downto 0); 
+    signal ex_output      : std_logic_vector(31 downto 0);
 
     signal hi, lo : std_logic_vector(31 downto 0);
 
@@ -251,7 +252,7 @@ begin
             end if;
         end if;
     end process;
-    
+
     --ex
 
     ex_opcode <= ex_instruction(31 downto 26);
@@ -279,7 +280,7 @@ begin
              shamt => ex_shamt,
              funct => ex_funct,
              output => ex_alu_result);
-    
+
     hi_lo_registers : process(clock, reset)
     begin
         if (reset = '1') then
