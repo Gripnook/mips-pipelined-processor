@@ -4,7 +4,7 @@
 
         addi $16, $0, 2000      # Initializing the beginning of Data Section address in memory
         addi $23, $16, 0        # Address of current prime
-        addi $17, $0, 5         # Number of primes to generate
+        addi $17, $0, 10        # Number of primes to generate
         addi $18, $0, 0         # Number of primes generated so far
 
         addi $19, $0, 2         # 2 is a special case
