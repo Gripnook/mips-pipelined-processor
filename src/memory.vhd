@@ -19,13 +19,14 @@ architecture rtl of memory is
     type mem_type is array (0 to ram_size - 1) of std_logic_vector(31 downto 0);
     signal ram_block : mem_type;
 
-    type state_type is (ready, stall);
+    type state_type is (ready, stalled);
     signal state : state_type := ready;
 
+    constant miss_enable : std_logic := '0'; -- Set this constant to enable random cache misses
     constant miss_rate : real := 0.1;
     constant miss_penalty : integer := 10;
 
-    signal miss_countdown : integer;
+    signal miss_countdown : integer := 0;
 
 begin
 
@@ -38,9 +39,11 @@ begin
         if (falling_edge(clock)) then
             if (state = ready) then
                 waitrequest <= '0';
-                -- uniform(seed1, seed2, rand);
+                if (miss_enable = '1') then
+                    uniform(seed1, seed2, rand);
+                end if;
                 if (rand < miss_rate) then
-                    state <= stall;
+                    state <= stalled;
                     miss_countdown <= miss_penalty - 1;
                     waitrequest <= '1';
                 elsif (memread = '1') then
