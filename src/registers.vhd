@@ -31,7 +31,7 @@ begin
   if(reset = '1') then
 
     For i in 0 to 31 LOOP
-        ram_block(i) <= std_logic_vector(to_unsigned(0, 32));
+        registers(i) <= std_logic_vector(to_unsigned(0, 32));
     END LOOP;
 
   end if;
