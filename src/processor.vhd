@@ -53,13 +53,13 @@ architecture arch of processor is
     end component;
 
     -- pc
-    signal pc        : std_logic_vector(31 downto 0);
+    signal pc        : std_logic_vector(31 downto 0) := (others => '0');
     signal pc_enable : std_logic;
 
     -- if
     signal if_instruction : std_logic_vector(31 downto 0);
     signal if_npc         : std_logic_vector(31 downto 0);
-    signal if_address     : integer;
+    signal if_address     : integer := 0;
     signal if_read_en     : std_logic;
     signal if_waitrequest : std_logic;
 
@@ -106,9 +106,9 @@ architecture arch of processor is
     signal mem_instruction : std_logic_vector(31 downto 0);
     signal mem_opcode      : std_logic_vector(5 downto 0);
     signal mem_rt          : std_logic_vector(31 downto 0);
-    signal mem_alu_result  : std_logic_vector(31 downto 0);
+    signal mem_alu_result  : std_logic_vector(31 downto 0) := (others => '0');
     signal mem_memory_load : std_logic_vector(31 downto 0);
-    signal mem_address     : integer;
+    signal mem_address     : integer := 0;
     signal mem_write_en    : std_logic;
     signal mem_read_en     : std_logic;
     signal mem_waitrequest : std_logic;
@@ -151,7 +151,7 @@ begin
              memread => if_read_en,
              readdata => if_instruction,
              waitrequest => if_waitrequest);
-    if_address <= to_integer(unsigned(pc));
+    if_address <= to_integer(unsigned(pc(31 downto 2)));
 
     with id_branch_taken select if_npc <=
         std_logic_vector(unsigned(pc) + 4) when '0', -- predict taken
@@ -351,7 +351,7 @@ begin
              memread => mem_read_en,
              readdata => mem_memory_load,
              waitrequest => mem_waitrequest);
-    mem_address <= to_integer(unsigned(mem_alu_result));
+    mem_address <= to_integer(unsigned(mem_alu_result(31 downto 2)));
 
     with mem_opcode select mem_write_en <=
         '1' when OP_SW,
