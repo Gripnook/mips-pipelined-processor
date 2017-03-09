@@ -486,6 +486,21 @@ begin
         -----------------------------------------------------
         
         -----------------------------------------------------
+        ---------------------Test#5-5: div---------------------
+        --This test performs the div operation on the alu
+        report "Test#5-5: div";
+        a      <= std_logic_vector(to_signed(1, 32));
+        b      <= std_logic_vector(to_signed(-999999, 32));
+        opcode <= 6x"0";
+        shamt  <= 5x"0";
+        funct  <= 6x"1a";
+
+        wait for 1 ns;
+
+        assert_equal(alu_output, std_logic_vector(to_signed(1, 32) & to_signed(0, 32)), error_count);
+        -----------------------------------------------------
+        
+        -----------------------------------------------------
         ---------------------Test#6-1: slt---------------------
         --This test performs the slt operation on the alu
         report "Test#6-1: slt";
@@ -507,20 +522,20 @@ begin
         a      <= 32x"0";
         b      <= std_logic_vector(to_signed(-2147483648, 32));
         opcode <= 6x"0";
-        shamt  <= 5x"1";
+        shamt  <= 5x"0";
         funct  <= 6x"2a";
 
         wait for 1 ns;
 
         assert_equal(alu_output, 64x"0", error_count);
         -----------------------------------------------------
-
+        
         -----------------------------------------------------
         ---------------------Test#7: slti---------------------
         --This test performs the slti operation on the alu
         report "Test#7: slti";
-        a      <= 32x"0";
-        b      <= 32x"1";
+        a      <= 32x"539494";
+        b      <= std_logic_vector(to_signed(5555555,32));
         opcode <= 6x"a";
         shamt  <= 5x"0";
         funct  <= 6x"0";
@@ -659,9 +674,9 @@ begin
         report "Testing shift instructions";
 
         -----------------------------------------------------
-        ---------------------Test#16: sll---------------------
+        ---------------------Test#16-1: sll---------------------
         --This test performs the sll operation on the alu
-        report "Test#16: sll";
+        report "Test#16-1: sll";
         b      <= 32x"4";
         opcode <= 6x"0";
         shamt  <= 5x"1";
@@ -673,9 +688,37 @@ begin
         -----------------------------------------------------
 
         -----------------------------------------------------
-        ---------------------Test#17: srl---------------------
+        ---------------------Test#16-2: sll---------------------
+        --This test performs the sll operation on the alu
+        report "Test#16-2: sll";
+        b      <= 32x"fffffff0";
+        opcode <= 6x"0";
+        shamt  <= 5x"18";
+        funct  <= 6x"0";
+
+        wait for 1 ns;
+
+        assert_equal(alu_output, 32x"0" & 32x"f0000000", error_count);
+        -----------------------------------------------------
+        
+        -----------------------------------------------------
+        ---------------------Test#16-3: sll---------------------
+        --This test performs the sll operation on the alu
+        report "Test#16-3: sll";
+        b      <= 32x"feabffff";
+        opcode <= 6x"0";
+        shamt  <= 5x"8";
+        funct  <= 6x"0";
+
+        wait for 1 ns;
+
+        assert_equal(alu_output, 32x"0" & 32x"abffff00", error_count);
+        -----------------------------------------------------
+        
+        -----------------------------------------------------
+        ---------------------Test#17-1: srl---------------------
         --This test performs the srl operation on the alu
-        report "Test#17: srl";
+        report "Test#17-1: srl";
         b      <= 32x"4";
         opcode <= 6x"0";
         shamt  <= 5x"1";
@@ -685,19 +728,47 @@ begin
 
         assert_equal(alu_output, 64x"2", error_count);
         -----------------------------------------------------
+        
+        -----------------------------------------------------
+        ---------------------Test#17-2: srl---------------------
+        --This test performs the srl operation on the alu
+        report "Test#17-2: srl";
+        b      <= 32x"ffffffff";
+        opcode <= 6x"0";
+        shamt  <= 5x"4";
+        funct  <= 6x"2";
+
+        wait for 1 ns;
+
+        assert_equal(alu_output, 32x"0" & 32x"0fffffff", error_count);
+        -----------------------------------------------------
 
         -----------------------------------------------------
-        ---------------------Test#18: sra---------------------
+        ---------------------Test#18-1: sra---------------------
         --This test performs the sra operation on the alu
-        report "Test#18: sra";
-        b      <= 32x"4";
+        report "Test#18-1: sra";
+        b      <= 32x"ffffffff";
         opcode <= 6x"0";
         shamt  <= 5x"1";
         funct  <= 6x"3";
 
         wait for 1 ns;
 
-        assert_equal(alu_output, 64x"2", error_count);
+        assert_equal(alu_output, 32x"0" & 32x"ffffffff", error_count);
+        -----------------------------------------------------
+        
+        -----------------------------------------------------
+        ---------------------Test#18-2: sra---------------------
+        --This test performs the sra operation on the alu
+        report "Test#18-2: sra";
+        b      <= 32x"0fffffff";
+        opcode <= 6x"0";
+        shamt  <= 5x"4";
+        funct  <= 6x"3";
+
+        wait for 1 ns;
+
+        assert_equal(alu_output, 32x"0" & 32x"00ffffff", error_count);
         -----------------------------------------------------
 
         ----------------- Memory instructions----------------
