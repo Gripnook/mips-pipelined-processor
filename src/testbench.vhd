@@ -1,10 +1,10 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-entity processor_tb is
-end processor_tb;
+entity testbench is
+end testbench;
 
-architecture arch of processor_tb is
+architecture arch of testbench is
 
     component processor is
         port(clock : in std_logic;

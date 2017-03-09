@@ -1,5 +1,5 @@
 // memory data file (do not edit the following line - required for mem load use)
-// instance=/processor_tb/dut/data_cache/ram_block
+// instance=/testbench/dut/data_cache/ram_block
 // format=bin addressradix=h dataradix=b version=1.0 wordsperline=1 noaddress
 00000000000000000000000000000000
 00000000000000000000000000000000
