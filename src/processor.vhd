@@ -53,13 +53,13 @@ architecture arch of processor is
     end component;
 
     -- pc
-    signal pc        : std_logic_vector(31 downto 0);
+    signal pc        : std_logic_vector(31 downto 0) := (others => '0');
     signal pc_enable : std_logic;
 
     -- if
     signal if_instruction : std_logic_vector(31 downto 0);
     signal if_npc         : std_logic_vector(31 downto 0);
-    signal if_address     : integer;
+    signal if_address     : integer := 0;
     signal if_read_en     : std_logic;
     signal if_waitrequest : std_logic;
 
@@ -76,6 +76,8 @@ architecture arch of processor is
     signal id_npc           : std_logic_vector(31 downto 0);
     signal id_rs            : std_logic_vector(31 downto 0);
     signal id_rt            : std_logic_vector(31 downto 0);
+    signal id_rs_output     : std_logic_vector(31 downto 0);
+    signal id_rt_output     : std_logic_vector(31 downto 0);
     signal id_immediate     : std_logic_vector(31 downto 0);
     signal id_branch_taken  : std_logic;
     signal id_branch_target : std_logic_vector(31 downto 0);
@@ -104,9 +106,9 @@ architecture arch of processor is
     signal mem_instruction : std_logic_vector(31 downto 0);
     signal mem_opcode      : std_logic_vector(5 downto 0);
     signal mem_rt          : std_logic_vector(31 downto 0);
-    signal mem_alu_result  : std_logic_vector(31 downto 0);
+    signal mem_alu_result  : std_logic_vector(31 downto 0) := (others => '0');
     signal mem_memory_load : std_logic_vector(31 downto 0);
-    signal mem_address     : integer;
+    signal mem_address     : integer := 0;
     signal mem_write_en    : std_logic;
     signal mem_read_en     : std_logic;
     signal mem_waitrequest : std_logic;
@@ -121,6 +123,8 @@ architecture arch of processor is
     signal wb_write_en    : std_logic;
     signal wb_write_addr  : std_logic_vector(4 downto 0);
     signal wb_writedata   : std_logic_vector(31 downto 0);
+    signal wb_funct       : std_logic_vector(5 downto 0);
+    signal wb_opcode      : std_logic_vector(5 downto 0);
 
     -- stalls and flushes
     signal data_hazard_stall : std_logic;
@@ -149,7 +153,7 @@ begin
              memread => if_read_en,
              readdata => if_instruction,
              waitrequest => if_waitrequest);
-    if_address <= to_integer(unsigned(pc));
+    if_address <= to_integer(unsigned(pc(31 downto 2)));
 
     with id_branch_taken select if_npc <=
         std_logic_vector(unsigned(pc) + 4) when '0', -- predict taken
@@ -176,7 +180,6 @@ begin
     end process;
 
     -- id
-    -- TODO: JAL
 
     id_opcode <= id_instruction(31 downto 26);
     id_funct <= id_instruction(5 downto 0);
@@ -194,6 +197,11 @@ begin
              writedata => wb_writedata,
              rs => id_rs,
              rt => id_rt);
+
+    with id_opcode select id_rs_output <=
+        id_npc when OP_JAL,
+        id_rs when others;
+    id_rt_output <= id_rt;
 
     id_immediate <= std_logic_vector(resize(signed(id_instruction(15 downto 0)), 32)); -- sign extend
 
@@ -246,8 +254,8 @@ begin
                     ex_immediate   <= (others => '0');
                 else
                     ex_instruction <= id_instruction;
-                    ex_rs          <= id_rs;
-                    ex_rt          <= id_rt;
+                    ex_rs          <= id_rs_output;
+                    ex_rt          <= id_rt_output;
                     ex_immediate   <= id_immediate;
                 end if;
             end if;
@@ -345,7 +353,7 @@ begin
              memread => mem_read_en,
              readdata => mem_memory_load,
              waitrequest => mem_waitrequest);
-    mem_address <= to_integer(unsigned(mem_alu_result));
+    mem_address <= to_integer(unsigned(mem_alu_result(31 downto 2)));
 
     with mem_opcode select mem_write_en <=
         '1' when OP_SW,
@@ -379,7 +387,32 @@ begin
     end process;
 
     -- wb
-    -- TODO
+    wb_opcode <= wb_instruction(31 downto 26);
+    wb_funct  <= wb_instruction(5 downto 0);
+
+    process(wb_opcode, wb_funct) is
+      begin
+        case wb_opcode is
+          when OP_LW =>   wb_writedata <= wb_memory_load;
+                          wb_write_addr <= wb_instruction(20 downto 16);--rt
+                          wb_write_en <= '1';
+
+          when  OP_ADDI | OP_SLTI | OP_ANDI | OP_ORI  | OP_XORI | OP_LUI | OP_JAL  => wb_writedata <= wb_alu_result;
+                                                                                      wb_write_addr <= wb_instruction(20 downto 16);--rt
+                                                                                      wb_write_en <= '1';
+          when others => wb_write_en <= '0';
+
+        end case;
+
+        case wb_funct is
+          when  FUNCT_ADD | FUNCT_SUB | FUNCT_SLT | FUNCT_AND | FUNCT_OR | FUNCT_NOR | FUNCT_XOR | FUNCT_MFHI | FUNCT_MFLO  | FUNCT_SLL | FUNCT_SRL | FUNCT_SRA
+                                                                  =>  wb_writedata <= wb_alu_result;
+                                                                      wb_write_addr <= wb_instruction(15 downto 11);--rd
+                                                                      wb_write_en <= '1';
+          when others => wb_write_en <= '0';
+
+        end case;
+      end process;
 
     -- stalls and flushes
 
