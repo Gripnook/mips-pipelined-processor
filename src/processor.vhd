@@ -118,13 +118,14 @@ architecture arch of processor is
 
     -- wb
     signal wb_instruction : std_logic_vector(31 downto 0);
+    signal wb_opcode      : std_logic_vector(5 downto 0);
+    signal wb_rt_addr     : std_logic_vector(4 downto 0);
+    signal wb_rd_addr     : std_logic_vector(4 downto 0);
     signal wb_alu_result  : std_logic_vector(31 downto 0);
     signal wb_memory_load : std_logic_vector(31 downto 0);
     signal wb_write_en    : std_logic;
     signal wb_write_addr  : std_logic_vector(4 downto 0);
     signal wb_writedata   : std_logic_vector(31 downto 0);
-    signal wb_funct       : std_logic_vector(5 downto 0);
-    signal wb_opcode      : std_logic_vector(5 downto 0);
 
     -- stalls and flushes
     signal data_hazard_stall : std_logic;
@@ -387,32 +388,42 @@ begin
     end process;
 
     -- wb
-    wb_opcode <= wb_instruction(31 downto 26);
-    wb_funct  <= wb_instruction(5 downto 0);
 
-    process(wb_opcode, wb_funct) is
-      begin
+    wb_opcode  <= wb_instruction(31 downto 26);
+    wb_rt_addr <= wb_instruction(20 downto 16);
+    wb_rd_addr <= wb_instruction(15 downto 11);
+
+    write_en_mux : process(wb_opcode)
+    begin
         case wb_opcode is
-          when OP_LW =>   wb_writedata <= wb_memory_load;
-                          wb_write_addr <= wb_instruction(20 downto 16);--rt
-                          wb_write_en <= '1';
-
-          when  OP_ADDI | OP_SLTI | OP_ANDI | OP_ORI  | OP_XORI | OP_LUI | OP_JAL  => wb_writedata <= wb_alu_result;
-                                                                                      wb_write_addr <= wb_instruction(20 downto 16);--rt
-                                                                                      wb_write_en <= '1';
-          when others => wb_write_en <= '0';
-
+            when OP_SW | OP_BEQ | OP_BNE | OP_J =>
+                wb_write_en <= '0';
+            when others =>
+                wb_write_en <= '1';
         end case;
+    end process;
 
-        case wb_funct is
-          when  FUNCT_ADD | FUNCT_SUB | FUNCT_SLT | FUNCT_AND | FUNCT_OR | FUNCT_NOR | FUNCT_XOR | FUNCT_MFHI | FUNCT_MFLO  | FUNCT_SLL | FUNCT_SRL | FUNCT_SRA
-                                                                  =>  wb_writedata <= wb_alu_result;
-                                                                      wb_write_addr <= wb_instruction(15 downto 11);--rd
-                                                                      wb_write_en <= '1';
-          when others => wb_write_en <= '0';
-
+    write_addr_mux : process(wb_opcode, wb_rt_addr, wb_rd_addr)
+    begin
+        case wb_opcode is
+            when OP_R_TYPE =>
+                wb_write_addr <= wb_rd_addr;
+            when OP_JAL =>
+                wb_write_addr <= "11111"; -- $ra
+            when others =>
+                wb_write_addr <= wb_rt_addr;
         end case;
-      end process;
+    end process;
+
+    writedata_mux : process(wb_opcode, wb_alu_result, wb_memory_load)
+    begin
+        case wb_opcode is
+            when OP_LW =>
+                wb_writedata <= wb_memory_load;
+            when others =>
+                wb_writedata <= wb_alu_result;
+        end case;
+    end process;
 
     -- stalls and flushes
 
