@@ -269,7 +269,7 @@ begin
         end if;
     end process;
 
-    --ex
+    -- ex
 
     ex_opcode <= ex_instruction(31 downto 26);
     ex_funct  <= ex_instruction(5 downto 0);
