@@ -14,9 +14,17 @@ Branch resolution is implemented in the ID stage. A simple predict not-taken arc
 
 Data hazard detection is implemented through the use of an instruction decoding procedure. This procedure identifies two inputs and one output for each instruction, assigning the register $0 if one of these parameters is unused. A simple combinational block then checks if the inputs in ID match the outputs in EX, MEM, or WB, and stalls the processor accordingly. The register $0 is ignored in checking for data hazards.
 
+## Data Forwarding
+
+Coming soon...
+
 ## Memory Accesses
 
 Memory accesses occur on the falling edge of the clock in order to allow them to occur between pipeline stages. For data memory accesses, the waitrequest signal is used to stall the pipeline in the MEM stage until the access completes. For instruction memory accesses, the pipeline is stalled in the ID stage. The reason we are not stalling in IF is that branch hazards can occur at the same time as an instruction memory stall. If we were stalling in IF, the branch resolution would flush the IF/ID pipeline register and attempt to branch, but the IF stall would prevent the PC from being updated. Hence we would lose a branch. To prevent this, the ID stage is stalled as well.
+
+## Register File
+
+The register file was designed to perform reads on the falling edge and writes on the rising edge. This was done to allow for reads between pipeline stages. In addition, the HI and LO registers were included in the EX stage, which prevents data hazards as MFHI/MFLO read from these registers in EX and MULT/DIV write to them in EX as well.
 
 ## Optimizations
 Coming soon...
