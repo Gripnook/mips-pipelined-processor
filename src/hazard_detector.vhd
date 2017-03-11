@@ -1,6 +1,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use work.MIPS_instruction_set.all;
 
 entity hazard_detector is
     port(
@@ -26,21 +27,21 @@ architecture arch of hazard_detector is
         rd    := instr(15 downto 11);
         funct := instr(5 downto 0);
 
-        if (op = 6x"0") then            -- R-Types
-            if (funct = 6x"18" or funct = 6x"1a") then -- rs, rt format
-                ro  := 5x"0";
+        if (op = OP_R_TYPE) then        -- R-Types
+            if (funct = FUNCT_MULT or funct = FUNCT_DIV) then -- rs, rt format
+                ro  := "00000";
                 ri1 := rs;
                 ri2 := rt;
-            elsif (funct = 6x"10" or funct = 6x"12") then -- rd format
+            elsif (funct = FUNCT_MFHI or funct = FUNCT_MFLO) then -- rd format
                 ro  := rd;
-                ri1 := 5x"0";
-                ri2 := 5x"0";
-            elsif (funct = 6x"0" or funct = 6x"2" or funct = 6x"3") then -- rd, rt format
+                ri1 := "00000";
+                ri2 := "00000";
+            elsif (funct = FUNCT_SLL or funct = FUNCT_SRL or funct = FUNCT_SRA) then -- rd, rt format
                 ro  := rd;
                 ri1 := rt;
                 ri2 := rt;
-            elsif (funct = 6x"8") then  -- rs format
-                ro  := 5x"0";
+            elsif (funct = FUNCT_JR) then -- rs format
+                ro  := "00000";
                 ri1 := rs;
                 ri2 := rs;
             else                        -- rd, rs, rt format
@@ -48,25 +49,25 @@ architecture arch of hazard_detector is
                 ri1 := rs;
                 ri2 := rt;
             end if;
-        elsif (op = 6x"2") then         -- J-Types, j
-            ro  := 5x"0";
-            ri1 := 5x"0";
-            ri2 := 5x"0";
-        elsif (op = 6x"3") then         -- jal
-            ro  := 5x"1f";
-            ri1 := 5x"0";
-            ri2 := 5x"0";
+        elsif (op = OP_J) then          -- J-Types
+            ro  := "00000";
+            ri1 := "00000";
+            ri2 := "00000";
+        elsif (op = OP_JAL) then
+            ro  := "11111";
+            ri1 := "00000";
+            ri2 := "00000";
         else                            -- I-Types
-            if (op = 6x"f") then        -- rt format
+            if (op = OP_LUI) then       -- rt format
                 ro  := rt;
-                ri1 := 5x"0";
-                ri2 := 5x"0";
-            elsif (op = 6x"4" or op = 6x"5") then -- beq, bne
-                ro  := 5x"0";
+                ri1 := "00000";
+                ri2 := "00000";
+            elsif (op = OP_BEQ or op = OP_BNE) then
+                ro  := "00000";
                 ri1 := rs;
                 ri2 := rt;
-            elsif (op = 6x"2b") then    -- store
-                ro  := 5x"0";
+            elsif (op = OP_SW) then
+                ro  := "00000";
                 ri1 := rt;
                 ri2 := rs;
             else                        -- rt, rs format
@@ -100,17 +101,17 @@ begin
 
         stall <= '0';                   -- Do not stall
 
-        if (o2 /= 5x"0") then           -- Read-After-Write hazards detection (True Dependence)
+        if (o2 /= "00000") then         -- Read-After-Write hazards detection (True Dependence)
             if (o2 = i11 or o2 = i12) then -- 3 stall cycles
                 stall <= '1';
             end if;
         end if;
-        if (o3 /= 5x"0") then
+        if (o3 /= "00000") then
             if (o3 = i11 or o3 = i12) then -- 2 stall cycles
                 stall <= '1';
             end if;
         end if;
-        if (o4 /= 5x"0") then
+        if (o4 /= "00000") then
             if (o4 = i11 or o4 = i12) then -- 1 stall cycle
                 stall <= '1';
             end if;
