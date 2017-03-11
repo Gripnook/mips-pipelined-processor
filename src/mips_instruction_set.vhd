@@ -55,31 +55,31 @@ package body mips_instruction_set is
         rd    := instr(15 downto 11);
         funct := instr(5 downto 0);
 
-        if (op = OP_R_TYPE) then        -- R-Types
-            if (funct = FUNCT_MULT or funct = FUNCT_DIV) then -- rs, rt format
+        if (op = OP_R_TYPE) then
+            if (funct = FUNCT_MULT or funct = FUNCT_DIV) then
                 ri1 := rs;
                 ri2 := rt;
-            elsif (funct = FUNCT_MFHI or funct = FUNCT_MFLO) then -- rd format
+            elsif (funct = FUNCT_MFHI or funct = FUNCT_MFLO) then
                 ri1 := "00000";
                 ri2 := "00000";
-            elsif (funct = FUNCT_SLL or funct = FUNCT_SRL or funct = FUNCT_SRA) then -- rd, rt format
+            elsif (funct = FUNCT_SLL or funct = FUNCT_SRL or funct = FUNCT_SRA) then
                 ri1 := rt;
                 ri2 := rt;
-            elsif (funct = FUNCT_JR) then -- rs format
+            elsif (funct = FUNCT_JR) then
                 ri1 := rs;
                 ri2 := rs;
-            else                        -- rd, rs, rt format
+            else
                 ri1 := rs;
                 ri2 := rt;
             end if;
-        elsif (op = OP_J) then          -- J-Types
+        elsif (op = OP_J) then
             ri1 := "00000";
             ri2 := "00000";
         elsif (op = OP_JAL) then
             ri1 := "00000";
             ri2 := "00000";
-        else                            -- I-Types
-            if (op = OP_LUI) then       -- rt format
+        else
+            if (op = OP_LUI) then
                 ri1 := "00000";
                 ri2 := "00000";
             elsif (op = OP_BEQ or op = OP_BNE) then
@@ -88,7 +88,7 @@ package body mips_instruction_set is
             elsif (op = OP_SW) then
                 ri1 := rt;
                 ri2 := rs;
-            else                        -- rt, rs format
+            else
                 ri1 := rs;
                 ri2 := rs;
             end if;
@@ -107,30 +107,30 @@ package body mips_instruction_set is
         rd    := instr(15 downto 11);
         funct := instr(5 downto 0);
 
-        if (op = OP_R_TYPE) then        -- R-Types
-            if (funct = FUNCT_MULT or funct = FUNCT_DIV) then -- rs, rt format
+        if (op = OP_R_TYPE) then
+            if (funct = FUNCT_MULT or funct = FUNCT_DIV) then
                 ro := "00000";
-            elsif (funct = FUNCT_MFHI or funct = FUNCT_MFLO) then -- rd format
+            elsif (funct = FUNCT_MFHI or funct = FUNCT_MFLO) then
                 ro := rd;
-            elsif (funct = FUNCT_SLL or funct = FUNCT_SRL or funct = FUNCT_SRA) then -- rd, rt format
+            elsif (funct = FUNCT_SLL or funct = FUNCT_SRL or funct = FUNCT_SRA) then
                 ro := rd;
-            elsif (funct = FUNCT_JR) then -- rs format
+            elsif (funct = FUNCT_JR) then
                 ro := "00000";
-            else                        -- rd, rs, rt format
+            else
                 ro := rd;
             end if;
-        elsif (op = OP_J) then          -- J-Types
+        elsif (op = OP_J) then
             ro := "00000";
         elsif (op = OP_JAL) then
             ro := "11111";
-        else                            -- I-Types
-            if (op = OP_LUI) then       -- rt format
+        else
+            if (op = OP_LUI) then
                 ro := rt;
             elsif (op = OP_BEQ or op = OP_BNE) then
                 ro := "00000";
             elsif (op = OP_SW) then
                 ro := "00000";
-            else                        -- rt, rs format
+            else
                 ro := rt;
             end if;
         end if;
