@@ -16,7 +16,7 @@ architecture arch of processor is
         generic(ram_size : integer := 8192);
         port(clock       : in  std_logic;
              writedata   : in  std_logic_vector(31 downto 0) := (others => '0');
-             address     : in  integer range 0 to ram_size - 1;
+             address     : in  integer;
              memwrite    : in  std_logic := '0';
              memread     : in  std_logic;
              readdata    : out std_logic_vector(31 downto 0);
