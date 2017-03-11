@@ -29,10 +29,14 @@ begin
         variable i31, i32, i41, i42 : std_logic_vector(4 downto 0);
 
     begin
-        decode_instruction(if_id, o1, i11, i12);
-        decode_instruction(id_ex, o2, i21, i22);
-        decode_instruction(ex_mem, o3, i31, i32);
-        decode_instruction(mem_wb, o4, i41, i42);
+        decode_instruction_input(if_id, i11, i12);
+        decode_instruction_input(id_ex, i21, i22);
+        decode_instruction_input(ex_mem, i31, i32);
+        decode_instruction_input(mem_wb, i41, i42);
+        decode_instruction_output(if_id, o1);
+        decode_instruction_output(id_ex, o2);
+        decode_instruction_output(ex_mem, o3);
+        decode_instruction_output(mem_wb, o4);
 
         stall <= '0';                   -- Do not stall
 
