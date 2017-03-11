@@ -211,13 +211,13 @@ begin
         id_rs when others;
     id_rt_output <= id_rt;
 
-    sign_extend : process(id_opcode)
+    immediate_extend : process(id_opcode)
     begin
         case id_opcode is
             when OP_ORI | OP_ANDI | OP_XORI =>
-                id_immediate <= x"0000" & id_instruction(15 downto 0);
+                id_immediate <= x"0000" & id_instruction(15 downto 0); -- zero extend
             when others =>
-                id_immediate <= std_logic_vector(resize(signed(id_instruction(15 downto 0)), 32));
+                id_immediate <= std_logic_vector(resize(signed(id_instruction(15 downto 0)), 32)); -- sign extend
         end case;
     end process;
 
