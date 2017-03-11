@@ -211,7 +211,15 @@ begin
         id_rs when others;
     id_rt_output <= id_rt;
 
-    id_immediate <= std_logic_vector(resize(signed(id_instruction(15 downto 0)), 32)); -- sign extend
+    sign_extend : process(id_opcode)
+    begin
+        case id_opcode is
+            when OP_ORI | OP_ANDI | OP_XORI =>
+                id_immediate <= x"0000" & id_instruction(15 downto 0);
+            when others =>
+                id_immediate <= std_logic_vector(resize(signed(id_instruction(15 downto 0)), 32));
+        end case;
+    end process;
 
     branch_resolution : process(id_opcode, id_funct, id_target, id_npc, id_rs, id_rt, id_immediate)
     begin
