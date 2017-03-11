@@ -11,7 +11,7 @@ proc AddWaves {} {
 vlib work
 
 ;# Compile components
-vcom -2008 mips_isa.vhd
+vcom -2008 mips_instruction_set.vhd
 vcom -2008 alu.vhd
 vcom -2008 alu_tb.vhd
 

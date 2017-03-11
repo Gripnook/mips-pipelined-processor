@@ -2,7 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-package MIPS_instruction_set is
+package mips_instruction_set is
     constant OP_R_TYPE : std_logic_vector(5 downto 0) := "000000";
     constant OP_ADDI   : std_logic_vector(5 downto 0) := "001000";
     constant OP_SLTI   : std_logic_vector(5 downto 0) := "001010";

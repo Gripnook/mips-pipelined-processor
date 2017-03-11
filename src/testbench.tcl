@@ -24,13 +24,13 @@ proc AddWaves {} {
 vlib work
 
 # Compile components
-vcom -2008 mips_isa.vhd
-vcom -2008 memory.vhd
-vcom -2008 registers.vhd
-vcom -2008 alu.vhd
-vcom -2008 hazard_detector.vhd
-vcom -2008 processor.vhd
-vcom -2008 testbench.vhd
+vcom mips_instruction_set.vhd
+vcom memory.vhd
+vcom registers.vhd
+vcom alu.vhd
+vcom hazard_detector.vhd
+vcom processor.vhd
+vcom testbench.vhd
 
 # Start simulation
 vsim -t ps testbench
