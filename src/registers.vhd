@@ -15,13 +15,11 @@ entity registers is
 end registers;
 
 architecture arch of registers is
-
     type reg_type is array (0 to 31) of std_logic_vector(31 downto 0);
     signal registers : reg_type;
 
 begin
-
-    registers(0) <= (others => '0'); -- $0 is hard wired to 0
+    registers(0) <= (others => '0');    -- $0 is hard wired to 0
 
     process(clock, reset)
     begin

@@ -424,7 +424,7 @@ begin
 
         assert_equal(alu_output, std_logic_vector(to_signed(81795, 32) & to_signed(5509, 32)), error_count);
         -----------------------------------------------------
-        
+
         -----------------------------------------------------
         ---------------------Test#5-2: div---------------------
         --This test performs the div operation on the alu
@@ -439,7 +439,7 @@ begin
 
         assert_equal(alu_output, std_logic_vector(to_signed(81795, 32) & to_signed(-5509, 32)), error_count);
         -----------------------------------------------------
-        
+
         -----------------------------------------------------
         ---------------------Test#5-3: div---------------------
         --This test performs the div operation on the alu
@@ -454,7 +454,7 @@ begin
 
         assert_equal(alu_output, std_logic_vector(to_signed(-81795, 32) & to_signed(-5509, 32)), error_count);
         -----------------------------------------------------
-        
+
         -----------------------------------------------------
         ---------------------Test#5-4: div---------------------
         --This test performs the div operation on the alu
@@ -469,7 +469,7 @@ begin
 
         assert_equal(alu_output, std_logic_vector(to_signed(2, 32) & to_signed(-2, 32)), error_count);
         -----------------------------------------------------
-        
+
         -----------------------------------------------------
         ---------------------Test#5-5: div---------------------
         --This test performs the div operation on the alu
@@ -484,7 +484,7 @@ begin
 
         assert_equal(alu_output, std_logic_vector(to_signed(-2, 32) & to_signed(-2, 32)), error_count);
         -----------------------------------------------------
-        
+
         -----------------------------------------------------
         ---------------------Test#5-5: div---------------------
         --This test performs the div operation on the alu
@@ -499,7 +499,7 @@ begin
 
         assert_equal(alu_output, std_logic_vector(to_signed(1, 32) & to_signed(0, 32)), error_count);
         -----------------------------------------------------
-        
+
         -----------------------------------------------------
         ---------------------Test#6-1: slt---------------------
         --This test performs the slt operation on the alu
@@ -514,7 +514,7 @@ begin
 
         assert_equal(alu_output, 64x"1", error_count);
         -----------------------------------------------------
-        
+
         -----------------------------------------------------
         ---------------------Test#6-2: slt---------------------
         --This test performs the slt operation on the alu
@@ -529,13 +529,13 @@ begin
 
         assert_equal(alu_output, 64x"0", error_count);
         -----------------------------------------------------
-        
+
         -----------------------------------------------------
         ---------------------Test#7: slti---------------------
         --This test performs the slti operation on the alu
         report "Test#7: slti";
         a      <= 32x"539494";
-        b      <= std_logic_vector(to_signed(5555555,32));
+        b      <= std_logic_vector(to_signed(5555555, 32));
         opcode <= 6x"a";
         shamt  <= 5x"0";
         funct  <= 6x"0";
@@ -700,7 +700,7 @@ begin
 
         assert_equal(alu_output, 32x"0" & 32x"f0000000", error_count);
         -----------------------------------------------------
-        
+
         -----------------------------------------------------
         ---------------------Test#16-3: sll---------------------
         --This test performs the sll operation on the alu
@@ -714,7 +714,7 @@ begin
 
         assert_equal(alu_output, 32x"0" & 32x"abffff00", error_count);
         -----------------------------------------------------
-        
+
         -----------------------------------------------------
         ---------------------Test#17-1: srl---------------------
         --This test performs the srl operation on the alu
@@ -728,7 +728,7 @@ begin
 
         assert_equal(alu_output, 64x"2", error_count);
         -----------------------------------------------------
-        
+
         -----------------------------------------------------
         ---------------------Test#17-2: srl---------------------
         --This test performs the srl operation on the alu
@@ -756,7 +756,7 @@ begin
 
         assert_equal(alu_output, 32x"0" & 32x"ffffffff", error_count);
         -----------------------------------------------------
-        
+
         -----------------------------------------------------
         ---------------------Test#18-2: sra---------------------
         --This test performs the sra operation on the alu

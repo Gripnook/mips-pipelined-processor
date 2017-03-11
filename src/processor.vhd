@@ -17,7 +17,7 @@ architecture arch of processor is
         port(clock       : in  std_logic;
              writedata   : in  std_logic_vector(31 downto 0) := (others => '0');
              address     : in  integer;
-             memwrite    : in  std_logic := '0';
+             memwrite    : in  std_logic                     := '0';
              memread     : in  std_logic;
              readdata    : out std_logic_vector(31 downto 0);
              waitrequest : out std_logic);
@@ -108,7 +108,7 @@ architecture arch of processor is
     signal mem_rt          : std_logic_vector(31 downto 0);
     signal mem_alu_result  : std_logic_vector(31 downto 0) := (others => '0');
     signal mem_memory_load : std_logic_vector(31 downto 0);
-    signal mem_address     : integer := 0;
+    signal mem_address     : integer                       := 0;
     signal mem_write_en    : std_logic;
     signal mem_read_en     : std_logic;
     signal mem_waitrequest : std_logic;
@@ -154,12 +154,12 @@ begin
     -- if
 
     instruction_cache : memory
-    generic map(ram_size => 1024)
-    port map(clock => clock,
-             address => if_address,
-             memread => if_read_en,
-             readdata => if_instruction,
-             waitrequest => if_waitrequest);
+        generic map(ram_size => 1024)
+        port map(clock       => clock,
+                 address     => if_address,
+                 memread     => if_read_en,
+                 readdata    => if_instruction,
+                 waitrequest => if_waitrequest);
     if_address <= to_integer(unsigned(pc(31 downto 2)));
     if_read_en <= '1';
 
@@ -189,22 +189,22 @@ begin
 
     -- id
 
-    id_opcode <= id_instruction(31 downto 26);
-    id_funct <= id_instruction(5 downto 0);
-    id_target <= id_instruction(25 downto 0);
+    id_opcode  <= id_instruction(31 downto 26);
+    id_funct   <= id_instruction(5 downto 0);
+    id_target  <= id_instruction(25 downto 0);
     id_rs_addr <= id_instruction(25 downto 21);
     id_rt_addr <= id_instruction(20 downto 16);
 
     register_file : registers
-    port map(clock => clock,
-             reset => reset,
-             rs_addr => id_rs_addr,
-             rt_addr => id_rt_addr,
-             write_en => wb_write_en,
-             write_addr => wb_write_addr,
-             writedata => wb_writedata,
-             rs => id_rs,
-             rt => id_rt);
+        port map(clock      => clock,
+                 reset      => reset,
+                 rs_addr    => id_rs_addr,
+                 rt_addr    => id_rt_addr,
+                 write_en   => wb_write_en,
+                 write_addr => wb_write_addr,
+                 writedata  => wb_writedata,
+                 rs         => id_rs,
+                 rt         => id_rt);
 
     with id_opcode select id_rs_output <=
         id_npc when OP_JAL,
@@ -215,28 +215,28 @@ begin
 
     branch_resolution : process(id_opcode, id_funct, id_target, id_npc, id_rs, id_rt, id_immediate)
     begin
-        id_branch_taken <= '0';
+        id_branch_taken  <= '0';
         id_branch_target <= (others => '0');
         case id_opcode is
             when OP_R_TYPE =>
                 if (id_funct = FUNCT_JR) then
-                    id_branch_taken <= '1';
+                    id_branch_taken  <= '1';
                     id_branch_target <= id_rs;
                 end if;
             when OP_J =>
-                id_branch_taken <= '1';
+                id_branch_taken  <= '1';
                 id_branch_target <= id_npc(31 downto 28) & id_target & "00";
             when OP_JAL =>
-                id_branch_taken <= '1';
+                id_branch_taken  <= '1';
                 id_branch_target <= id_npc(31 downto 28) & id_target & "00";
             when OP_BEQ =>
                 if (id_rs = id_rt) then
-                    id_branch_taken <= '1';
+                    id_branch_taken  <= '1';
                     id_branch_target <= std_logic_vector(signed(id_npc) + signed(id_immediate(29 downto 0) & "00"));
                 end if;
             when OP_BNE =>
                 if (id_rs /= id_rt) then
-                    id_branch_taken <= '1';
+                    id_branch_taken  <= '1';
                     id_branch_target <= std_logic_vector(signed(id_npc) + signed(id_immediate(29 downto 0) & "00"));
                 end if;
             when others =>
@@ -282,21 +282,21 @@ begin
     end process;
     alu_input_2 : process(ex_opcode, ex_rt, ex_immediate)
     begin
-    	case ex_opcode is
-    		when OP_R_TYPE =>
+        case ex_opcode is
+            when OP_R_TYPE =>
                 ex_b <= ex_rt;
-    		when others =>
+            when others =>
                 ex_b <= ex_immediate;
-    	end case;
+        end case;
     end process;
 
     ex_alu : alu
-    port map(a => ex_a,
-             b => ex_b,
-             opcode => ex_opcode,
-             shamt => ex_shamt,
-             funct => ex_funct,
-             output => ex_alu_result);
+        port map(a      => ex_a,
+                 b      => ex_b,
+                 opcode => ex_opcode,
+                 shamt  => ex_shamt,
+                 funct  => ex_funct,
+                 output => ex_alu_result);
 
     hi_lo_registers : process(clock, reset)
     begin
@@ -353,14 +353,14 @@ begin
     mem_opcode <= mem_instruction(31 downto 26);
 
     data_cache : memory
-    generic map(ram_size => 8192)
-    port map(clock => clock,
-             writedata => mem_rt,
-             address => mem_address,
-             memwrite => mem_write_en,
-             memread => mem_read_en,
-             readdata => mem_memory_load,
-             waitrequest => mem_waitrequest);
+        generic map(ram_size => 8192)
+        port map(clock       => clock,
+                 writedata   => mem_rt,
+                 address     => mem_address,
+                 memwrite    => mem_write_en,
+                 memread     => mem_read_en,
+                 readdata    => mem_memory_load,
+                 waitrequest => mem_waitrequest);
     mem_address <= to_integer(unsigned(mem_alu_result(31 downto 2)));
 
     with mem_opcode select mem_write_en <=
@@ -403,7 +403,7 @@ begin
 
     write_en_mux : process(wb_opcode, wb_funct)
     begin
-        wb_write_en <= '1'; -- default value
+        wb_write_en <= '1';             -- default value
         case wb_opcode is
             when OP_R_TYPE =>
                 case wb_funct is
@@ -444,11 +444,11 @@ begin
     -- stalls and flushes
 
     data_hazard_detector : hazard_detector
-    port map(if_id => id_instruction,
-             id_ex => ex_instruction,
-             ex_mem => mem_instruction,
-             mem_wb => wb_instruction,
-             stall => data_hazard_stall);
+        port map(if_id  => id_instruction,
+                 id_ex  => ex_instruction,
+                 ex_mem => mem_instruction,
+                 mem_wb => wb_instruction,
+                 stall  => data_hazard_stall);
 
     pc_enable     <= (not if_waitrequest) and (not mem_waitrequest) and (not data_hazard_stall);
     if_id_enable  <= (not if_waitrequest) and (not mem_waitrequest) and (not data_hazard_stall);
@@ -466,7 +466,7 @@ begin
     begin
         if (reset = '1') then
             memory_access_stall_count <= 0;
-            data_hazard_stall_count <= 0;
+            data_hazard_stall_count   <= 0;
             branch_hazard_stall_count <= 0;
         elsif (rising_edge(clock)) then
             if (if_waitrequest = '1' or mem_waitrequest = '1') then
