@@ -10,6 +10,7 @@ proc AddWaves {} {
 vlib work
 
 ;# Compile components
+vcom -2008 mips_isa.vhd
 vcom -2008 hazard_detector.vhd
 vcom -2008 hazard_detector_tb.vhd
 

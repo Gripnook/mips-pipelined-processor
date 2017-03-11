@@ -1,7 +1,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use work.MIPS_encoding.all;
+use work.MIPS_instruction_set.all;
 
 entity processor is
     port(clock : in std_logic;
