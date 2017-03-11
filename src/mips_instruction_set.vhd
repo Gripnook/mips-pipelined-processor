@@ -33,4 +33,76 @@ package mips_instruction_set is
     constant FUNCT_SRA  : std_logic_vector(5 downto 0) := "000011";
     constant FUNCT_JR   : std_logic_vector(5 downto 0) := "001000";
 
+    procedure decode_instruction(instr : in  std_logic_vector(31 downto 0);
+                                 ro    : out std_logic_vector(4 downto 0);
+                                 ri1   : out std_logic_vector(4 downto 0);
+                                 ri2   : out std_logic_vector(4 downto 0));
 end package;
+
+package body mips_instruction_set is
+    procedure decode_instruction(instr : in  std_logic_vector(31 downto 0);
+                                 ro    : out std_logic_vector(4 downto 0);
+                                 ri1   : out std_logic_vector(4 downto 0);
+                                 ri2   : out std_logic_vector(4 downto 0)) is
+        variable op         : std_logic_vector(5 downto 0);
+        variable rs, rt, rd : std_logic_vector(4 downto 0);
+        variable funct      : std_logic_vector(5 downto 0);
+    begin
+        op    := instr(31 downto 26);
+        rs    := instr(25 downto 21);
+        rt    := instr(20 downto 16);
+        rd    := instr(15 downto 11);
+        funct := instr(5 downto 0);
+
+        if (op = OP_R_TYPE) then        -- R-Types
+            if (funct = FUNCT_MULT or funct = FUNCT_DIV) then -- rs, rt format
+                ro  := "00000";
+                ri1 := rs;
+                ri2 := rt;
+            elsif (funct = FUNCT_MFHI or funct = FUNCT_MFLO) then -- rd format
+                ro  := rd;
+                ri1 := "00000";
+                ri2 := "00000";
+            elsif (funct = FUNCT_SLL or funct = FUNCT_SRL or funct = FUNCT_SRA) then -- rd, rt format
+                ro  := rd;
+                ri1 := rt;
+                ri2 := rt;
+            elsif (funct = FUNCT_JR) then -- rs format
+                ro  := "00000";
+                ri1 := rs;
+                ri2 := rs;
+            else                        -- rd, rs, rt format
+                ro  := rd;
+                ri1 := rs;
+                ri2 := rt;
+            end if;
+        elsif (op = OP_J) then          -- J-Types
+            ro  := "00000";
+            ri1 := "00000";
+            ri2 := "00000";
+        elsif (op = OP_JAL) then
+            ro  := "11111";
+            ri1 := "00000";
+            ri2 := "00000";
+        else                            -- I-Types
+            if (op = OP_LUI) then       -- rt format
+                ro  := rt;
+                ri1 := "00000";
+                ri2 := "00000";
+            elsif (op = OP_BEQ or op = OP_BNE) then
+                ro  := "00000";
+                ri1 := rs;
+                ri2 := rt;
+            elsif (op = OP_SW) then
+                ro  := "00000";
+                ri1 := rt;
+                ri2 := rs;
+            else                        -- rt, rs format
+                ro  := rt;
+                ri1 := rs;
+                ri2 := rs;
+            end if;
+        end if;
+    end procedure decode_instruction;
+
+end mips_instruction_set;
