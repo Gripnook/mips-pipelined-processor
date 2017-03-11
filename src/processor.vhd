@@ -119,6 +119,7 @@ architecture arch of processor is
     -- wb
     signal wb_instruction : std_logic_vector(31 downto 0);
     signal wb_opcode      : std_logic_vector(5 downto 0);
+    signal wb_funct       : std_logic_vector(5 downto 0);
     signal wb_rt_addr     : std_logic_vector(4 downto 0);
     signal wb_rd_addr     : std_logic_vector(4 downto 0);
     signal wb_alu_result  : std_logic_vector(31 downto 0);
@@ -396,16 +397,25 @@ begin
     -- wb
 
     wb_opcode  <= wb_instruction(31 downto 26);
+    wb_funct   <= wb_instruction(5 downto 0);
     wb_rt_addr <= wb_instruction(20 downto 16);
     wb_rd_addr <= wb_instruction(15 downto 11);
 
-    write_en_mux : process(wb_opcode)
+    write_en_mux : process(wb_opcode, wb_funct)
     begin
+        wb_write_en <= '1'; -- default value
         case wb_opcode is
+            when OP_R_TYPE =>
+                case wb_funct is
+                    when FUNCT_MULT | FUNCT_DIV | FUNCT_JR =>
+                        wb_write_en <= '0';
+                    when others =>
+                        null;
+                end case;
             when OP_SW | OP_BEQ | OP_BNE | OP_J =>
                 wb_write_en <= '0';
             when others =>
-                wb_write_en <= '1';
+                null;
         end case;
     end process;
 
