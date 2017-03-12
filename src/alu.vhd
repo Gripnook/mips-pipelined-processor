@@ -27,8 +27,11 @@ begin
                     when FUNCT_MULT =>
                         output <= std_logic_vector(signed(a) * signed(b));
                     when FUNCT_DIV =>
-                        output(63 downto 32) <= std_logic_vector(signed(a) rem signed(b));
-                        output(31 downto 0)  <= std_logic_vector(signed(a) / signed(b));
+                        -- This is needed to avoid warnings caused by signal path differences
+                        if (b /= x"00000000") then
+                            output(63 downto 32) <= std_logic_vector(signed(a) rem signed(b));
+                            output(31 downto 0)  <= std_logic_vector(signed(a) / signed(b));
+                        end if;
                     when FUNCT_SLT =>
                         if signed(a) < signed(b) then
                             output(31 downto 0) <= std_logic_vector(to_signed(1, 32));

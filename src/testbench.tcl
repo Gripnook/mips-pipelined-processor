@@ -15,6 +15,18 @@ proc AddWaves {} {
     add wave -position end sim:/testbench/dut/if_waitrequest
     add wave -position end sim:/testbench/dut/mem_waitrequest
     add wave -position end sim:/testbench/dut/data_hazard_stall
+    # Forwarding signals
+    add wave -position end sim:/testbench/dut/fwd_id_rs
+    add wave -position end sim:/testbench/dut/fwd_id_rt
+    add wave -position end sim:/testbench/dut/fwd_ex_rs
+    add wave -position end sim:/testbench/dut/fwd_ex_rt
+    add wave -position end sim:/testbench/dut/fwd_mem_rt
+    add wave -position end sim:/testbench/dut/fwd_ex_ready
+    add wave -position end sim:/testbench/dut/fwd_ex_result
+    add wave -position end sim:/testbench/dut/fwd_mem_ready
+    add wave -position end sim:/testbench/dut/fwd_mem_result
+    add wave -position end sim:/testbench/dut/fwd_wb_ready
+    add wave -position end sim:/testbench/dut/fwd_wb_result
     # Performance counters
     add wave -position end -radix 10 sim:/testbench/dut/memory_access_stall_count
     add wave -position end -radix 10 sim:/testbench/dut/data_hazard_stall_count

@@ -75,7 +75,9 @@ architecture arch of processor is
     signal id_rt_addr       : std_logic_vector(4 downto 0);
     signal id_npc           : std_logic_vector(31 downto 0);
     signal id_rs            : std_logic_vector(31 downto 0);
+    signal id_rs_fwd        : std_logic_vector(31 downto 0);
     signal id_rt            : std_logic_vector(31 downto 0);
+    signal id_rt_fwd        : std_logic_vector(31 downto 0);
     signal id_rs_output     : std_logic_vector(31 downto 0);
     signal id_rt_output     : std_logic_vector(31 downto 0);
     signal id_immediate     : std_logic_vector(31 downto 0);
@@ -91,7 +93,9 @@ architecture arch of processor is
     signal ex_funct       : std_logic_vector(5 downto 0);
     signal ex_shamt       : std_logic_vector(4 downto 0);
     signal ex_rs          : std_logic_vector(31 downto 0);
+    signal ex_rs_fwd      : std_logic_vector(31 downto 0);
     signal ex_rt          : std_logic_vector(31 downto 0);
+    signal ex_rt_fwd      : std_logic_vector(31 downto 0);
     signal ex_immediate   : std_logic_vector(31 downto 0);
     signal ex_alu_result  : std_logic_vector(63 downto 0); -- 64 bit for mult and div results
     signal ex_a, ex_b     : std_logic_vector(31 downto 0);
@@ -106,6 +110,7 @@ architecture arch of processor is
     signal mem_instruction : std_logic_vector(31 downto 0);
     signal mem_opcode      : std_logic_vector(5 downto 0);
     signal mem_rt          : std_logic_vector(31 downto 0);
+    signal mem_rt_fwd      : std_logic_vector(31 downto 0);
     signal mem_alu_result  : std_logic_vector(31 downto 0) := (others => '0');
     signal mem_memory_load : std_logic_vector(31 downto 0);
     signal mem_address     : integer                       := 0;
@@ -130,6 +135,20 @@ architecture arch of processor is
 
     -- stalls and flushes
     signal data_hazard_stall : std_logic;
+
+    -- forwarding
+    signal fwd_id_rs  : std_logic_vector(4 downto 0);
+    signal fwd_id_rt  : std_logic_vector(4 downto 0);
+    signal fwd_ex_rs  : std_logic_vector(4 downto 0);
+    signal fwd_ex_rt  : std_logic_vector(4 downto 0);
+    signal fwd_mem_rt : std_logic_vector(4 downto 0);
+
+    signal fwd_ex_result  : std_logic_vector(4 downto 0);
+    signal fwd_ex_ready   : std_logic;
+    signal fwd_mem_result : std_logic_vector(4 downto 0);
+    signal fwd_mem_ready  : std_logic;
+    signal fwd_wb_result  : std_logic_vector(4 downto 0);
+    signal fwd_wb_ready   : std_logic;
 
     -- performance counters
     signal memory_access_stall_count : integer := 0;
@@ -206,10 +225,40 @@ begin
                  rs         => id_rs,
                  rt         => id_rt);
 
+    id_forwarding_rs : process(id_rs, fwd_id_rs, fwd_ex_ready, fwd_ex_result, ex_rs, fwd_mem_ready,
+                               fwd_mem_result, mem_alu_result, fwd_wb_ready, fwd_wb_result, wb_writedata)
+    begin
+        id_rs_fwd <= id_rs; -- default output
+        if (fwd_id_rs /= "00000") then
+            if (fwd_ex_ready = '1' and fwd_id_rs = fwd_ex_result) then
+                id_rs_fwd <= ex_rs; -- special case for JAL
+            elsif (fwd_mem_ready = '1' and fwd_id_rs = fwd_mem_result) then
+                id_rs_fwd <= mem_alu_result;
+            elsif (fwd_wb_ready = '1' and fwd_id_rs = fwd_wb_result) then
+                id_rs_fwd <= wb_writedata;
+            end if;
+        end if;
+    end process;
+
+    id_forwarding_rt : process(id_rt, fwd_id_rt, fwd_ex_ready, fwd_ex_result, ex_rs, fwd_mem_ready,
+                               fwd_mem_result, mem_alu_result, fwd_wb_ready, fwd_wb_result, wb_writedata)
+    begin
+        id_rt_fwd <= id_rt; -- default output
+        if (fwd_id_rt /= "00000") then
+            if (fwd_ex_ready = '1' and fwd_id_rt = fwd_ex_result) then
+                id_rt_fwd <= ex_rs; -- special case for JAL
+            elsif (fwd_mem_ready = '1' and fwd_id_rt = fwd_mem_result) then
+                id_rt_fwd <= mem_alu_result;
+            elsif (fwd_wb_ready = '1' and fwd_id_rt = fwd_wb_result) then
+                id_rt_fwd <= wb_writedata;
+            end if;
+        end if;
+    end process;
+
     with id_opcode select id_rs_output <=
         id_npc when OP_JAL,
-        id_rs when others;
-    id_rt_output <= id_rt;
+        id_rs_fwd when others;
+    id_rt_output <= id_rt_fwd;
 
     immediate_extend : process(id_opcode, id_instruction)
     begin
@@ -221,7 +270,7 @@ begin
         end case;
     end process;
 
-    branch_resolution : process(id_opcode, id_funct, id_target, id_npc, id_rs, id_rt, id_immediate)
+    branch_resolution : process(id_opcode, id_funct, id_target, id_npc, id_rs_fwd, id_rt_fwd, id_immediate)
     begin
         id_branch_taken  <= '0';
         id_branch_target <= (others => '0');
@@ -229,7 +278,7 @@ begin
             when OP_R_TYPE =>
                 if (id_funct = FUNCT_JR) then
                     id_branch_taken  <= '1';
-                    id_branch_target <= id_rs;
+                    id_branch_target <= id_rs_fwd;
                 end if;
             when OP_J =>
                 id_branch_taken  <= '1';
@@ -238,12 +287,12 @@ begin
                 id_branch_taken  <= '1';
                 id_branch_target <= id_npc(31 downto 28) & id_target & "00";
             when OP_BEQ =>
-                if (id_rs = id_rt) then
+                if (id_rs_fwd = id_rt_fwd) then
                     id_branch_taken  <= '1';
                     id_branch_target <= std_logic_vector(signed(id_npc) + signed(id_immediate(29 downto 0) & "00"));
                 end if;
             when OP_BNE =>
-                if (id_rs /= id_rt) then
+                if (id_rs_fwd /= id_rt_fwd) then
                     id_branch_taken  <= '1';
                     id_branch_target <= std_logic_vector(signed(id_npc) + signed(id_immediate(29 downto 0) & "00"));
                 end if;
@@ -284,15 +333,41 @@ begin
     ex_funct  <= ex_instruction(5 downto 0);
     ex_shamt  <= ex_instruction(10 downto 6);
 
-    alu_input_1 : process(ex_rs)
+    ex_forwarding_rs : process(ex_rs, fwd_ex_rs, fwd_mem_ready, fwd_mem_result,
+                               mem_alu_result, fwd_wb_ready, fwd_wb_result, wb_writedata)
     begin
-        ex_a <= ex_rs;
+        ex_rs_fwd <= ex_rs; -- default output
+        if (fwd_ex_rs /= "00000") then
+            if (fwd_mem_ready = '1' and fwd_ex_rs = fwd_mem_result) then
+                ex_rs_fwd <= mem_alu_result;
+            elsif (fwd_wb_ready = '1' and fwd_ex_rs = fwd_wb_result) then
+                ex_rs_fwd <= wb_writedata;
+            end if;
+        end if;
     end process;
-    alu_input_2 : process(ex_opcode, ex_rt, ex_immediate)
+
+    ex_forwarding_rt : process(ex_rt, fwd_ex_rt, fwd_mem_ready, fwd_mem_result,
+                               mem_alu_result, fwd_wb_ready, fwd_wb_result, wb_writedata)
+    begin
+        ex_rt_fwd <= ex_rt; -- default output
+        if (fwd_ex_rt /= "00000") then
+            if (fwd_mem_ready = '1' and fwd_ex_rt = fwd_mem_result) then
+                ex_rt_fwd <= mem_alu_result;
+            elsif (fwd_wb_ready = '1' and fwd_ex_rt = fwd_wb_result) then
+                ex_rt_fwd <= wb_writedata;
+            end if;
+        end if;
+    end process;
+
+    alu_input_1 : process(ex_rs_fwd)
+    begin
+        ex_a <= ex_rs_fwd;
+    end process;
+    alu_input_2 : process(ex_opcode, ex_rt_fwd, ex_immediate)
     begin
         case ex_opcode is
             when OP_R_TYPE =>
-                ex_b <= ex_rt;
+                ex_b <= ex_rt_fwd;
             when others =>
                 ex_b <= ex_immediate;
         end case;
@@ -349,7 +424,7 @@ begin
                     mem_alu_result  <= (others => '0');
                 else
                     mem_instruction <= ex_instruction;
-                    mem_rt          <= ex_rt;
+                    mem_rt          <= ex_rt_fwd;
                     mem_alu_result  <= ex_output;
                 end if;
             end if;
@@ -360,10 +435,20 @@ begin
 
     mem_opcode <= mem_instruction(31 downto 26);
 
+    mem_forwarding_rt : process(mem_rt, fwd_mem_rt, fwd_wb_ready, fwd_wb_result, wb_writedata)
+    begin
+        mem_rt_fwd <= mem_rt; -- default output
+        if (fwd_mem_rt /= "00000") then
+            if (fwd_wb_ready = '1' and fwd_mem_rt = fwd_wb_result) then
+                mem_rt_fwd <= wb_writedata;
+            end if;
+        end if;
+    end process;
+
     data_cache : memory
         generic map(ram_size => 8192)
         port map(clock       => clock,
-                 writedata   => mem_rt,
+                 writedata   => mem_rt_fwd,
                  address     => mem_address,
                  memwrite    => mem_write_en,
                  memread     => mem_read_en,
@@ -467,6 +552,51 @@ begin
     ex_mem_reset  <= '0';
     mem_wb_enable <= '1';
     mem_wb_reset  <= mem_waitrequest;
+
+    -- forwarding
+    instruction_input_decoding : process(id_instruction, ex_instruction, mem_instruction)
+        variable r1, r2 : std_logic_vector(4 downto 0);
+        variable t1, t2 : integer;
+    begin
+        decode_instruction_input(id_instruction, r1, r2, t1, t2);
+        fwd_id_rs <= r1;
+        fwd_id_rt <= r2;
+
+        decode_instruction_input(ex_instruction, r1, r2, t1, t2);
+        fwd_ex_rs <= r1;
+        fwd_ex_rt <= r2;
+
+        decode_instruction_input(mem_instruction, r1, r2, t1, t2);
+        fwd_mem_rt <= r2;
+    end process;
+
+    instruction_output_decoding : process(ex_instruction, mem_instruction, wb_instruction)
+        variable r : std_logic_vector(4 downto 0);
+        variable t : integer;
+    begin
+        -- default outputs
+        fwd_ex_ready <= '0';
+        fwd_mem_ready <= '0';
+        fwd_wb_ready <= '0';
+
+        decode_instruction_output(ex_instruction, r, t);
+        fwd_ex_result <= r;
+        if (t <= STAGE_EX) then
+            fwd_ex_ready <= '1';
+        end if;
+
+        decode_instruction_output(mem_instruction, r, t);
+        fwd_mem_result <= r;
+        if (t <= STAGE_MEM) then
+            fwd_mem_ready <= '1';
+        end if;
+
+        decode_instruction_output(wb_instruction, r, t);
+        fwd_wb_result <= r;
+        if (t <= STAGE_WB) then
+            fwd_wb_ready <= '1';
+        end if;
+    end process;
 
     -- performance counters
 
