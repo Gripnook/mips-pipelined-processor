@@ -1,7 +1,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use work.MIPS_instruction_set.all;
+use work.mips_instruction_set.all;
 
 entity processor is
     port(clock : in std_logic;
@@ -211,7 +211,7 @@ begin
         id_rs when others;
     id_rt_output <= id_rt;
 
-    immediate_extend : process(id_opcode)
+    immediate_extend : process(id_opcode, id_instruction)
     begin
         case id_opcode is
             when OP_ORI | OP_ANDI | OP_XORI =>
