@@ -23,26 +23,47 @@ begin
         variable i11, i12   : std_logic_vector(4 downto 0);
         variable ti11, ti12 : integer;
 
+        -- Forwarding variables
+        variable prod_time              : integer;
+        variable cons_time1, cons_time2 : integer;
+
     begin
         decode_instruction_input(if_id, i11, i12, ti11, ti12);
         decode_instruction_output(id_ex, o2, to2);
         decode_instruction_output(ex_mem, o3, to3);
         decode_instruction_output(mem_wb, o4, to4);
 
-        stall <= '0';                   -- Do not stall
+        cons_time1 := ti11 - STAGE_ID;
+        cons_time2 := ti12 - STAGE_ID;
 
-        if (o2 /= "00000") then         -- Read-After-Write hazards detection (True Dependence)
-            if (o2 = i11 or o2 = i12) then -- 3 stall cycles
+        stall <= '0';
+
+        if (o2 /= "00000") then         -- EX
+            prod_time := to2 - STAGE_EX;
+            if (o2 = i11 and prod_time > cons_time1) then
+                stall <= '1';
+            end if;
+            if (o2 = i12 and prod_time > cons_time2) then
                 stall <= '1';
             end if;
         end if;
-        if (o3 /= "00000") then
-            if (o3 = i11 or o3 = i12) then -- 2 stall cycles
+
+        if (o3 /= "00000") then         -- MEM
+            prod_time := to2 - STAGE_MEM;
+            if (o3 = i11 and prod_time > cons_time1) then
+                stall <= '1';
+            end if;
+            if (o3 = i12 and prod_time > cons_time2) then
                 stall <= '1';
             end if;
         end if;
-        if (o4 /= "00000") then
-            if (o4 = i11 or o4 = i12) then -- 1 stall cycle
+
+        if (o4 /= "00000") then         -- WB
+            prod_time := to2 - STAGE_WB;
+            if (o4 = i11 and prod_time > cons_time1) then
+                stall <= '1';
+            end if;
+            if (o4 = i12 and prod_time > cons_time2) then
                 stall <= '1';
             end if;
         end if;
