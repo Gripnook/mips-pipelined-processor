@@ -14,7 +14,16 @@ addi $5, $0, 1              # Constant 1
 addi $2, $0, 4              # Input y = 4
 addi $3, $0, 15             # Input x = 15
 jal exp                     # Jump to function
-sw $1, 0($6)        # Save the result in memory
+sw $1, 0($6)                # Save the result in memory
+
+addi $10, $1, 0             # Save result to reg 10
+
+addi $2, $0, 11             # Input y = 11
+addi $3, $0, 7              # Input x = 7
+jal exp                     # Jump to function
+sw $1, 4($6)                # Save the result in memory
+
+addi $11, $1, 0             # Save result to reg 11
 
 EoP:    beq  $0, $0, EoP    # End of program (infinite loop)
 
