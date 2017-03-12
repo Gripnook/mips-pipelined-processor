@@ -554,6 +554,7 @@ begin
     mem_wb_reset  <= mem_waitrequest;
 
     -- forwarding
+    
     instruction_input_decoding : process(id_instruction, ex_instruction, mem_instruction)
         variable r1, r2 : std_logic_vector(4 downto 0);
         variable t1, t2 : integer;
