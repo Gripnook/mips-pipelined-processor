@@ -33,18 +33,30 @@ package mips_instruction_set is
     constant FUNCT_SRA  : std_logic_vector(5 downto 0) := "000011";
     constant FUNCT_JR   : std_logic_vector(5 downto 0) := "001000";
 
+    constant STAGE_DONTCARE : integer := 0;
+    constant STAGE_IF       : integer := 1;
+    constant STAGE_ID       : integer := 2;
+    constant STAGE_EX       : integer := 3;
+    constant STAGE_MEM      : integer := 4;
+    constant STAGE_WB       : integer := 5;
+
     procedure decode_instruction_input(instr : in  std_logic_vector(31 downto 0);
                                        ri1   : out std_logic_vector(4 downto 0);
-                                       ri2   : out std_logic_vector(4 downto 0));
+                                       ri2   : out std_logic_vector(4 downto 0);
+                                       t1    : out integer;
+                                       t2    : out integer);
 
     procedure decode_instruction_output(instr : in  std_logic_vector(31 downto 0);
-                                        ro    : out std_logic_vector(4 downto 0));
+                                        ro    : out std_logic_vector(4 downto 0);
+                                        t     : out integer);
 end package;
 
 package body mips_instruction_set is
     procedure decode_instruction_input(instr : in  std_logic_vector(31 downto 0);
                                        ri1   : out std_logic_vector(4 downto 0);
-                                       ri2   : out std_logic_vector(4 downto 0)) is
+                                       ri2   : out std_logic_vector(4 downto 0);
+                                       t1    : out integer;
+                                       t2    : out integer) is
         variable op         : std_logic_vector(5 downto 0);
         variable rs, rt, rd : std_logic_vector(4 downto 0);
         variable funct      : std_logic_vector(5 downto 0);
@@ -56,6 +68,37 @@ package body mips_instruction_set is
         funct := instr(5 downto 0);
 
         if (op = OP_R_TYPE) then
+            if (funct = FUNCT_MFHI or funct = FUNCT_MFLO) then
+                t1 := STAGE_DONTCARE;
+                t2 := STAGE_DONTCARE;
+            elsif (funct = FUNCT_JR) then
+                t1 := STAGE_ID;
+                t2 := STAGE_DONTCARE;
+            end if;
+        elsif (op = OP_LUI) then
+            t1 := STAGE_DONTCARE;
+            t2 := STAGE_DONTCARE;
+        elsif (op = OP_BEQ or op = OP_BNE) then
+            t1 := STAGE_ID;
+            t2 := STAGE_ID;
+        elsif (op = OP_J) then
+            t1 := STAGE_DONTCARE;
+            t2 := STAGE_DONTCARE;
+        elsif (op = OP_JAL) then
+            t1 := STAGE_EX;
+            t2 := STAGE_DONTCARE;
+        elsif (op = OP_SW) then
+            t1 := STAGE_EX;
+            t2 := STAGE_MEM;
+        elsif (op = OP_LW) then
+            t1 := STAGE_EX;
+            t2 := STAGE_DONTCARE;
+        else
+            t1 := STAGE_EX;
+            t2 := STAGE_EX;
+        end if;
+
+        if (op = OP_R_TYPE) then
             if (funct = FUNCT_MULT or funct = FUNCT_DIV) then
                 ri1 := rs;
                 ri2 := rt;
@@ -63,11 +106,11 @@ package body mips_instruction_set is
                 ri1 := "00000";
                 ri2 := "00000";
             elsif (funct = FUNCT_SLL or funct = FUNCT_SRL or funct = FUNCT_SRA) then
-                ri1 := rt;
+                ri1 := "00000";
                 ri2 := rt;
             elsif (funct = FUNCT_JR) then
                 ri1 := rs;
-                ri2 := rs;
+                ri2 := "00000";
             else
                 ri1 := rs;
                 ri2 := rt;
@@ -86,17 +129,18 @@ package body mips_instruction_set is
                 ri1 := rs;
                 ri2 := rt;
             elsif (op = OP_SW) then
-                ri1 := rt;
-                ri2 := rs;
+                ri1 := rs;
+                ri2 := rt;
             else
                 ri1 := rs;
-                ri2 := rs;
+                ri2 := "00000";
             end if;
         end if;
     end procedure decode_instruction_input;
 
     procedure decode_instruction_output(instr : in  std_logic_vector(31 downto 0);
-                                        ro    : out std_logic_vector(4 downto 0)) is
+                                        ro    : out std_logic_vector(4 downto 0);
+                                        t     : out integer) is
         variable op         : std_logic_vector(5 downto 0);
         variable rs, rt, rd : std_logic_vector(4 downto 0);
         variable funct      : std_logic_vector(5 downto 0);
@@ -106,6 +150,18 @@ package body mips_instruction_set is
         rt    := instr(20 downto 16);
         rd    := instr(15 downto 11);
         funct := instr(5 downto 0);
+
+        if (op = OP_R_TYPE) then
+            if (funct = FUNCT_JR) then
+                t := STAGE_DONTCARE;
+            end if;
+        elsif (op = OP_BEQ or op = OP_BNE or op = OP_J or op = OP_SW) then
+            t := STAGE_DONTCARE;
+        elsif (op = OP_JAL or op = OP_LW) then
+            t := STAGE_WB;
+        else
+            t := STAGE_MEM;
+        end if;
 
         if (op = OP_R_TYPE) then
             if (funct = FUNCT_MULT or funct = FUNCT_DIV) then
