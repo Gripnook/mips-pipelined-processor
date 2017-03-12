@@ -49,7 +49,7 @@ begin
         end if;
 
         if (o3 /= "00000") then         -- MEM
-            prod_time := to2 - STAGE_MEM;
+            prod_time := to3 - STAGE_MEM;
             if (o3 = i11 and prod_time > cons_time1) then
                 stall <= '1';
             end if;
@@ -59,7 +59,7 @@ begin
         end if;
 
         if (o4 /= "00000") then         -- WB
-            prod_time := to2 - STAGE_WB;
+            prod_time := to4 - STAGE_WB;
             if (o4 = i11 and prod_time > cons_time1) then
                 stall <= '1';
             end if;
