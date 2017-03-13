@@ -45,11 +45,11 @@ architecture arch of processor is
     end component;
 
     component hazard_detector is
-        port(if_id  : in  std_logic_vector(31 downto 0);
-             id_ex  : in  std_logic_vector(31 downto 0);
-             ex_mem : in  std_logic_vector(31 downto 0);
-             mem_wb : in  std_logic_vector(31 downto 0);
-             stall  : out std_logic);
+        port(id_instruction  : in  std_logic_vector(31 downto 0);
+             ex_instruction  : in  std_logic_vector(31 downto 0);
+             mem_instruction : in  std_logic_vector(31 downto 0);
+             wb_instruction  : in  std_logic_vector(31 downto 0);
+             stall           : out std_logic);
     end component;
 
     -- pc
@@ -537,11 +537,11 @@ begin
     -- stalls and flushes
 
     data_hazard_detector : hazard_detector
-        port map(if_id  => id_instruction,
-                 id_ex  => ex_instruction,
-                 ex_mem => mem_instruction,
-                 mem_wb => wb_instruction,
-                 stall  => data_hazard_stall);
+        port map(id_instruction  => id_instruction,
+                 ex_instruction  => ex_instruction,
+                 mem_instruction => mem_instruction,
+                 wb_instruction  => wb_instruction,
+                 stall           => data_hazard_stall);
 
     pc_enable     <= (not if_waitrequest) and (not mem_waitrequest) and (not data_hazard_stall);
     if_id_enable  <= (not if_waitrequest) and (not mem_waitrequest) and (not data_hazard_stall);
@@ -556,45 +556,45 @@ begin
     -- forwarding
     
     instruction_input_decoding : process(id_instruction, ex_instruction, mem_instruction)
-        variable r1, r2 : std_logic_vector(4 downto 0);
-        variable t1, t2 : integer;
+        variable reg_in_1, reg_in_2 : std_logic_vector(4 downto 0);
+        variable stage_in_1, stage_in_2 : integer;
     begin
-        decode_instruction_input(id_instruction, r1, r2, t1, t2);
-        fwd_id_rs <= r1;
-        fwd_id_rt <= r2;
+        decode_instruction_input(id_instruction, reg_in_1, reg_in_2, stage_in_1, stage_in_2);
+        fwd_id_rs <= reg_in_1;
+        fwd_id_rt <= reg_in_2;
 
-        decode_instruction_input(ex_instruction, r1, r2, t1, t2);
-        fwd_ex_rs <= r1;
-        fwd_ex_rt <= r2;
+        decode_instruction_input(ex_instruction, reg_in_1, reg_in_2, stage_in_1, stage_in_2);
+        fwd_ex_rs <= reg_in_1;
+        fwd_ex_rt <= reg_in_2;
 
-        decode_instruction_input(mem_instruction, r1, r2, t1, t2);
-        fwd_mem_rt <= r2;
+        decode_instruction_input(mem_instruction, reg_in_1, reg_in_2, stage_in_1, stage_in_2);
+        fwd_mem_rt <= reg_in_2;
     end process;
 
     instruction_output_decoding : process(ex_instruction, mem_instruction, wb_instruction)
-        variable r : std_logic_vector(4 downto 0);
-        variable t : integer;
+        variable reg_out : std_logic_vector(4 downto 0);
+        variable stage_out : integer;
     begin
         -- default outputs
         fwd_ex_ready <= '0';
         fwd_mem_ready <= '0';
         fwd_wb_ready <= '0';
 
-        decode_instruction_output(ex_instruction, r, t);
-        fwd_ex_result <= r;
-        if (t <= STAGE_EX) then
+        decode_instruction_output(ex_instruction, reg_out, stage_out);
+        fwd_ex_result <= reg_out;
+        if (stage_out <= STAGE_EX) then
             fwd_ex_ready <= '1';
         end if;
 
-        decode_instruction_output(mem_instruction, r, t);
-        fwd_mem_result <= r;
-        if (t <= STAGE_MEM) then
+        decode_instruction_output(mem_instruction, reg_out, stage_out);
+        fwd_mem_result <= reg_out;
+        if (stage_out <= STAGE_MEM) then
             fwd_mem_ready <= '1';
         end if;
 
-        decode_instruction_output(wb_instruction, r, t);
-        fwd_wb_result <= r;
-        if (t <= STAGE_WB) then
+        decode_instruction_output(wb_instruction, reg_out, stage_out);
+        fwd_wb_result <= reg_out;
+        if (stage_out <= STAGE_WB) then
             fwd_wb_ready <= '1';
         end if;
     end process;

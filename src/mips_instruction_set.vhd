@@ -40,111 +40,115 @@ package mips_instruction_set is
     constant STAGE_MEM  : integer := 4;
     constant STAGE_WB   : integer := 5;
 
-    procedure decode_instruction_input(instr : in  std_logic_vector(31 downto 0);
-                                       ri1   : out std_logic_vector(4 downto 0);
-                                       ri2   : out std_logic_vector(4 downto 0);
-                                       t1    : out integer;
-                                       t2    : out integer);
+    -- Decodes the input registers required by the instruction and the stages at which these inputs are consumed.
+    -- If an input is unneeded, the corresponding register is set to $0.
+    procedure decode_instruction_input(instruction : in  std_logic_vector(31 downto 0);
+                                       reg_in_1    : out std_logic_vector(4 downto 0);
+                                       reg_in_2    : out std_logic_vector(4 downto 0);
+                                       stage_in_1  : out integer;
+                                       stage_in_2  : out integer);
 
-    procedure decode_instruction_output(instr : in  std_logic_vector(31 downto 0);
-                                        ro    : out std_logic_vector(4 downto 0);
-                                        t     : out integer);
+    -- Decodes the output register used to store the result of the instruction and the stage at which this result is produced.
+    -- If no output result is produced, the output register is set to $0.
+    procedure decode_instruction_output(instruction : in  std_logic_vector(31 downto 0);
+                                        reg_out     : out std_logic_vector(4 downto 0);
+                                        stage_out   : out integer);
 
 end package;
 
 package body mips_instruction_set is
 
-    procedure decode_instruction_input(instr : in  std_logic_vector(31 downto 0);
-                                       ri1   : out std_logic_vector(4 downto 0);
-                                       ri2   : out std_logic_vector(4 downto 0);
-                                       t1    : out integer;
-                                       t2    : out integer) is
+    procedure decode_instruction_input(instruction : in  std_logic_vector(31 downto 0);
+                                       reg_in_1    : out std_logic_vector(4 downto 0);
+                                       reg_in_2    : out std_logic_vector(4 downto 0);
+                                       stage_in_1  : out integer;
+                                       stage_in_2  : out integer) is
         variable op     : std_logic_vector(5 downto 0);
         variable rs, rt : std_logic_vector(4 downto 0);
         variable funct  : std_logic_vector(5 downto 0);
     begin
-        op    := instr(31 downto 26);
-        rs    := instr(25 downto 21);
-        rt    := instr(20 downto 16);
-        funct := instr(5 downto 0);
+        op    := instruction(31 downto 26);
+        rs    := instruction(25 downto 21);
+        rt    := instruction(20 downto 16);
+        funct := instruction(5 downto 0);
 
         if (op = OP_R_TYPE) then
             if (funct = FUNCT_JR) then
-                t1 := STAGE_ID;
-                t2 := STAGE_NONE;
+                stage_in_1 := STAGE_ID;
+                stage_in_2 := STAGE_NONE;
             else
-                t1 := STAGE_EX;
-                t2 := STAGE_EX;
+                stage_in_1 := STAGE_EX;
+                stage_in_2 := STAGE_EX;
             end if;
         elsif (op = OP_BEQ or op = OP_BNE) then
-            t1 := STAGE_ID;
-            t2 := STAGE_ID;
+            stage_in_1 := STAGE_ID;
+            stage_in_2 := STAGE_ID;
         elsif (op = OP_SW) then
-            t1 := STAGE_EX;
-            t2 := STAGE_MEM;
+            stage_in_1 := STAGE_EX;
+            stage_in_2 := STAGE_MEM;
         else
-            t1 := STAGE_EX;
-            t2 := STAGE_EX;
+            stage_in_1 := STAGE_EX;
+            stage_in_2 := STAGE_EX;
         end if;
 
         if (op = OP_R_TYPE) then
             if (funct = FUNCT_MFHI or funct = FUNCT_MFLO) then
-                ri1 := "00000";
-                ri2 := "00000";
+                reg_in_1 := "00000";
+                reg_in_2 := "00000";
             elsif (funct = FUNCT_SLL or funct = FUNCT_SRL or funct = FUNCT_SRA) then
-                ri1 := "00000";
-                ri2 := rt;
+                reg_in_1 := "00000";
+                reg_in_2 := rt;
             elsif (funct = FUNCT_JR) then
-                ri1 := rs;
-                ri2 := "00000";
+                reg_in_1 := rs;
+                reg_in_2 := "00000";
             else
-                ri1 := rs;
-                ri2 := rt;
+                reg_in_1 := rs;
+                reg_in_2 := rt;
             end if;
         elsif (op = OP_J or op = OP_JAL or op = OP_LUI) then
-            ri1 := "00000";
-            ri2 := "00000";
+            reg_in_1 := "00000";
+            reg_in_2 := "00000";
         elsif (op = OP_BEQ or op = OP_BNE or op = OP_SW) then
-            ri1 := rs;
-            ri2 := rt;
+            reg_in_1 := rs;
+            reg_in_2 := rt;
         else
-            ri1 := rs;
-            ri2 := "00000";
+            reg_in_1 := rs;
+            reg_in_2 := "00000";
         end if;
     end procedure decode_instruction_input;
 
-    procedure decode_instruction_output(instr : in  std_logic_vector(31 downto 0);
-                                        ro    : out std_logic_vector(4 downto 0);
-                                        t     : out integer) is
+    procedure decode_instruction_output(instruction : in  std_logic_vector(31 downto 0);
+                                        reg_out     : out std_logic_vector(4 downto 0);
+                                        stage_out   : out integer) is
         variable op     : std_logic_vector(5 downto 0);
         variable rt, rd : std_logic_vector(4 downto 0);
         variable funct  : std_logic_vector(5 downto 0);
     begin
-        op    := instr(31 downto 26);
-        rt    := instr(20 downto 16);
-        rd    := instr(15 downto 11);
-        funct := instr(5 downto 0);
+        op    := instruction(31 downto 26);
+        rt    := instruction(20 downto 16);
+        rd    := instruction(15 downto 11);
+        funct := instruction(5 downto 0);
 
         if (op = OP_JAL) then
-            t := STAGE_EX;
+            stage_out := STAGE_EX;
         elsif (op = OP_LW) then
-            t := STAGE_WB;
+            stage_out := STAGE_WB;
         else
-            t := STAGE_MEM;
+            stage_out := STAGE_MEM;
         end if;
 
         if (op = OP_R_TYPE) then
             if (funct = FUNCT_MULT or funct = FUNCT_DIV or funct = FUNCT_JR) then
-                ro := "00000";
+                reg_out := "00000";
             else
-                ro := rd;
+                reg_out := rd;
             end if;
         elsif (op = OP_J or op = OP_BEQ or op = OP_BNE or op = OP_SW) then
-            ro := "00000";
+            reg_out := "00000";
         elsif (op = OP_JAL) then
-            ro := "11111"; -- $ra
+            reg_out := "11111"; -- $ra
         else
-            ro := rt;
+            reg_out := rt;
         end if;
     end procedure decode_instruction_output;
 
