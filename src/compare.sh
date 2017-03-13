@@ -1,7 +1,14 @@
 #!/bin/bash
 
+# Compares the simulation results to the expected results
+
+print_usage () {
+	echo "Usage: ./compare.sh <program>";
+	return;
+}
+
 if [[ -z "$1" ]]; then
-	echo "Missing argument";
+	print_usage;
 	exit 1;
 fi
 
