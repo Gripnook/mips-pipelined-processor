@@ -388,10 +388,7 @@ begin
         wait for 1 ns;
 
         assert_equal_bit(stall, '0', error_count);
-        --TODO: CONFIRM THIS
         -----------------------------------------------------
-
-
 
         report "Done. Found " & integer'image(error_count) & " error(s).";
 

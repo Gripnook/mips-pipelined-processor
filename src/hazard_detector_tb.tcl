@@ -24,4 +24,4 @@ vsim -t ps hazard_detector_tb
 AddWaves
 
 ;# Run
-run 10us
+run 40ns
