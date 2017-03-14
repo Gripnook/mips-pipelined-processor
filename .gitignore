@@ -79,3 +79,6 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.gitignore.io/api/modelsim,macos,windo
+
+# Simulation results
+results/
