@@ -21,13 +21,15 @@ architecture arch of hazard_detector_tb is
     constant BEQR1R0L0   : std_logic_vector(31 downto 0) := 6x"4" & 5x"1" & 5x"0" & 16x"0"; -- I-Type
     constant JL0         : std_logic_vector(31 downto 0) := 6x"2" & 26x"0"; -- J-Type
     constant JAL0        : std_logic_vector(31 downto 0) := 6x"3" & 26x"0"; -- J-Type
+    constant LWR1        : std_logic_vector(31 downto 0) := 6x"23" & 5x"0" & 5x"1" & 16x"4";
+    constant SWR1        : std_logic_vector(31 downto 0) := 6x"2B" & 5x"0" & 5x"1" & 16x"4";
 
     component hazard_detector
         port(
-            if_id  : in  std_logic_vector(31 downto 0);
-            id_ex  : in  std_logic_vector(31 downto 0);
-            ex_mem : in  std_logic_vector(31 downto 0);
-            mem_wb : in  std_logic_vector(31 downto 0);
+            id_instruction  : in  std_logic_vector(31 downto 0);
+            ex_instruction  : in  std_logic_vector(31 downto 0);
+            mem_instruction : in  std_logic_vector(31 downto 0);
+            wb_instruction : in  std_logic_vector(31 downto 0);
             stall  : out std_logic);
     end component hazard_detector;
 
@@ -50,10 +52,10 @@ architecture arch of hazard_detector_tb is
 begin
     dut : hazard_detector
         port map(
-            if_id  => if_id,
-            id_ex  => id_ex,
-            ex_mem => ex_mem,
-            mem_wb => mem_wb,
+            id_instruction  => if_id,
+            ex_instruction  => id_ex,
+            mem_instruction => ex_mem,
+            wb_instruction => mem_wb,
             stall  => stall
         );
 
@@ -88,7 +90,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal_bit(stall, '1', error_count);
+        assert_equal_bit(stall, '0', error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -102,7 +104,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal_bit(stall, '1', error_count);
+        assert_equal_bit(stall, '0', error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -116,7 +118,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal_bit(stall, '1', error_count);
+        assert_equal_bit(stall, '0', error_count);
         -----------------------------------------------------
 
         -------------- Control hazards ---------------
@@ -175,7 +177,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal_bit(stall, '1', error_count);
+        assert_equal_bit(stall, '0', error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -189,7 +191,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal_bit(stall, '1', error_count);
+        assert_equal_bit(stall, '0', error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -203,7 +205,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal_bit(stall, '1', error_count);
+        assert_equal_bit(stall, '0', error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -217,7 +219,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal_bit(stall, '1', error_count);
+        assert_equal_bit(stall, '0', error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -231,7 +233,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal_bit(stall, '1', error_count);
+        assert_equal_bit(stall, '0', error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -245,8 +247,151 @@ begin
 
         wait for 1 ns;
 
+        assert_equal_bit(stall, '0', error_count);
+        -----------------------------------------------------
+
+        -----------------------------------------------------
+        ---------------------Test#5-1: LW/ALU---------------------
+        --This test performs LW then ALU
+        report "Test#5-1: LW";
+        if_id  <= ADDR1R0R0;
+        id_ex  <= LWR1;
+        ex_mem <= NOP;
+        mem_wb <= NOP;
+
+        wait for 1 ns;
+
         assert_equal_bit(stall, '1', error_count);
         -----------------------------------------------------
+
+        -----------------------------------------------------
+        ---------------------Test#5-2: LW/ALU---------------------
+        --This test performs LW then ALU
+        report "Test#5-2: LW";
+        if_id  <= ADDR1R0R0;
+        id_ex  <= NOP;
+        ex_mem <= LWR1;
+        mem_wb <= NOP;
+
+        wait for 1 ns;
+
+        assert_equal_bit(stall, '0', error_count);
+        -----------------------------------------------------
+
+        -----------------------------------------------------
+        ---------------------Test#5-3: LW/ALU---------------------
+        --This test performs LW then ALU
+        report "Test#5-3: LW";
+        if_id  <= ADDR1R0R0;
+        id_ex  <= NOP;
+        ex_mem <= NOP;
+        mem_wb <= LWR1;
+
+        wait for 1 ns;
+
+        assert_equal_bit(stall, '0', error_count);
+        -----------------------------------------------------
+
+        -----------------------------------------------------
+        ---------------------Test#5-4: LW---------------------
+        --This test performs LW
+        report "Test#5-4: LW";
+        if_id  <= LWR1;
+        id_ex  <= NOP;
+        ex_mem <= NOP;
+        mem_wb <= NOP;
+
+        wait for 1 ns;
+
+        assert_equal_bit(stall, '0', error_count);
+        -----------------------------------------------------
+
+        -----------------------------------------------------
+        ---------------------Test#5-5: LW/SW---------------------
+        --This test performs LW/SW
+        report "Test#5-5: LW";
+        if_id  <= LWR1;
+        id_ex  <= SWR1;
+        ex_mem <= NOP;
+        mem_wb <= NOP;
+
+        wait for 1 ns;
+
+        assert_equal_bit(stall, '0', error_count);
+        -----------------------------------------------------
+
+        -----------------------------------------------------
+        ---------------------Test#5-6: LW/SW---------------------
+        --This test performs LW/SW
+        report "Test#5-6: LW";
+        if_id  <= LWR1;
+        id_ex  <= NOP;
+        ex_mem <= SWR1;
+        mem_wb <= NOP;
+
+        wait for 1 ns;
+
+        assert_equal_bit(stall, '0', error_count);
+        -----------------------------------------------------
+
+        -----------------------------------------------------
+        ---------------------Test#5-7: LW/SW---------------------
+        --This test performs LW/SW
+        report "Test#5-7: LW";
+        if_id  <= LWR1;
+        id_ex  <= NOP;
+        ex_mem <= NOP;
+        mem_wb <= SWR1;
+
+        wait for 1 ns;
+
+        assert_equal_bit(stall, '0', error_count);
+        -----------------------------------------------------
+
+        -----------------------------------------------------
+        ------------------Test#5-8: LW/BEQ-------------------
+        --This test performs LW then Branch
+        report "Test#5-8: LW";
+        if_id  <= BEQR1R0L0;
+        id_ex  <= LWR1;
+        ex_mem <= NOP;
+        mem_wb <= NOP;
+
+        wait for 1 ns;
+
+        assert_equal_bit(stall, '1', error_count);
+        -----------------------------------------------------
+
+        -----------------------------------------------------
+        ----------------Test#5-9: LW/BEQ---------------------
+        --This test performs LW then Branch
+        report "Test#5-9: LW";
+        if_id  <= BEQR1R0L0;
+        id_ex  <= NOP;
+        ex_mem <= LWR1;
+        mem_wb <= NOP;
+
+        wait for 1 ns;
+
+        assert_equal_bit(stall, '0', error_count);
+        -----------------------------------------------------
+
+        -----------------------------------------------------
+        ----------------Test#5-10: LW/BEQ--------------------
+        --This test performs LW then Branch
+        report "Test#5-10: LW";
+        if_id  <= BEQR1R0L0;
+        id_ex  <= NOP;
+        ex_mem <= NOP;
+        mem_wb <= LWR1;
+
+        wait for 1 ns;
+
+        assert_equal_bit(stall, '0', error_count);
+        --TODO: CONFIRM THIS
+        -----------------------------------------------------
+
+
 
         report "Done. Found " & integer'image(error_count) & " error(s).";
 
