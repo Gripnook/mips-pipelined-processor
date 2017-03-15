@@ -29,8 +29,8 @@ architecture arch of hazard_detector_tb is
             id_instruction  : in  std_logic_vector(31 downto 0);
             ex_instruction  : in  std_logic_vector(31 downto 0);
             mem_instruction : in  std_logic_vector(31 downto 0);
-            wb_instruction : in  std_logic_vector(31 downto 0);
-            stall  : out std_logic);
+            wb_instruction  : in  std_logic_vector(31 downto 0);
+            stall           : out std_logic);
     end component hazard_detector;
 
     procedure assert_equal(actual, expected : in std_logic_vector(63 downto 0); error_count : inout integer) is
@@ -55,8 +55,8 @@ begin
             id_instruction  => if_id,
             ex_instruction  => id_ex,
             mem_instruction => ex_mem,
-            wb_instruction => mem_wb,
-            stall  => stall
+            wb_instruction  => mem_wb,
+            stall           => stall
         );
 
     test_process : process
@@ -463,5 +463,4 @@ begin
 
         wait;
     end process;
-
 end architecture arch;

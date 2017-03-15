@@ -5,15 +5,14 @@
 # return x == 0 ? y : gcd(y % x, x);
 # }
 
-
-        addi $11, $0, 2000  	# initializing the beginning of Data Section address in memory
+        addi $11, $0, 2000          # initializing the beginning of Data Section address in memory
         addi $29, $0, 32764
 
-test:   addi $4, $0, 22866             # x 103*222
-        addi $5, $0, 9991              # y 103*97
+test:   addi $4, $0, 22866          # x 103*222
+        addi $5, $0, 9991           # y 103*97
         sw   $4, 0($11)
         sw   $5, 4($11)
-        addi $4, $0, 99                 #memory tests
+        addi $4, $0, 99             #memory tests
         addi $5, $0, 151
         lw   $4, 0($11)
         lw   $5, 4($11)
@@ -21,7 +20,7 @@ test:   addi $4, $0, 22866             # x 103*222
         jal gcd
         sw   $2, 8($11)
 
-EoP:	beq	 $11, $11, EoP 	#end of program (infinite loop)
+EoP:    beq  $11, $11, EoP          #end of program (infinite loop)
 
 gcd:    slt $8, $5, $4              # swap condition
         bne $8, $0, swap
@@ -49,5 +48,3 @@ swap:   or $8, $0, $4               # put x into temp
 gcd_rt: lw $31, 0($29)
         addi $29, $29, 12
         jr $31
-
-

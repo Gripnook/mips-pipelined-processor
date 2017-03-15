@@ -2,7 +2,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 package mips_instruction_set is
-
     constant OP_R_TYPE : std_logic_vector(5 downto 0) := "000000";
     constant OP_ADDI   : std_logic_vector(5 downto 0) := "001000";
     constant OP_SLTI   : std_logic_vector(5 downto 0) := "001010";
@@ -57,7 +56,6 @@ package mips_instruction_set is
 end package;
 
 package body mips_instruction_set is
-
     procedure decode_instruction_input(instruction : in  std_logic_vector(31 downto 0);
                                        reg_in_1    : out std_logic_vector(4 downto 0);
                                        reg_in_2    : out std_logic_vector(4 downto 0);
@@ -146,7 +144,7 @@ package body mips_instruction_set is
         elsif (op = OP_J or op = OP_BEQ or op = OP_BNE or op = OP_SW) then
             reg_out := "00000";
         elsif (op = OP_JAL) then
-            reg_out := "11111"; -- $ra
+            reg_out := "11111";         -- $ra
         else
             reg_out := rt;
         end if;

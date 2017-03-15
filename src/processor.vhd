@@ -225,13 +225,12 @@ begin
                  rs         => id_rs,
                  rt         => id_rt);
 
-    id_forwarding_rs : process(id_rs, fwd_id_rs, fwd_ex_ready, fwd_ex_result, ex_rs, fwd_mem_ready,
-                               fwd_mem_result, mem_alu_result, fwd_wb_ready, fwd_wb_result, wb_writedata)
+    id_forwarding_rs : process(id_rs, fwd_id_rs, fwd_ex_ready, fwd_ex_result, ex_rs, fwd_mem_ready, fwd_mem_result, mem_alu_result, fwd_wb_ready, fwd_wb_result, wb_writedata)
     begin
-        id_rs_fwd <= id_rs; -- default output
+        id_rs_fwd <= id_rs;             -- default output
         if (fwd_id_rs /= "00000") then
             if (fwd_ex_ready = '1' and fwd_id_rs = fwd_ex_result) then
-                id_rs_fwd <= ex_rs; -- special case for JAL
+                id_rs_fwd <= ex_rs;     -- special case for JAL
             elsif (fwd_mem_ready = '1' and fwd_id_rs = fwd_mem_result) then
                 id_rs_fwd <= mem_alu_result;
             elsif (fwd_wb_ready = '1' and fwd_id_rs = fwd_wb_result) then
@@ -240,13 +239,12 @@ begin
         end if;
     end process;
 
-    id_forwarding_rt : process(id_rt, fwd_id_rt, fwd_ex_ready, fwd_ex_result, ex_rs, fwd_mem_ready,
-                               fwd_mem_result, mem_alu_result, fwd_wb_ready, fwd_wb_result, wb_writedata)
+    id_forwarding_rt : process(id_rt, fwd_id_rt, fwd_ex_ready, fwd_ex_result, ex_rs, fwd_mem_ready, fwd_mem_result, mem_alu_result, fwd_wb_ready, fwd_wb_result, wb_writedata)
     begin
-        id_rt_fwd <= id_rt; -- default output
+        id_rt_fwd <= id_rt;             -- default output
         if (fwd_id_rt /= "00000") then
             if (fwd_ex_ready = '1' and fwd_id_rt = fwd_ex_result) then
-                id_rt_fwd <= ex_rs; -- special case for JAL
+                id_rt_fwd <= ex_rs;     -- special case for JAL
             elsif (fwd_mem_ready = '1' and fwd_id_rt = fwd_mem_result) then
                 id_rt_fwd <= mem_alu_result;
             elsif (fwd_wb_ready = '1' and fwd_id_rt = fwd_wb_result) then
@@ -333,10 +331,9 @@ begin
     ex_funct  <= ex_instruction(5 downto 0);
     ex_shamt  <= ex_instruction(10 downto 6);
 
-    ex_forwarding_rs : process(ex_rs, fwd_ex_rs, fwd_mem_ready, fwd_mem_result,
-                               mem_alu_result, fwd_wb_ready, fwd_wb_result, wb_writedata)
+    ex_forwarding_rs : process(ex_rs, fwd_ex_rs, fwd_mem_ready, fwd_mem_result, mem_alu_result, fwd_wb_ready, fwd_wb_result, wb_writedata)
     begin
-        ex_rs_fwd <= ex_rs; -- default output
+        ex_rs_fwd <= ex_rs;             -- default output
         if (fwd_ex_rs /= "00000") then
             if (fwd_mem_ready = '1' and fwd_ex_rs = fwd_mem_result) then
                 ex_rs_fwd <= mem_alu_result;
@@ -346,10 +343,9 @@ begin
         end if;
     end process;
 
-    ex_forwarding_rt : process(ex_rt, fwd_ex_rt, fwd_mem_ready, fwd_mem_result,
-                               mem_alu_result, fwd_wb_ready, fwd_wb_result, wb_writedata)
+    ex_forwarding_rt : process(ex_rt, fwd_ex_rt, fwd_mem_ready, fwd_mem_result, mem_alu_result, fwd_wb_ready, fwd_wb_result, wb_writedata)
     begin
-        ex_rt_fwd <= ex_rt; -- default output
+        ex_rt_fwd <= ex_rt;             -- default output
         if (fwd_ex_rt /= "00000") then
             if (fwd_mem_ready = '1' and fwd_ex_rt = fwd_mem_result) then
                 ex_rt_fwd <= mem_alu_result;
@@ -437,7 +433,7 @@ begin
 
     mem_forwarding_rt : process(mem_rt, fwd_mem_rt, fwd_wb_ready, fwd_wb_result, wb_writedata)
     begin
-        mem_rt_fwd <= mem_rt; -- default output
+        mem_rt_fwd <= mem_rt;           -- default output
         if (fwd_mem_rt /= "00000") then
             if (fwd_wb_ready = '1' and fwd_mem_rt = fwd_wb_result) then
                 mem_rt_fwd <= wb_writedata;
@@ -554,9 +550,9 @@ begin
     mem_wb_reset  <= mem_waitrequest;
 
     -- forwarding
-    
+
     instruction_input_decoding : process(id_instruction, ex_instruction, mem_instruction)
-        variable reg_in_1, reg_in_2 : std_logic_vector(4 downto 0);
+        variable reg_in_1, reg_in_2     : std_logic_vector(4 downto 0);
         variable stage_in_1, stage_in_2 : integer;
     begin
         decode_instruction_input(id_instruction, reg_in_1, reg_in_2, stage_in_1, stage_in_2);
@@ -572,13 +568,13 @@ begin
     end process;
 
     instruction_output_decoding : process(ex_instruction, mem_instruction, wb_instruction)
-        variable reg_out : std_logic_vector(4 downto 0);
+        variable reg_out   : std_logic_vector(4 downto 0);
         variable stage_out : integer;
     begin
         -- default outputs
-        fwd_ex_ready <= '0';
+        fwd_ex_ready  <= '0';
         fwd_mem_ready <= '0';
-        fwd_wb_ready <= '0';
+        fwd_wb_ready  <= '0';
 
         decode_instruction_output(ex_instruction, reg_out, stage_out);
         fwd_ex_result <= reg_out;
