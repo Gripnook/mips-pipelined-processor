@@ -80,9 +80,9 @@ begin
         -----------------------------------------------------
 
         -----------------------------------------------------
-        ---------------------Test#2-1: ADD1---------------------
-        --This test performs ADD1
-        report "Test#2-1: ADD1";
+        ---------------------Test#2-1: ALU/ALU---------------------
+        --This test performs ALU then ALU using same register
+        report "Test#2-1: ALU/ALU";
         if_id  <= ADDR0R1R1;
         id_ex  <= ADDR1R0R0;
         ex_mem <= NOP;
@@ -94,9 +94,9 @@ begin
         -----------------------------------------------------
 
         -----------------------------------------------------
-        ---------------------Test#2-2: ADD2---------------------
+        ---------------------Test#2-2: ALU/ALU---------------------
         --This test performs ADD2
-        report "Test#2-2: ADD2";
+        report "Test#2-2: ALU/ALU";
         if_id  <= ADDR0R1R1;
         id_ex  <= NOP;
         ex_mem <= ADDR1R0R0;
@@ -108,9 +108,9 @@ begin
         -----------------------------------------------------
 
         -----------------------------------------------------
-        ---------------------Test#2-3: ADD3---------------------
+        ---------------------Test#2-3: ALU/ALU---------------------
         --This test performs ADD3
-        report "Test#2-3: ADD3";
+        report "Test#2-3: ALU/ALU";
         if_id  <= ADDR0R1R1;
         id_ex  <= NOP;
         ex_mem <= NOP;
@@ -139,9 +139,9 @@ begin
         -----------------------------------------------------
 
         -----------------------------------------------------
-        ---------------------Test#3-2: BEQ---------------------
+        ---------------------Test#3-2: BEQ/ALU---------------------
         --This test performs BEQ
-        report "Test#3-2: BEQ";
+        report "Test#3-2: BEQ/ALU";
         if_id  <= ADDR1R0R0;
         id_ex  <= BEQR1R0L0;
         ex_mem <= NOP;
@@ -153,9 +153,9 @@ begin
         -----------------------------------------------------
 
         -----------------------------------------------------
-        ---------------------Test#3-3: BEQ---------------------
+        ---------------------Test#3-3: BEQ/ALU---------------------
         --This test performs BEQ
-        report "Test#3-3: BEQ";
+        report "Test#3-3: BEQ/ALU";
         if_id  <= ADDR0R1R1;
         id_ex  <= BEQR1R0L0;
         ex_mem <= NOP;
@@ -169,7 +169,7 @@ begin
         -----------------------------------------------------
         ---------------------Test#3-4: BEQ---------------------
         --This test performs BEQ
-        report "Test#3-4: BEQ";
+        report "Test#3-4: ALU/BEQ";
         if_id  <= BEQR1R0L0;
         id_ex  <= ADDR1R0R0;
         ex_mem <= NOP;
@@ -181,9 +181,9 @@ begin
         -----------------------------------------------------
 
         -----------------------------------------------------
-        ---------------------Test#3-5: BEQ---------------------
+        ---------------------Test#3-5: ALU/BEQ---------------------
         --This test performs BEQ
-        report "Test#3-5: BEQ";
+        report "Test#3-5: ALU/BEQ";
         if_id  <= BEQR1R0L0;
         id_ex  <= NOP;
         ex_mem <= ADDR1R0R0;
@@ -195,9 +195,9 @@ begin
         -----------------------------------------------------
 
         -----------------------------------------------------
-        ---------------------Test#3-6: BEQ---------------------
+        ---------------------Test#3-6: ALU/BEQ---------------
         --This test performs BEQ
-        report "Test#3-6: BEQ";
+        report "Test#3-6: ALU/BEQ";
         if_id  <= BEQR1R0L0;
         id_ex  <= NOP;
         ex_mem <= NOP;
@@ -209,9 +209,9 @@ begin
         -----------------------------------------------------
 
         -----------------------------------------------------
-        ---------------------Test#4-1: JAL1---------------------
-        --This test performs JAL1
-        report "Test#4-1: JAL1";
+        ---------------------Test#4-1: JAL/ALU---------------
+        --This test performs JAL then ALU
+        report "Test#4-1: JAL/ALU";
         if_id  <= ADDR0R31R31;
         id_ex  <= JAL0;
         ex_mem <= NOP;
@@ -223,9 +223,9 @@ begin
         -----------------------------------------------------
 
         -----------------------------------------------------
-        ---------------------Test#4-2: JAL2---------------------
+        ---------------------Test#4-2: JAL/ALU-------------------
         --This test performs JAL2
-        report "Test#4-2: JAL2";
+        report "Test#4-2: JAL/ALU";
         if_id  <= ADDR0R31R31;
         id_ex  <= NOP;
         ex_mem <= JAL0;
@@ -237,10 +237,52 @@ begin
         -----------------------------------------------------
 
         -----------------------------------------------------
-        ---------------------Test#4-3: JAL3---------------------
-        --This test performs JAL3
-        report "Test#4-3: JAL3";
+        ---------------------Test#4-3: JAL/ALU--------------------
+        --This test performs JAL
+        report "Test#4-3: JAL/ALU";
         if_id  <= ADDR0R31R31;
+        id_ex  <= NOP;
+        ex_mem <= NOP;
+        mem_wb <= JAL0;
+
+        wait for 1 ns;
+
+        assert_equal_bit(stall, '0', error_count);
+        -----------------------------------------------------
+
+        -----------------------------------------------------
+        ---------------------Test#4-4: JAL/BEQ---------------------
+        --This test performs JAL then branches
+        report "Test#4-4: JAL/BEQ";
+        if_id  <= BEQR1R0L0;
+        id_ex  <= JAL0;
+        ex_mem <= NOP;
+        mem_wb <= NOP;
+
+        wait for 1 ns;
+
+        assert_equal_bit(stall, '0', error_count);
+        -----------------------------------------------------
+
+        -----------------------------------------------------
+        ---------------------Test#4-5: JAL/BEQ---------------------
+        --This test performs JAL then branches
+        report "Test#4-5: JAL/BEQ";
+        if_id  <= BEQR1R0L0;
+        id_ex  <= NOP;
+        ex_mem <= JAL0;
+        mem_wb <= NOP;
+
+        wait for 1 ns;
+
+        assert_equal_bit(stall, '0', error_count);
+        -----------------------------------------------------
+
+        -----------------------------------------------------
+        ---------------------Test#4-6: JAL/BEQ---------------------
+        --This test performs JAL then branches
+        report "Test#4-3: JAL/BEQ";
+        if_id  <= BEQR1R0L0;
         id_ex  <= NOP;
         ex_mem <= NOP;
         mem_wb <= JAL0;
@@ -253,7 +295,7 @@ begin
         -----------------------------------------------------
         ---------------------Test#5-1: LW/ALU---------------------
         --This test performs LW then ALU
-        report "Test#5-1: LW";
+        report "Test#5-1: LW/ALU";
         if_id  <= ADDR1R0R0;
         id_ex  <= LWR1;
         ex_mem <= NOP;
@@ -267,7 +309,7 @@ begin
         -----------------------------------------------------
         ---------------------Test#5-2: LW/ALU---------------------
         --This test performs LW then ALU
-        report "Test#5-2: LW";
+        report "Test#5-2: LW/ALU";
         if_id  <= ADDR1R0R0;
         id_ex  <= NOP;
         ex_mem <= LWR1;
@@ -281,7 +323,7 @@ begin
         -----------------------------------------------------
         ---------------------Test#5-3: LW/ALU---------------------
         --This test performs LW then ALU
-        report "Test#5-3: LW";
+        report "Test#5-3: LW/ALU";
         if_id  <= ADDR1R0R0;
         id_ex  <= NOP;
         ex_mem <= NOP;
@@ -309,7 +351,7 @@ begin
         -----------------------------------------------------
         ---------------------Test#5-5: LW/SW---------------------
         --This test performs LW/SW
-        report "Test#5-5: LW";
+        report "Test#5-5: LW/SW";
         if_id  <= LWR1;
         id_ex  <= SWR1;
         ex_mem <= NOP;
@@ -323,7 +365,7 @@ begin
         -----------------------------------------------------
         ---------------------Test#5-6: LW/SW---------------------
         --This test performs LW/SW
-        report "Test#5-6: LW";
+        report "Test#5-6: LW/SW";
         if_id  <= LWR1;
         id_ex  <= NOP;
         ex_mem <= SWR1;
@@ -337,7 +379,7 @@ begin
         -----------------------------------------------------
         ---------------------Test#5-7: LW/SW---------------------
         --This test performs LW/SW
-        report "Test#5-7: LW";
+        report "Test#5-7: LW/SW";
         if_id  <= LWR1;
         id_ex  <= NOP;
         ex_mem <= NOP;
@@ -351,7 +393,7 @@ begin
         -----------------------------------------------------
         ------------------Test#5-8: LW/BEQ-------------------
         --This test performs LW then Branch
-        report "Test#5-8: LW";
+        report "Test#5-8: LW/BEQ";
         if_id  <= BEQR1R0L0;
         id_ex  <= LWR1;
         ex_mem <= NOP;
@@ -365,7 +407,7 @@ begin
         -----------------------------------------------------
         ----------------Test#5-9: LW/BEQ---------------------
         --This test performs LW then Branch
-        report "Test#5-9: LW";
+        report "Test#5-9: LW/BEQ";
         if_id  <= BEQR1R0L0;
         id_ex  <= NOP;
         ex_mem <= LWR1;
@@ -379,8 +421,64 @@ begin
         -----------------------------------------------------
         ----------------Test#5-10: LW/BEQ--------------------
         --This test performs LW then Branch
-        report "Test#5-10: LW";
+        report "Test#5-10: LW/BEQ";
         if_id  <= BEQR1R0L0;
+        id_ex  <= NOP;
+        ex_mem <= NOP;
+        mem_wb <= LWR1;
+
+        wait for 1 ns;
+
+        assert_equal_bit(stall, '0', error_count);
+        -----------------------------------------------------
+
+        -----------------------------------------------------
+        ---------------------Test#5-11: SW-------------------
+        --This test performs LW
+        report "Test#5-11: SW";
+        if_id  <= SWR1;
+        id_ex  <= NOP;
+        ex_mem <= NOP;
+        mem_wb <= NOP;
+
+        wait for 1 ns;
+
+        assert_equal_bit(stall, '0', error_count);
+        -----------------------------------------------------
+
+        -----------------------------------------------------
+        ---------------------Test#5-12: SW/LW-----------------
+        --This test performs SW/LW
+        report "Test#5-12: SW/LW";
+        if_id  <= SWR1;
+        id_ex  <= LWR1;
+        ex_mem <= NOP;
+        mem_wb <= NOP;
+
+        wait for 1 ns;
+
+        assert_equal_bit(stall, '1', error_count);
+        -----------------------------------------------------
+
+        -----------------------------------------------------
+        ---------------------Test#5-13: SW/LW---------------------
+        --This test performs SW/LW
+        report "Test#5-13: SW/LW";
+        if_id  <= SWR1;
+        id_ex  <= NOP;
+        ex_mem <= LWR1;
+        mem_wb <= NOP;
+
+        wait for 1 ns;
+
+        assert_equal_bit(stall, '0', error_count);
+        -----------------------------------------------------
+
+        -----------------------------------------------------
+        ---------------------Test#5-14: SW/LW---------------------
+        --This test performs SW/LW
+        report "Test#5-14: SW/LW";
+        if_id  <= SWR1;
         id_ex  <= NOP;
         ex_mem <= NOP;
         mem_wb <= LWR1;
