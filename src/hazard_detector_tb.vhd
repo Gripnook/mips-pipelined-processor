@@ -67,7 +67,6 @@ begin
 
         -----------------------------------------------------
         ---------------------Test#1: NOP---------------------
-        --This test performs NOP
         report "Test#1: NOP";
         if_id  <= NOP;
         id_ex  <= NOP;
@@ -81,7 +80,6 @@ begin
 
         -----------------------------------------------------
         ---------------------Test#2-1: ALU/ALU---------------------
-        --This test performs ALU then ALU using same register
         report "Test#2-1: ALU/ALU";
         if_id  <= ADDR0R1R1;
         id_ex  <= ADDR1R0R0;
@@ -95,7 +93,6 @@ begin
 
         -----------------------------------------------------
         ---------------------Test#2-2: ALU/ALU---------------------
-        --This test performs ADD2
         report "Test#2-2: ALU/ALU";
         if_id  <= ADDR0R1R1;
         id_ex  <= NOP;
@@ -109,7 +106,6 @@ begin
 
         -----------------------------------------------------
         ---------------------Test#2-3: ALU/ALU---------------------
-        --This test performs ADD3
         report "Test#2-3: ALU/ALU";
         if_id  <= ADDR0R1R1;
         id_ex  <= NOP;
@@ -126,7 +122,6 @@ begin
 
         -----------------------------------------------------
         ---------------------Test#3-1: BEQ---------------------
-        --This test performs BEQ
         report "Test#3-1: BEQ";
         if_id  <= BEQR1R0L0;
         id_ex  <= NOP;
@@ -140,7 +135,6 @@ begin
 
         -----------------------------------------------------
         ---------------------Test#3-2: BEQ/ALU---------------------
-        --This test performs BEQ
         report "Test#3-2: BEQ/ALU";
         if_id  <= ADDR1R0R0;
         id_ex  <= BEQR1R0L0;
@@ -168,7 +162,6 @@ begin
 
         -----------------------------------------------------
         ---------------------Test#3-4: BEQ---------------------
-        --This test performs BEQ
         report "Test#3-4: ALU/BEQ";
         if_id  <= BEQR1R0L0;
         id_ex  <= ADDR1R0R0;
@@ -177,12 +170,11 @@ begin
 
         wait for 1 ns;
 
-        assert_equal_bit(stall, '0', error_count);
+        assert_equal_bit(stall, '1', error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
         ---------------------Test#3-5: ALU/BEQ---------------------
-        --This test performs BEQ
         report "Test#3-5: ALU/BEQ";
         if_id  <= BEQR1R0L0;
         id_ex  <= NOP;
@@ -196,7 +188,6 @@ begin
 
         -----------------------------------------------------
         ---------------------Test#3-6: ALU/BEQ---------------
-        --This test performs BEQ
         report "Test#3-6: ALU/BEQ";
         if_id  <= BEQR1R0L0;
         id_ex  <= NOP;
@@ -210,7 +201,6 @@ begin
 
         -----------------------------------------------------
         ---------------------Test#4-1: JAL/ALU---------------
-        --This test performs JAL then ALU
         report "Test#4-1: JAL/ALU";
         if_id  <= ADDR0R31R31;
         id_ex  <= JAL0;
@@ -224,7 +214,6 @@ begin
 
         -----------------------------------------------------
         ---------------------Test#4-2: JAL/ALU-------------------
-        --This test performs JAL2
         report "Test#4-2: JAL/ALU";
         if_id  <= ADDR0R31R31;
         id_ex  <= NOP;
@@ -238,7 +227,6 @@ begin
 
         -----------------------------------------------------
         ---------------------Test#4-3: JAL/ALU--------------------
-        --This test performs JAL
         report "Test#4-3: JAL/ALU";
         if_id  <= ADDR0R31R31;
         id_ex  <= NOP;
@@ -252,7 +240,6 @@ begin
 
         -----------------------------------------------------
         ---------------------Test#4-4: JAL/BEQ---------------------
-        --This test performs JAL then branches
         report "Test#4-4: JAL/BEQ";
         if_id  <= BEQR1R0L0;
         id_ex  <= JAL0;
@@ -266,7 +253,6 @@ begin
 
         -----------------------------------------------------
         ---------------------Test#4-5: JAL/BEQ---------------------
-        --This test performs JAL then branches
         report "Test#4-5: JAL/BEQ";
         if_id  <= BEQR1R0L0;
         id_ex  <= NOP;
@@ -280,8 +266,7 @@ begin
 
         -----------------------------------------------------
         ---------------------Test#4-6: JAL/BEQ---------------------
-        --This test performs JAL then branches
-        report "Test#4-3: JAL/BEQ";
+        report "Test#4-6: JAL/BEQ";
         if_id  <= BEQR1R0L0;
         id_ex  <= NOP;
         ex_mem <= NOP;
@@ -294,7 +279,6 @@ begin
 
         -----------------------------------------------------
         ---------------------Test#5-1: LW/ALU---------------------
-        --This test performs LW then ALU
         report "Test#5-1: LW/ALU";
         if_id  <= ADDR1R0R0;
         id_ex  <= LWR1;
@@ -303,12 +287,11 @@ begin
 
         wait for 1 ns;
 
-        assert_equal_bit(stall, '1', error_count);
+        assert_equal_bit(stall, '0', error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
         ---------------------Test#5-2: LW/ALU---------------------
-        --This test performs LW then ALU
         report "Test#5-2: LW/ALU";
         if_id  <= ADDR1R0R0;
         id_ex  <= NOP;
@@ -322,7 +305,6 @@ begin
 
         -----------------------------------------------------
         ---------------------Test#5-3: LW/ALU---------------------
-        --This test performs LW then ALU
         report "Test#5-3: LW/ALU";
         if_id  <= ADDR1R0R0;
         id_ex  <= NOP;
@@ -336,7 +318,6 @@ begin
 
         -----------------------------------------------------
         ---------------------Test#5-4: LW---------------------
-        --This test performs LW
         report "Test#5-4: LW";
         if_id  <= LWR1;
         id_ex  <= NOP;
@@ -350,7 +331,6 @@ begin
 
         -----------------------------------------------------
         ---------------------Test#5-5: LW/SW---------------------
-        --This test performs LW/SW
         report "Test#5-5: LW/SW";
         if_id  <= LWR1;
         id_ex  <= SWR1;
@@ -364,7 +344,6 @@ begin
 
         -----------------------------------------------------
         ---------------------Test#5-6: LW/SW---------------------
-        --This test performs LW/SW
         report "Test#5-6: LW/SW";
         if_id  <= LWR1;
         id_ex  <= NOP;
@@ -378,7 +357,6 @@ begin
 
         -----------------------------------------------------
         ---------------------Test#5-7: LW/SW---------------------
-        --This test performs LW/SW
         report "Test#5-7: LW/SW";
         if_id  <= LWR1;
         id_ex  <= NOP;
@@ -392,7 +370,6 @@ begin
 
         -----------------------------------------------------
         ------------------Test#5-8: LW/BEQ-------------------
-        --This test performs LW then Branch
         report "Test#5-8: LW/BEQ";
         if_id  <= BEQR1R0L0;
         id_ex  <= LWR1;
@@ -406,7 +383,6 @@ begin
 
         -----------------------------------------------------
         ----------------Test#5-9: LW/BEQ---------------------
-        --This test performs LW then Branch
         report "Test#5-9: LW/BEQ";
         if_id  <= BEQR1R0L0;
         id_ex  <= NOP;
@@ -415,12 +391,11 @@ begin
 
         wait for 1 ns;
 
-        assert_equal_bit(stall, '0', error_count);
+        assert_equal_bit(stall, '1', error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
         ----------------Test#5-10: LW/BEQ--------------------
-        --This test performs LW then Branch
         report "Test#5-10: LW/BEQ";
         if_id  <= BEQR1R0L0;
         id_ex  <= NOP;
@@ -434,7 +409,6 @@ begin
 
         -----------------------------------------------------
         ---------------------Test#5-11: SW-------------------
-        --This test performs LW
         report "Test#5-11: SW";
         if_id  <= SWR1;
         id_ex  <= NOP;
@@ -448,7 +422,6 @@ begin
 
         -----------------------------------------------------
         ---------------------Test#5-12: SW/LW-----------------
-        --This test performs SW/LW
         report "Test#5-12: SW/LW";
         if_id  <= SWR1;
         id_ex  <= LWR1;
@@ -457,12 +430,11 @@ begin
 
         wait for 1 ns;
 
-        assert_equal_bit(stall, '1', error_count);
+        assert_equal_bit(stall, '0', error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
-        ---------------------Test#5-13: SW/LW---------------------
-        --This test performs SW/LW
+        ------------------Test#5-13: SW/LW-------------------
         report "Test#5-13: SW/LW";
         if_id  <= SWR1;
         id_ex  <= NOP;
@@ -475,8 +447,7 @@ begin
         -----------------------------------------------------
 
         -----------------------------------------------------
-        ---------------------Test#5-14: SW/LW---------------------
-        --This test performs SW/LW
+        --------------------Test#5-14: SW/LW-----------------
         report "Test#5-14: SW/LW";
         if_id  <= SWR1;
         id_ex  <= NOP;
