@@ -125,8 +125,10 @@ architecture arch of processor is
     signal wb_instruction : std_logic_vector(31 downto 0);
     signal wb_opcode      : std_logic_vector(5 downto 0);
     signal wb_funct       : std_logic_vector(5 downto 0);
+    signal wb_rs_addr     : std_logic_vector(4 downto 0);
     signal wb_rt_addr     : std_logic_vector(4 downto 0);
     signal wb_rd_addr     : std_logic_vector(4 downto 0);
+    signal wb_immediate   : std_logic_vector(15 downto 0);
     signal wb_alu_result  : std_logic_vector(31 downto 0);
     signal wb_memory_load : std_logic_vector(31 downto 0);
     signal wb_write_en    : std_logic;
@@ -154,6 +156,10 @@ architecture arch of processor is
     signal memory_access_stall_count : integer := 0;
     signal data_hazard_stall_count   : integer := 0;
     signal branch_hazard_stall_count : integer := 0;
+
+    -- bookkeeping
+    signal id_done : std_logic := '0';
+    signal wb_done : std_logic := '0';
 
 begin
 
@@ -485,10 +491,12 @@ begin
 
     -- wb
 
-    wb_opcode  <= wb_instruction(31 downto 26);
-    wb_funct   <= wb_instruction(5 downto 0);
-    wb_rt_addr <= wb_instruction(20 downto 16);
-    wb_rd_addr <= wb_instruction(15 downto 11);
+    wb_opcode    <= wb_instruction(31 downto 26);
+    wb_funct     <= wb_instruction(5 downto 0);
+    wb_rs_addr   <= wb_instruction(25 downto 21);
+    wb_rt_addr   <= wb_instruction(20 downto 16);
+    wb_rd_addr   <= wb_instruction(15 downto 11);
+    wb_immediate <= wb_instruction(15 downto 0);
 
     write_en_mux : process(wb_opcode, wb_funct)
     begin
@@ -608,8 +616,34 @@ begin
                 memory_access_stall_count <= memory_access_stall_count + 1;
             elsif (data_hazard_stall = '1') then
                 data_hazard_stall_count <= data_hazard_stall_count + 1;
-            elsif (id_branch_taken = '1') then
+            elsif (id_done = '0' and id_branch_taken = '1') then
                 branch_hazard_stall_count <= branch_hazard_stall_count + 1;
+            end if;
+        end if;
+    end process;
+
+    -- bookkeeping
+
+    branch_termination : process(clock, reset)
+    begin
+        if (reset = '1') then
+            id_done <= '0';
+        elsif (rising_edge(clock)) then
+            -- No more branch hazards can occur if an infinite loop using BEQ reaches ID 
+            if (id_opcode = OP_BEQ and id_rs_addr = id_rt_addr and id_immediate = x"FFFFFFFF") then
+                id_done <= '1';
+            end if;
+        end if;
+    end process;
+
+    program_termination : process(clock, reset)
+    begin
+        if (reset = '1') then
+            wb_done <= '0';
+        elsif (rising_edge(clock)) then
+            -- The program is done if an infinite loop using BEQ reaches WB
+            if (wb_opcode = OP_BEQ and wb_rs_addr = wb_rt_addr and wb_immediate = x"FFFF") then
+                wb_done <= '1';
             end if;
         end if;
     end process;
