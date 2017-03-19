@@ -323,7 +323,7 @@ begin
         -----------------------------------------------------
         ---------------------Test#3-6: addi---------------------
         --This test performs the addi operation on the alu
-        report "Test#3-4: addi";
+        report "Test#3-6: addi";
         a      <= std_logic_vector(to_signed(-806540, 32));
         b      <= std_logic_vector(to_signed(-5051, 32));
         opcode <= 6x"8";
@@ -486,9 +486,9 @@ begin
         -----------------------------------------------------
 
         -----------------------------------------------------
-        ---------------------Test#5-5: div---------------------
+        ---------------------Test#5-6: div---------------------
         --This test performs the div operation on the alu
-        report "Test#5-5: div";
+        report "Test#5-6: div";
         a      <= std_logic_vector(to_signed(1, 32));
         b      <= std_logic_vector(to_signed(-999999, 32));
         opcode <= 6x"0";
@@ -698,7 +698,7 @@ begin
         assert_equal(alu_output, x"00000000FFFFFFFF", error_count);
         -----------------------------------------------------
         
-        ---------------------Test#11-12 xor---------------------
+        ---------------------Test#11-2 xor---------------------
         --This test performs the xor operation on the alu
         report "Test#11-2: xor";
         a      <= (others => '0');
@@ -726,9 +726,9 @@ begin
         assert_equal(alu_output, 64x"0", error_count);
         -----------------------------------------------------
         
-        ---------------------Test#11-3: xor---------------------
+        ---------------------Test#11-4: xor---------------------
         --This test performs the xor operation on the alu
-        report "Test#11-3: xor";
+        report "Test#11-4: xor";
         a      <= (others => '0');
         b      <= (others => '1');
         opcode <= 6x"0";
