@@ -12,8 +12,8 @@ vlib work
 
 ;# Compile components
 vcom -2008 mips_instruction_set.vhd
-vcom -2008 alu.vhd
-vcom -2008 alu_tb.vhd
+vcom -2008 alu/alu.vhd
+vcom -2008 alu/alu_tb.vhd
 
 ;# Start simulation
 vsim -t ps alu_tb

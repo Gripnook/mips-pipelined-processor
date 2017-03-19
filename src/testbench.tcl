@@ -39,8 +39,8 @@ vlib work
 vcom mips_instruction_set.vhd
 vcom memory.vhd
 vcom registers.vhd
-vcom alu.vhd
-vcom hazard_detector.vhd
+vcom alu/alu.vhd
+vcom hazards/hazard_detector.vhd
 vcom processor.vhd
 vcom testbench.vhd
 

@@ -11,8 +11,8 @@ vlib work
 
 ;# Compile components
 vcom -2008 mips_instruction_set.vhd
-vcom -2008 hazard_detector.vhd
-vcom -2008 hazard_detector_tb.vhd
+vcom -2008 hazards/hazard_detector.vhd
+vcom -2008 hazards/hazard_detector_tb.vhd
 
 ;# Start simulation
 vsim -t ps hazard_detector_tb
