@@ -549,9 +549,9 @@ begin
         report "Testing logical instructions";
 
         -----------------------------------------------------
-        ---------------------Test#8: and---------------------
+        ---------------------Test#8-1: and---------------------
         --This test performs the and operation on the alu
-        report "Test#8: and";
+        report "Test#8-1: and";
         a      <= (others => '1');
         b      <= 32x"1";
         opcode <= 6x"0";
@@ -562,11 +562,41 @@ begin
 
         assert_equal(alu_output, 64x"1", error_count);
         -----------------------------------------------------
+        
+        -----------------------------------------------------
+        ---------------------Test#8-2: and---------------------
+        --This test performs the and operation on the alu
+        report "Test#8-2: and";
+        a      <= (others => '1');
+        b      <= "10101010101010101010101010101011";
+        opcode <= 6x"0";
+        shamt  <= 5x"0";
+        funct  <= 6x"24";
+
+        wait for 1 ns;
+
+        assert_equal(alu_output, 32x"0" & "10101010101010101010101010101011", error_count);
+        -----------------------------------------------------
+        
+        -----------------------------------------------------
+        ---------------------Test#8-3: and---------------------
+        --This test performs the and operation on the alu
+        report "Test#8-3: and";
+        a      <= (others => '0');
+        b      <= "10101010101010101010101010101011";
+        opcode <= 6x"0";
+        shamt  <= 5x"0";
+        funct  <= 6x"24";
+
+        wait for 1 ns;
+
+        assert_equal(alu_output, 64x"0", error_count);
+        -----------------------------------------------------
 
         -----------------------------------------------------
-        ---------------------Test#9: or---------------------
+        ---------------------Test#9-1: or---------------------
         --This test performs the or operation on the alu
-        report "Test#9: or";
+        report "Test#9-1: or";
         a      <= (others => '1');
         b      <= 32x"1";
         opcode <= 6x"0";
@@ -577,11 +607,41 @@ begin
 
         assert_equal(alu_output, x"00000000FFFFFFFF", error_count);
         -----------------------------------------------------
+        
+        -----------------------------------------------------
+        ---------------------Test#9-2: or---------------------
+        --This test performs the or operation on the alu
+        report "Test#9-2: or";
+        a      <= (others => '0');
+        b      <= (others => '1');
+        opcode <= 6x"0";
+        shamt  <= 5x"0";
+        funct  <= 6x"25";
+
+        wait for 1 ns;
+
+        assert_equal(alu_output, 32x"0" & 32x"ffffffff", error_count);
+        -----------------------------------------------------
+        
+        -----------------------------------------------------
+        ---------------------Test#9-3: or---------------------
+        --This test performs the or operation on the alu
+        report "Test#9-3: or";
+        a      <= (others => '0');
+        b      <= 32x"0";
+        opcode <= 6x"0";
+        shamt  <= 5x"0";
+        funct  <= 6x"25";
+
+        wait for 1 ns;
+
+        assert_equal(alu_output, 64x"0", error_count);
+        -----------------------------------------------------
 
         -----------------------------------------------------
-        ---------------------Test#10: nor---------------------
+        ---------------------Test#10-1: nor---------------------
         --This test performs the nor operation on the alu
-        report "Test#10: nor";
+        report "Test#10-1: nor";
         a      <= (others => '1');
         b      <= 32x"1";
         opcode <= 6x"0";
@@ -592,11 +652,41 @@ begin
 
         assert_equal(alu_output, 64x"0", error_count);
         -----------------------------------------------------
+        
+        -----------------------------------------------------
+        ---------------------Test#10-2: nor---------------------
+        --This test performs the nor operation on the alu
+        report "Test#10-2: nor";
+        a      <= (others => '1');
+        b      <= (others => '1');
+        opcode <= 6x"0";
+        shamt  <= 5x"0";
+        funct  <= 6x"27";
+
+        wait for 1 ns;
+
+        assert_equal(alu_output, 64x"0", error_count);
+        -----------------------------------------------------
+        
+        -----------------------------------------------------
+        ---------------------Test#10-3: nor---------------------
+        --This test performs the nor operation on the alu
+        report "Test#10-3: nor";
+        a      <= (others => '0');
+        b      <= 16x"ffff" & 16x"0";
+        opcode <= 6x"0";
+        shamt  <= 5x"0";
+        funct  <= 6x"27";
+
+        wait for 1 ns;
+
+        assert_equal(alu_output, 48x"0" & 16x"ffff" , error_count);
+        -----------------------------------------------------
 
         -----------------------------------------------------
-        ---------------------Test#11: xor---------------------
+        ---------------------Test#11-1: xor---------------------
         --This test performs the xor operation on the alu
-        report "Test#11: xor";
+        report "Test#11-1: xor";
         a      <= (others => '1');
         b      <= 32x"0";
         opcode <= 6x"0";
@@ -607,11 +697,53 @@ begin
 
         assert_equal(alu_output, x"00000000FFFFFFFF", error_count);
         -----------------------------------------------------
+        
+        ---------------------Test#11-12 xor---------------------
+        --This test performs the xor operation on the alu
+        report "Test#11-2: xor";
+        a      <= (others => '0');
+        b      <= 32x"0";
+        opcode <= 6x"0";
+        shamt  <= 5x"0";
+        funct  <= 6x"26";
+
+        wait for 1 ns;
+
+        assert_equal(alu_output, 64x"0", error_count);
+        -----------------------------------------------------
+        
+        ---------------------Test#11-3: xor---------------------
+        --This test performs the xor operation on the alu
+        report "Test#11-3: xor";
+        a      <= (others => '1');
+        b      <= (others => '1');
+        opcode <= 6x"0";
+        shamt  <= 5x"0";
+        funct  <= 6x"26";
+
+        wait for 1 ns;
+
+        assert_equal(alu_output, 64x"0", error_count);
+        -----------------------------------------------------
+        
+        ---------------------Test#11-3: xor---------------------
+        --This test performs the xor operation on the alu
+        report "Test#11-3: xor";
+        a      <= (others => '0');
+        b      <= (others => '1');
+        opcode <= 6x"0";
+        shamt  <= 5x"0";
+        funct  <= 6x"26";
+
+        wait for 1 ns;
+
+        assert_equal(alu_output, x"00000000FFFFFFFF", error_count);
+        -----------------------------------------------------
 
         -----------------------------------------------------
-        ---------------------Test#12: andi---------------------
+        ---------------------Test#12-1: andi---------------------
         --This test performs the andi operation on the alu
-        report "Test#12: andi";
+        report "Test#12-1: andi";
         a      <= (others => '1');
         b      <= 32x"0";
         opcode <= 6x"c";
@@ -622,11 +754,41 @@ begin
 
         assert_equal(alu_output, 64x"0", error_count);
         -----------------------------------------------------
+        
+        -----------------------------------------------------
+        ---------------------Test#12-2: andi---------------------
+        --This test performs the andi operation on the alu
+        report "Test#12-2: andi";
+        a      <= (others => '1');
+        b      <= 32x"0000ffff";
+        opcode <= 6x"c";
+        shamt  <= 5x"0";
+        funct  <= 6x"0";
+
+        wait for 1 ns;
+
+        assert_equal(alu_output, 32x"0" & 32x"0000ffff", error_count);
+        -----------------------------------------------------
+        
+        -----------------------------------------------------
+        ---------------------Test#12-3: andi---------------------
+        --This test performs the andi operation on the alu
+        report "Test#12-3: andi";
+        a      <= (others => '0');
+        b      <= 32x"0000ffff";
+        opcode <= 6x"c";
+        shamt  <= 5x"0";
+        funct  <= 6x"0";
+
+        wait for 1 ns;
+
+        assert_equal(alu_output, 64x"0", error_count);
+        -----------------------------------------------------
 
         -----------------------------------------------------
-        ---------------------Test#13: ori---------------------
+        ---------------------Test#13-1: ori---------------------
         --This test performs the ori operation on the alu
-        report "Test#13: ori";
+        report "Test#13-1: ori";
         a      <= (others => '1');
         b      <= 32x"0";
         opcode <= 6x"d";
@@ -637,13 +799,103 @@ begin
 
         assert_equal(alu_output, x"00000000FFFFFFFF", error_count);
         -----------------------------------------------------
+        
+        -----------------------------------------------------
+        ---------------------Test#13-2: ori---------------------
+        --This test performs the ori operation on the alu
+        report "Test#13-2: ori";
+        a      <= (others => '0');
+        b      <= 32x"0";
+        opcode <= 6x"d";
+        shamt  <= 5x"0";
+        funct  <= 6x"0";
+
+        wait for 1 ns;
+
+        assert_equal(alu_output, 64x"0", error_count);
+        -----------------------------------------------------
+        
+        -----------------------------------------------------
+        ---------------------Test#13-3: ori---------------------
+        --This test performs the ori operation on the alu
+        report "Test#13-3: ori";
+        a      <= (others => '1');
+        b      <= (others => '1');
+        opcode <= 6x"d";
+        shamt  <= 5x"0";
+        funct  <= 6x"0";
+
+        wait for 1 ns;
+
+        assert_equal(alu_output, 32x"0" & 32x"ffffffff", error_count);
+        -----------------------------------------------------
+        
+        -----------------------------------------------------
+        ---------------------Test#13-4: ori---------------------
+        --This test performs the ori operation on the alu
+        report "Test#13-4: ori";
+        a      <= (others => '0');
+        b      <= (others => '1');
+        opcode <= 6x"d";
+        shamt  <= 5x"0";
+        funct  <= 6x"0";
+
+        wait for 1 ns;
+
+        assert_equal(alu_output, 32x"0" & 32x"ffffffff", error_count);
+        -----------------------------------------------------
 
         -----------------------------------------------------
-        ---------------------Test#14: xori---------------------
+        ---------------------Test#14-1: xori---------------------
         --This test performs the xori operation on the alu
-        report "Test#14: xori";
+        report "Test#14-1: xori";
         a      <= (others => '1');
         b      <= 32x"0";
+        opcode <= 6x"e";
+        shamt  <= 5x"0";
+        funct  <= 6x"0";
+
+        wait for 1 ns;
+
+        assert_equal(alu_output, x"00000000FFFFFFFF", error_count);
+        -----------------------------------------------------
+        
+        -----------------------------------------------------
+        ---------------------Test#14-2: xori---------------------
+        --This test performs the xori operation on the alu
+        report "Test#14-2: xori";
+        a      <= (others => '0');
+        b      <= 32x"0";
+        opcode <= 6x"e";
+        shamt  <= 5x"0";
+        funct  <= 6x"0";
+
+        wait for 1 ns;
+
+        assert_equal(alu_output, 64x"0", error_count);
+        -----------------------------------------------------
+        
+        -----------------------------------------------------
+        ---------------------Test#14-3: xori---------------------
+        --This test performs the xori operation on the alu
+        report "Test#14-3: xori";
+        a      <= (others => '1');
+        b      <= (others => '1');
+        opcode <= 6x"e";
+        shamt  <= 5x"0";
+        funct  <= 6x"0";
+
+        wait for 1 ns;
+
+        assert_equal(alu_output, 64x"0", error_count);
+        -----------------------------------------------------
+        
+        -----------------------------------------------------
+        ---------------------Test#14-4: xori---------------------
+        --This test performs the xori operation on the alu
+        report "Test#14-4: xori";
+        a      <= 32x"0";
+        b      <= (others => '1');
         opcode <= 6x"e";
         shamt  <= 5x"0";
         funct  <= 6x"0";
@@ -657,9 +909,9 @@ begin
         report "Testing transfer instructions";
 
         -----------------------------------------------------
-        ---------------------Test#15: lui---------------------
+        ---------------------Test#15-1: lui---------------------
         --This test performs the lui operation on the alu
-        report "Test#15: lui";
+        report "Test#15-1: lui";
         b      <= 32x"1";
         opcode <= 6x"f";
         shamt  <= 5x"0";
@@ -668,6 +920,19 @@ begin
         wait for 1 ns;
 
         assert_equal(alu_output, x"0000000000010000", error_count);
+        -----------------------------------------------------
+        
+        ---------------------Test#15-2: lui---------------------
+        --This test performs the lui operation on the alu
+        report "Test#15-2: lui";
+        b      <= 32x"0000ffff";
+        opcode <= 6x"f";
+        shamt  <= 5x"0";
+        funct  <= 6x"0";
+
+        wait for 1 ns;
+
+        assert_equal(alu_output, 32x"0" & 32x"ffff0000", error_count);
         -----------------------------------------------------
 
         ----------------- Shift instructions-----------------
@@ -770,12 +1035,6 @@ begin
 
         assert_equal(alu_output, 32x"0" & 32x"00ffffff", error_count);
         -----------------------------------------------------
-
-        ----------------- Memory instructions----------------
-        report "Testing memory instructions";
-
-        ----------------- Control-flow instructions----------------
-        report "Testing control-flow instructions";
 
         report "Done. Found " & integer'image(error_count) & " error(s).";
 
