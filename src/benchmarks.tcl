@@ -23,6 +23,7 @@ vsim -t ps testbench
 # Generate a clock with 1 ns period
 force -deposit clock 0 0 ns, 1 0.5 ns -repeat 1 ns
 
+# Print performance counter header
 echo Program,Memory Stall Count,Data Hazard Stall Count,Branch Hazard Stall Count
 
 foreach program $programs {
@@ -45,6 +46,7 @@ foreach program $programs {
     mem save -outfile results/$program/memory.txt -format bin -wordsperline 1 -noaddress /testbench/dut/data_cache/ram_block
     mem save -outfile results/$program/register_file.txt -format bin -wordsperline 1 -noaddress /testbench/dut/register_file/registers
 
+    # Print performance counters
     echo $program,[examine -radix dec /testbench/dut/memory_access_stall_count],[examine -radix dec /testbench/dut/data_hazard_stall_count],[examine -radix dec /testbench/dut/branch_hazard_stall_count]
 }
 
