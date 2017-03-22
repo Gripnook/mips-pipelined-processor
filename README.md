@@ -18,6 +18,18 @@ Data hazard detection is implemented through the use of instruction decoding pro
 
 Data forwarding is implemented through the use of the same instruction decoding procedures used by data hazard detection. The production stage of the instructions in EX, MEM, and WB is used to verify if the outputs are ready at the current time. These ready signals control a set of multiplexers in the ID, EX, and MEM stages. The inputs in these stages are compared to the outputs in each of the subsequent stages, and if the input matches the output and the output is ready then the multiplexer forwards the value. Priority is given to later instructions, as these may overwrite the values written by previous instructions. The register $0 is ignored when forwarding data.
 
+The performance benefits of data forwarding can be seen in the following table:
+
+| Benchmark  | Data Hazards (no forwarding) | Data Hazards (with forwarding) |
+| ---------- | ---------------------------: | -----------------------------: |
+| bitwise    |                           21 |                              0 |
+| fib        |                           45 |                              4 |
+| primes     |                          502 |                            163 |
+| edge-cases |                            8 |                              0 |
+| exp        |                           28 |                              7 |
+| gcd        |                           72 |                             13 |
+| sqrt       |                           60 |                              8 |
+
 ## Memory Accesses
 
 Memory accesses occur on the falling edge of the clock in order to allow them to occur between pipeline stages. For data memory accesses, the waitrequest signal is used to stall the pipeline in the MEM stage until the access completes. For instruction memory accesses, the pipeline is stalled in the ID stage. The reason we are not stalling in IF is that branch hazards can occur at the same time as an instruction memory stall. If we were stalling in IF, the branch resolution would flush the IF/ID pipeline register and attempt to branch, but the IF stall would prevent the PC from being updated. Hence we would lose a branch. To prevent this, the ID stage is stalled as well.
