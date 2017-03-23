@@ -44,4 +44,4 @@ loop:   slt  $6, $4, $5     # i < 32
 b1:     sll  $2, $2, 1      # mask = mask << 1
         addi $4, $4, 1      # i = i + 1
         j loop              # repeat the loop
-quit:   jr $31  
+quit:   jr $31

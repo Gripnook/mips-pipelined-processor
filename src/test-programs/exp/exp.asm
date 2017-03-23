@@ -39,4 +39,4 @@ b1:     mult $3, $3         # x * x
         mflo $3             # x = x * x
         srl  $2, $2, 1      # y = y >> 1
         j loop              # repeat the loop
-quit:   jr $31  
+quit:   jr $31
