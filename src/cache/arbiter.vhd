@@ -2,22 +2,25 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 entity arbiter is
+    generic(
+        RAM_SIZE : integer := 32768
+    );
     port(
         clock         : in  std_logic;
         reset         : in  std_logic;
-        i_addr        : in  std_logic_vector(7 downto 0);
+        i_addr        : in  integer range 0 to RAM_SIZE - 1;
         i_read        : in  std_logic;
         i_readdata    : out std_logic_vector(7 downto 0);
         i_write       : in  std_logic;
         i_writedata   : in  std_logic_vector(7 downto 0);
         i_waitrequest : out std_logic;
-        d_addr        : in  std_logic_vector(7 downto 0);
+        d_addr        : in  integer range 0 to RAM_SIZE - 1;
         d_read        : in  std_logic;
         d_readdata    : out std_logic_vector(7 downto 0);
         d_write       : in  std_logic;
         d_writedata   : in  std_logic_vector(7 downto 0);
         d_waitrequest : out std_logic;
-        m_addr        : out std_logic_vector(7 downto 0);
+        m_addr        : out integer range 0 to RAM_SIZE - 1;
         m_read        : out std_logic;
         m_readdata    : in  std_logic_vector(7 downto 0);
         m_write       : out std_logic;
@@ -76,7 +79,7 @@ begin
         m_read        <= '0';
         m_write       <= '0';
         m_writedata   <= (others => '0');
-        m_addr        <= (others => '0');
+        m_addr        <= 0;
 
         case state is
             when IDLE =>

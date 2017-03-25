@@ -4,7 +4,7 @@ use ieee.numeric_std.all;
 
 entity cache is
     generic(
-        ram_size : INTEGER := 32768
+        RAM_SIZE : integer := 32768
     );
     port(
         clock         : in  std_logic;
@@ -16,7 +16,7 @@ entity cache is
         s_write       : in  std_logic;
         s_writedata   : in  std_logic_vector(31 downto 0);
         s_waitrequest : out std_logic;
-        m_addr        : out integer range 0 to ram_size - 1;
+        m_addr        : out integer range 0 to RAM_SIZE - 1;
         m_read        : out std_logic;
         m_readdata    : in  std_logic_vector(7 downto 0);
         m_write       : out std_logic;

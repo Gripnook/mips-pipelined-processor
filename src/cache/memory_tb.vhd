@@ -29,7 +29,7 @@ architecture behaviour of memory_tb is
     --all the input signals with initial values
     signal clock       : std_logic := '0';
     signal writedata   : std_logic_vector(7 downto 0);
-    signal address     : integer range 0 to 32768 - 1;
+    signal address     : integer := 0;
     signal memwrite    : std_logic := '0';
     signal memread     : std_logic := '0';
     signal readdata    : std_logic_vector(7 downto 0);

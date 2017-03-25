@@ -54,6 +54,13 @@ begin
             read_waitreq_reg <= '0' after MEM_DELAY, '1' after MEM_DELAY + CLOCK_PERIOD;
         end if;
     end process;
-    waitrequest <= write_waitreq_reg and read_waitreq_reg;
+
+    -- Synchronize the waitrequest signal to the falling edge of the clock
+    waitreq_proc : process(clock)
+    begin
+        if (falling_edge(clock)) then
+            waitrequest <= write_waitreq_reg and read_waitreq_reg;
+        end if;
+    end process;
 
 end rtl;

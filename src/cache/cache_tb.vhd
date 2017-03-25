@@ -6,14 +6,14 @@ entity cache_tb is
 end cache_tb;
 
 architecture behavior of cache_tb is
+
     component cache is
         generic(
-            ram_size : INTEGER := 32768
+            RAM_SIZE : integer := 32768
         );
         port(
             clock         : in  std_logic;
             reset         : in  std_logic;
-
             -- Avalon interface --
             s_addr        : in  std_logic_vector(31 downto 0);
             s_read        : in  std_logic;
@@ -21,7 +21,7 @@ architecture behavior of cache_tb is
             s_write       : in  std_logic;
             s_writedata   : in  std_logic_vector(31 downto 0);
             s_waitrequest : out std_logic;
-            m_addr        : out integer range 0 to ram_size - 1;
+            m_addr        : out integer range 0 to RAM_SIZE - 1;
             m_read        : out std_logic;
             m_readdata    : in  std_logic_vector(7 downto 0);
             m_write       : out std_logic;
@@ -31,26 +31,26 @@ architecture behavior of cache_tb is
     end component;
 
     component memory is
-        GENERIC(
-            ram_size     : INTEGER := 32768;
-            mem_delay    : time    := 10 ns;
-            clock_period : time    := 1 ns
+        generic(
+            RAM_SIZE     : integer := 32768;
+            MEM_DELAY    : time    := 10 ns;
+            CLOCK_PERIOD : time    := 1 ns
         );
-        PORT(
-            clock       : IN  STD_LOGIC;
-            writedata   : IN  STD_LOGIC_VECTOR(7 DOWNTO 0);
-            address     : IN  INTEGER RANGE 0 TO ram_size - 1;
-            memwrite    : IN  STD_LOGIC;
-            memread     : IN  STD_LOGIC;
-            readdata    : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
-            waitrequest : OUT STD_LOGIC
+        port(
+            clock       : in  std_logic;
+            writedata   : in  std_logic_vector(7 downto 0);
+            address     : in  integer range 0 to RAM_SIZE - 1;
+            memwrite    : in  std_logic;
+            memread     : in  std_logic;
+            readdata    : out std_logic_vector(7 downto 0);
+            waitrequest : out std_logic
         );
     end component;
 
-    -- test signals
-    signal clock          : std_logic := '0';
-    signal reset          : std_logic := '0';
-    constant clock_period : time      := 1 ns;
+    constant clock_period : time := 1 ns;
+
+    signal clock : std_logic := '0';
+    signal reset : std_logic := '0';
 
     signal s_addr        : std_logic_vector(31 downto 0) := (others => '0');
     signal s_read        : std_logic;
@@ -59,7 +59,7 @@ architecture behavior of cache_tb is
     signal s_writedata   : std_logic_vector(31 downto 0);
     signal s_waitrequest : std_logic;
 
-    signal m_addr        : integer range 0 to 2147483647;
+    signal m_addr        : integer;
     signal m_read        : std_logic;
     signal m_readdata    : std_logic_vector(7 downto 0);
     signal m_write       : std_logic;
@@ -106,7 +106,7 @@ begin
             m_waitrequest => m_waitrequest
         );
 
-    MEM : memory
+    mem : memory
         port map(
             clock       => clock,
             writedata   => m_writedata,
@@ -788,7 +788,6 @@ begin
         report "Done. Found " & integer'image(error_count) & " error(s).";
 
         wait;
-
     end process;
 
 end behavior;

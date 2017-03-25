@@ -18,7 +18,7 @@ vcom cache/memory_tb.vhd
 ;# Start simulation
 vsim -t ps memory_tb
 
-# Initialize memory with zeros
+# Initialize memory
 mem load -filldata FF -fillradix hex /memory_tb/dut/ram_block
 
 ;# Generate a clock with 1 ns period

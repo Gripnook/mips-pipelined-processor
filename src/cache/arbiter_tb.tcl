@@ -26,14 +26,18 @@ proc AddWaves {} {
 vlib work
 
 ;# Compile components
+vcom -2008 cache/memory.vhd
 vcom -2008 cache/arbiter.vhd
 vcom -2008 cache/arbiter_tb.vhd
 
 ;# Start simulation
 vsim -t ps arbiter_tb
 
+# Initialize memory
+mem load -filldata FF -fillradix hex /arbiter_tb/mem/ram_block
+
 ;# Add the waves
 AddWaves
 
 ;# Run
-run 40ns
+run 250ns
