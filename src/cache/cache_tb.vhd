@@ -531,8 +531,7 @@ begin
         ---------------------Test#17: Read--------------------
         --This test attempts to read a block of memory we haven't accessed
         --yet, and hence is invalid and should be retrieved from main memory
-        --We assume that the bytes in memory have been initialized to the
-        --address modulo 256.
+        --We assume that the bytes in memory have been initialized to 0xFF
         report "Test#17: Read";
         report "Covers cases read/invalid/x/x";
 
@@ -542,7 +541,7 @@ begin
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
 
-        assert_equal(s_readdata, x"03020100", error_count);
+        assert_equal(s_readdata, x"FFFFFFFF", error_count);
 
         s_read <= '0';
 

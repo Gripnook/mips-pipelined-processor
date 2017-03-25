@@ -30,14 +30,17 @@ proc AddWaves {} {
 vlib work
 
 ;# Compile components
-vcom memory.vhd
-vcom cache_controller.vhd
-vcom cache_block.vhd
-vcom cache.vhd
-vcom cache_tb.vhd
+vcom cache/memory.vhd
+vcom cache/cache_controller.vhd
+vcom cache/cache_block.vhd
+vcom cache/cache.vhd
+vcom cache/cache_tb.vhd
 
 ;# Start simulation
 vsim -t ps cache_tb
+
+# Initialize memory with zeros
+mem load -filldata FF -fillradix hex /cache_tb/mem/ram_block
 
 ;# Generate a clock with 1 ns period
 force -deposit clock 0 0 ns, 1 0.5 ns -repeat 1 ns
