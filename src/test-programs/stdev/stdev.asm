@@ -11,7 +11,7 @@ addi $7, $0, 2000 #Start of data memory address
 
 #########################
 addi $1, $0, 8 #Enter dataset size here
-sw $1, 0($7)   #Store the size of the dataset in $r1
+sw $1, 0($7)   #Store the size of the dataset in base memory address
 #########################
 
 #######Dataset#######
