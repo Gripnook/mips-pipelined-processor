@@ -25,8 +25,8 @@ proc AddWaves {} {
 vlib work
 
 ;# Compile components
-vcom -2008 arbiter.vhd
-vcom -2008 arbiter_tb.vhd
+vcom cache/arbiter.vhd
+vcom -2008 cache/arbiter_tb.vhd
 
 ;# Start simulation
 vsim -t ps arbiter_tb

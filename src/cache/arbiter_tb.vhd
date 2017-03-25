@@ -7,74 +7,54 @@ end entity arbiter_tb;
 
 architecture arch of arbiter_tb is
     -- test signals
-
-    constant clock_period : time := 1 ns;
-
-    signal clock : std_logic;
-    signal reset : std_logic;
-
-    signal i_read         : std_logic;
-    signal i_write        : std_logic;
-    signal i_wait_request : std_logic;
-
-    signal d_read         : std_logic;
-    signal d_write        : std_logic;
-    signal d_wait_request : std_logic;
-
+    signal clock            : std_logic;
+    signal reset            : std_logic;
+    signal i_read           : std_logic;
+    signal i_write          : std_logic;
+    signal i_wait_request   : std_logic;
+    signal d_read           : std_logic;
+    signal d_write          : std_logic;
+    signal d_wait_request   : std_logic;
     signal mem_read         : std_logic;
     signal mem_write        : std_logic;
     signal mem_wait_request : std_logic;
+    signal i_readdata       : std_logic_vector(7 downto 0);
+    signal i_writedata      : std_logic_vector(7 downto 0);
+    signal i_adr            : std_logic_vector(7 downto 0);
+    signal d_readdata       : std_logic_vector(7 downto 0);
+    signal d_writedata      : std_logic_vector(7 downto 0);
+    signal d_adr            : std_logic_vector(7 downto 0);
+    signal mem_readdata     : std_logic_vector(7 downto 0);
+    signal mem_writedata    : std_logic_vector(7 downto 0);
+    signal mem_adr          : std_logic_vector(7 downto 0);
 
-    signal i_readdata  : std_logic_vector(31 downto 0);
-    signal i_writedata : std_logic_vector(31 downto 0);
-    signal i_adr       : std_logic_vector(31 downto 0);
-
-    signal d_readdata  : std_logic_vector(31 downto 0);
-    signal d_writedata : std_logic_vector(31 downto 0);
-    signal d_adr       : std_logic_vector(31 downto 0);
-
-    signal mem_readdata  : std_logic_vector(31 downto 0);
-    signal mem_writedata : std_logic_vector(31 downto 0);
-    signal mem_adr       : std_logic_vector(31 downto 0);
+    constant clock_period : time := 1 ns;
 
     component arbiter
         port(
-            -- Controller
             clock            : in  std_logic;
             reset            : in  std_logic;
-
-            -- I$
             i_read           : in  std_logic;
             i_write          : in  std_logic;
             i_wait_request   : out std_logic;
-            -- D$
             d_read           : in  std_logic;
             d_write          : in  std_logic;
             d_wait_request   : out std_logic;
-
-            -- Memory
             mem_read         : out std_logic;
             mem_write        : out std_logic;
             mem_wait_request : in  std_logic;
-
-            -- Datapath
-            -- I$
-            i_readdata       : out std_logic_vector(31 downto 0);
-            i_writedata      : in  std_logic_vector(31 downto 0);
-            i_adr            : in  std_logic_vector(31 downto 0);
-
-            -- D$
-            d_readdata       : out std_logic_vector(31 downto 0);
-            d_writedata      : in  std_logic_vector(31 downto 0);
-            d_adr            : in  std_logic_vector(31 downto 0);
-
-            -- Memory
-            mem_readdata     : in  std_logic_vector(31 downto 0);
-            mem_writedata    : out std_logic_vector(31 downto 0);
-            mem_adr          : out std_logic_vector(31 downto 0));
+            i_readdata       : out std_logic_vector(7 downto 0);
+            i_writedata      : in  std_logic_vector(7 downto 0);
+            i_adr            : in  std_logic_vector(7 downto 0);
+            d_readdata       : out std_logic_vector(7 downto 0);
+            d_writedata      : in  std_logic_vector(7 downto 0);
+            d_adr            : in  std_logic_vector(7 downto 0);
+            mem_readdata     : in  std_logic_vector(7 downto 0);
+            mem_writedata    : out std_logic_vector(7 downto 0);
+            mem_adr          : out std_logic_vector(7 downto 0));
     end component arbiter;
 
-    procedure assert_equal(actual, expected : in std_logic_vector(31 downto 0); error_count : inout integer) is
+    procedure assert_equal(actual, expected : in std_logic_vector(7 downto 0); error_count : inout integer) is
     begin
         if (actual /= expected) then
             error_count := error_count + 1;
@@ -142,11 +122,11 @@ begin
         d_write          <= '0';
         mem_wait_request <= '0';
 
-        i_writedata  <= 32x"FF";
-        i_adr        <= 32x"FF";
-        d_writedata  <= 32x"AA";
-        d_adr        <= 32x"AA";
-        mem_readdata <= 32x"55";
+        i_writedata  <= 8x"FF";
+        i_adr        <= 8x"FF";
+        d_writedata  <= 8x"AA";
+        d_adr        <= 8x"AA";
+        mem_readdata <= 8x"55";
 
         wait for clock_period;
 
@@ -155,10 +135,10 @@ begin
         assert_equal_bit(mem_read, '0', error_count);
         assert_equal_bit(mem_write, '0', error_count);
 
-        assert_equal(i_readdata, 32x"0", error_count);
-        assert_equal(d_readdata, 32x"0", error_count);
-        assert_equal(mem_writedata, 32x"0", error_count);
-        assert_equal(mem_adr, 32x"0", error_count);
+        assert_equal(i_readdata, 8x"0", error_count);
+        assert_equal(d_readdata, 8x"0", error_count);
+        assert_equal(mem_writedata, 8x"0", error_count);
+        assert_equal(mem_adr, 8x"0", error_count);
         -----------------------------------------------------
 
 
@@ -171,11 +151,11 @@ begin
         d_write          <= '0';
         mem_wait_request <= '0';
 
-        i_writedata  <= 32x"FF";
-        i_adr        <= 32x"FF";
-        d_writedata  <= 32x"AA";
-        d_adr        <= 32x"AA";
-        mem_readdata <= 32x"55";
+        i_writedata  <= 8x"FF";
+        i_adr        <= 8x"FF";
+        d_writedata  <= 8x"AA";
+        d_adr        <= 8x"AA";
+        mem_readdata <= 8x"55";
 
         wait for clock_period;
 
@@ -184,10 +164,10 @@ begin
         assert_equal_bit(mem_read, '1', error_count);
         assert_equal_bit(mem_write, '0', error_count);
 
-        assert_equal(i_readdata, 32x"55", error_count);
-        assert_equal(d_readdata, 32x"0", error_count);
-        assert_equal(mem_writedata, 32x"FF", error_count);
-        assert_equal(mem_adr, 32x"FF", error_count);
+        assert_equal(i_readdata, 8x"55", error_count);
+        assert_equal(d_readdata, 8x"0", error_count);
+        assert_equal(mem_writedata, 8x"FF", error_count);
+        assert_equal(mem_adr, 8x"FF", error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -199,11 +179,11 @@ begin
         d_write          <= '0';
         mem_wait_request <= '0';
 
-        i_writedata  <= 32x"FF";
-        i_adr        <= 32x"FF";
-        d_writedata  <= 32x"AA";
-        d_adr        <= 32x"AA";
-        mem_readdata <= 32x"55";
+        i_writedata  <= 8x"FF";
+        i_adr        <= 8x"FF";
+        d_writedata  <= 8x"AA";
+        d_adr        <= 8x"AA";
+        mem_readdata <= 8x"55";
 
         wait for clock_period;
 
@@ -212,10 +192,10 @@ begin
         assert_equal_bit(mem_read, '0', error_count);
         assert_equal_bit(mem_write, '1', error_count);
 
-        assert_equal(i_readdata, 32x"55", error_count);
-        assert_equal(d_readdata, 32x"0", error_count);
-        assert_equal(mem_writedata, 32x"FF", error_count);
-        assert_equal(mem_adr, 32x"FF", error_count);
+        assert_equal(i_readdata, 8x"55", error_count);
+        assert_equal(d_readdata, 8x"0", error_count);
+        assert_equal(mem_writedata, 8x"FF", error_count);
+        assert_equal(mem_adr, 8x"FF", error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -227,11 +207,11 @@ begin
         d_write          <= '0';
         mem_wait_request <= '0';
 
-        i_writedata  <= 32x"FF";
-        i_adr        <= 32x"FF";
-        d_writedata  <= 32x"AA";
-        d_adr        <= 32x"AA";
-        mem_readdata <= 32x"55";
+        i_writedata  <= 8x"FF";
+        i_adr        <= 8x"FF";
+        d_writedata  <= 8x"AA";
+        d_adr        <= 8x"AA";
+        mem_readdata <= 8x"55";
 
         wait for clock_period;
 
@@ -240,10 +220,10 @@ begin
         assert_equal_bit(mem_read, '1', error_count);
         assert_equal_bit(mem_write, '0', error_count);
 
-        assert_equal(i_readdata, 32x"0", error_count);
-        assert_equal(d_readdata, 32x"55", error_count);
-        assert_equal(mem_writedata, 32x"AA", error_count);
-        assert_equal(mem_adr, 32x"AA", error_count);
+        assert_equal(i_readdata, 8x"0", error_count);
+        assert_equal(d_readdata, 8x"55", error_count);
+        assert_equal(mem_writedata, 8x"AA", error_count);
+        assert_equal(mem_adr, 8x"AA", error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -255,11 +235,11 @@ begin
         d_write          <= '1';
         mem_wait_request <= '0';
 
-        i_writedata  <= 32x"FF";
-        i_adr        <= 32x"FF";
-        d_writedata  <= 32x"AA";
-        d_adr        <= 32x"AA";
-        mem_readdata <= 32x"55";
+        i_writedata  <= 8x"FF";
+        i_adr        <= 8x"FF";
+        d_writedata  <= 8x"AA";
+        d_adr        <= 8x"AA";
+        mem_readdata <= 8x"55";
 
         wait for clock_period;
 
@@ -268,10 +248,10 @@ begin
         assert_equal_bit(mem_read, '0', error_count);
         assert_equal_bit(mem_write, '1', error_count);
 
-        assert_equal(i_readdata, 32x"0", error_count);
-        assert_equal(d_readdata, 32x"55", error_count);
-        assert_equal(mem_writedata, 32x"AA", error_count);
-        assert_equal(mem_adr, 32x"AA", error_count);
+        assert_equal(i_readdata, 8x"0", error_count);
+        assert_equal(d_readdata, 8x"55", error_count);
+        assert_equal(mem_writedata, 8x"AA", error_count);
+        assert_equal(mem_adr, 8x"AA", error_count);
         -----------------------------------------------------
 
         report "Done. Found " & integer'image(error_count) & " error(s).";
@@ -285,11 +265,11 @@ begin
         d_write          <= '1';
         mem_wait_request <= '0';
 
-        i_writedata  <= 32x"FF";
-        i_adr        <= 32x"FF";
-        d_writedata  <= 32x"AA";
-        d_adr        <= 32x"AA";
-        mem_readdata <= 32x"55";
+        i_writedata  <= 8x"FF";
+        i_adr        <= 8x"FF";
+        d_writedata  <= 8x"AA";
+        d_adr        <= 8x"AA";
+        mem_readdata <= 8x"55";
 
         wait for clock_period;
 
@@ -298,10 +278,10 @@ begin
         assert_equal_bit(mem_read, '1', error_count);
         assert_equal_bit(mem_write, '1', error_count);
 
-        assert_equal(i_readdata, 32x"0", error_count);
-        assert_equal(d_readdata, 32x"55", error_count);
-        assert_equal(mem_writedata, 32x"AA", error_count);
-        assert_equal(mem_adr, 32x"AA", error_count);
+        assert_equal(i_readdata, 8x"0", error_count);
+        assert_equal(d_readdata, 8x"55", error_count);
+        assert_equal(mem_writedata, 8x"AA", error_count);
+        assert_equal(mem_adr, 8x"AA", error_count);
         -----------------------------------------------------
 
         report "Done. Found " & integer'image(error_count) & " error(s).";
@@ -315,11 +295,11 @@ begin
         d_write          <= '0';
         mem_wait_request <= '0';
 
-        i_writedata  <= 32x"FF";
-        i_adr        <= 32x"FF";
-        d_writedata  <= 32x"AA";
-        d_adr        <= 32x"AA";
-        mem_readdata <= 32x"55";
+        i_writedata  <= 8x"FF";
+        i_adr        <= 8x"FF";
+        d_writedata  <= 8x"AA";
+        d_adr        <= 8x"AA";
+        mem_readdata <= 8x"55";
 
         wait for clock_period;
 
@@ -328,10 +308,10 @@ begin
         assert_equal_bit(mem_read, '1', error_count);
         assert_equal_bit(mem_write, '1', error_count);
 
-        assert_equal(i_readdata, 32x"55", error_count);
-        assert_equal(d_readdata, 32x"0", error_count);
-        assert_equal(mem_writedata, 32x"FF", error_count);
-        assert_equal(mem_adr, 32x"FF", error_count);
+        assert_equal(i_readdata, 8x"55", error_count);
+        assert_equal(d_readdata, 8x"0", error_count);
+        assert_equal(mem_writedata, 8x"FF", error_count);
+        assert_equal(mem_adr, 8x"FF", error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -343,11 +323,11 @@ begin
         d_write          <= '0';
         mem_wait_request <= '1';
 
-        i_writedata  <= 32x"FF";
-        i_adr        <= 32x"FF";
-        d_writedata  <= 32x"AA";
-        d_adr        <= 32x"AA";
-        mem_readdata <= 32x"55";
+        i_writedata  <= 8x"FF";
+        i_adr        <= 8x"FF";
+        d_writedata  <= 8x"AA";
+        d_adr        <= 8x"AA";
+        mem_readdata <= 8x"55";
 
         wait for clock_period;
 
@@ -356,10 +336,10 @@ begin
         assert_equal_bit(mem_read, '0', error_count);
         assert_equal_bit(mem_write, '0', error_count);
 
-        assert_equal(i_readdata, 32x"0", error_count);
-        assert_equal(d_readdata, 32x"0", error_count);
-        assert_equal(mem_writedata, 32x"0", error_count);
-        assert_equal(mem_adr, 32x"0", error_count);
+        assert_equal(i_readdata, 8x"0", error_count);
+        assert_equal(d_readdata, 8x"0", error_count);
+        assert_equal(mem_writedata, 8x"0", error_count);
+        assert_equal(mem_adr, 8x"0", error_count);
         -----------------------------------------------------
 
         report "Done. Found " & integer'image(error_count) & " error(s).";
