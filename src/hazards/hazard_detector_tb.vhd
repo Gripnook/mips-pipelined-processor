@@ -6,7 +6,6 @@ entity hazard_detector_tb is
 end entity hazard_detector_tb;
 
 architecture arch of hazard_detector_tb is
-    -- test signals
 
     signal if_id  : std_logic_vector(31 downto 0);
     signal id_ex  : std_logic_vector(31 downto 0);
