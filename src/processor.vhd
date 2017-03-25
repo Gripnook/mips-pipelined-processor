@@ -12,17 +12,6 @@ architecture arch of processor is
 
     -- components
 
-    component memory is
-        generic(ram_size : integer := 8192);
-        port(clock       : in  std_logic;
-             writedata   : in  std_logic_vector(31 downto 0) := (others => '0');
-             address     : in  integer;
-             memwrite    : in  std_logic                     := '0';
-             memread     : in  std_logic;
-             readdata    : out std_logic_vector(31 downto 0);
-             waitrequest : out std_logic);
-    end component;
-
     component registers is
         port(clock      : in  std_logic;
              reset      : in  std_logic;
@@ -52,6 +41,63 @@ architecture arch of processor is
              stall           : out std_logic);
     end component;
 
+    component cache is
+        generic(CACHE_SIZE : integer;
+                RAM_SIZE : integer := 8192);
+        port(clock         : in  std_logic;
+             reset         : in  std_logic;
+             -- Avalon interface --
+             s_addr        : in  std_logic_vector(31 downto 0);
+             s_read        : in  std_logic;
+             s_readdata    : out std_logic_vector(31 downto 0);
+             s_write       : in  std_logic := '0';
+             s_writedata   : in  std_logic_vector(31 downto 0) := (others => '0');
+             s_waitrequest : out std_logic;
+             m_addr        : out integer range 0 to RAM_SIZE - 1;
+             m_read        : out std_logic;
+             m_readdata    : in  std_logic_vector(31 downto 0);
+             m_write       : out std_logic;
+             m_writedata   : out std_logic_vector(31 downto 0);
+             m_waitrequest : in  std_logic);
+    end component;
+
+    component memory is
+        generic(RAM_SIZE     : integer := 8192;
+                MEM_DELAY    : time    := 10 ns;
+                CLOCK_PERIOD : time    := 1 ns);
+        port(clock       : in  std_logic;
+             writedata   : in  std_logic_vector(31 downto 0);
+             address     : in  integer range 0 to RAM_SIZE - 1;
+             memwrite    : in  std_logic;
+             memread     : in  std_logic;
+             readdata    : out std_logic_vector(31 downto 0);
+             waitrequest : out std_logic);
+    end component;
+
+    component arbiter is
+        generic(RAM_SIZE : integer := 8192);
+        port(clock         : in  std_logic;
+             reset         : in  std_logic;
+             i_addr        : in  integer range 0 to RAM_SIZE - 1;
+             i_read        : in  std_logic;
+             i_readdata    : out std_logic_vector(31 downto 0);
+             i_write       : in  std_logic;
+             i_writedata   : in  std_logic_vector(31 downto 0);
+             i_waitrequest : out std_logic;
+             d_addr        : in  integer range 0 to RAM_SIZE - 1;
+             d_read        : in  std_logic;
+             d_readdata    : out std_logic_vector(31 downto 0);
+             d_write       : in  std_logic;
+             d_writedata   : in  std_logic_vector(31 downto 0);
+             d_waitrequest : out std_logic;
+             m_addr        : out integer range 0 to RAM_SIZE - 1;
+             m_read        : out std_logic;
+             m_readdata    : in  std_logic_vector(31 downto 0);
+             m_write       : out std_logic;
+             m_writedata   : out std_logic_vector(31 downto 0);
+             m_waitrequest : in  std_logic);
+    end component;
+
     -- pc
     signal pc        : std_logic_vector(31 downto 0) := (others => '0');
     signal pc_enable : std_logic;
@@ -59,7 +105,7 @@ architecture arch of processor is
     -- if
     signal if_instruction : std_logic_vector(31 downto 0);
     signal if_npc         : std_logic_vector(31 downto 0);
-    signal if_address     : integer := 0;
+    signal if_address     : std_logic_vector(31 downto 0);
     signal if_read_en     : std_logic;
     signal if_waitrequest : std_logic;
 
@@ -113,7 +159,7 @@ architecture arch of processor is
     signal mem_rt_fwd      : std_logic_vector(31 downto 0);
     signal mem_alu_result  : std_logic_vector(31 downto 0) := (others => '0');
     signal mem_memory_load : std_logic_vector(31 downto 0);
-    signal mem_address     : integer                       := 0;
+    signal mem_address     : std_logic_vector(31 downto 0);
     signal mem_write_en    : std_logic;
     signal mem_read_en     : std_logic;
     signal mem_waitrequest : std_logic;
@@ -134,6 +180,26 @@ architecture arch of processor is
     signal wb_write_en    : std_logic;
     signal wb_write_addr  : std_logic_vector(4 downto 0);
     signal wb_writedata   : std_logic_vector(31 downto 0);
+
+    -- main memory
+    signal i_addr        : integer;
+    signal i_read        : std_logic;
+    signal i_readdata    : std_logic_vector(31 downto 0);
+    signal i_write       : std_logic;
+    signal i_writedata   : std_logic_vector(31 downto 0);
+    signal i_waitrequest : std_logic;
+    signal d_addr        : integer;
+    signal d_read        : std_logic;
+    signal d_readdata    : std_logic_vector(31 downto 0);
+    signal d_write       : std_logic;
+    signal d_writedata   : std_logic_vector(31 downto 0);
+    signal d_waitrequest : std_logic;
+    signal m_addr        : integer;
+    signal m_read        : std_logic;
+    signal m_readdata    : std_logic_vector(31 downto 0);
+    signal m_write       : std_logic;
+    signal m_writedata   : std_logic_vector(31 downto 0);
+    signal m_waitrequest : std_logic;
 
     -- stalls and flushes
     signal data_hazard_stall : std_logic;
@@ -178,14 +244,21 @@ begin
 
     -- if
 
-    instruction_cache : memory
-        generic map(ram_size => 1024)
-        port map(clock       => clock,
-                 address     => if_address,
-                 memread     => if_read_en,
-                 readdata    => if_instruction,
-                 waitrequest => if_waitrequest);
-    if_address <= to_integer(unsigned(pc(31 downto 2)));
+    instruction_cache : cache
+        generic map(CACHE_SIZE => 64)
+        port map(clock         => clock,
+                 reset         => reset,
+                 s_addr        => if_address,
+                 s_read        => if_read_en,
+                 s_readdata    => if_instruction,
+                 s_waitrequest => if_waitrequest,
+                 m_addr        => i_addr,
+                 m_read        => i_read,
+                 m_readdata    => i_readdata,
+                 m_write       => i_write,
+                 m_writedata   => i_writedata,
+                 m_waitrequest => i_waitrequest);
+    if_address <= pc(31 downto 2) & "00";
     if_read_en <= '1';
 
     with id_branch_taken select if_npc <=
@@ -447,16 +520,23 @@ begin
         end if;
     end process;
 
-    data_cache : memory
-        generic map(ram_size => 8192)
-        port map(clock       => clock,
-                 writedata   => mem_rt_fwd,
-                 address     => mem_address,
-                 memwrite    => mem_write_en,
-                 memread     => mem_read_en,
-                 readdata    => mem_memory_load,
-                 waitrequest => mem_waitrequest);
-    mem_address <= to_integer(unsigned(mem_alu_result(31 downto 2)));
+    data_cache : cache
+        generic map(CACHE_SIZE => 64)
+        port map(clock         => clock,
+                 reset         => reset,
+                 s_addr        => mem_address,
+                 s_read        => mem_read_en,
+                 s_readdata    => mem_memory_load,
+                 s_write       => mem_write_en,
+                 s_writedata   => mem_rt_fwd,
+                 s_waitrequest => mem_waitrequest,
+                 m_addr        => d_addr,
+                 m_read        => d_read,
+                 m_readdata    => d_readdata,
+                 m_write       => d_write,
+                 m_writedata   => d_writedata,
+                 m_waitrequest => d_waitrequest);
+    mem_address <= mem_alu_result(31 downto 2) & "00";
 
     with mem_opcode select mem_write_en <=
         '1' when OP_SW,
@@ -500,7 +580,7 @@ begin
 
     write_en_mux : process(wb_opcode, wb_funct)
     begin
-        wb_write_en <= '1';             -- default value
+        wb_write_en <= '1'; -- default value
         case wb_opcode is
             when OP_R_TYPE =>
                 case wb_funct is
@@ -537,6 +617,39 @@ begin
                 wb_writedata <= wb_alu_result;
         end case;
     end process;
+
+    -- main memory
+
+    mem : memory
+        port map(clock       => clock,
+                 writedata   => m_writedata,
+                 address     => m_addr,
+                 memwrite    => m_write,
+                 memread     => m_read,
+                 readdata    => m_readdata,
+                 waitrequest => m_waitrequest);
+
+    mem_arbiter : arbiter
+        port map(clock         => clock,
+                 reset         => reset,
+                 i_addr        => i_addr,
+                 i_read        => i_read,
+                 i_readdata    => i_readdata,
+                 i_write       => i_write,
+                 i_writedata   => i_writedata,
+                 i_waitrequest => i_waitrequest,
+                 d_addr        => d_addr,
+                 d_read        => d_read,
+                 d_readdata    => d_readdata,
+                 d_write       => d_write,
+                 d_writedata   => d_writedata,
+                 d_waitrequest => d_waitrequest,
+                 m_addr        => m_addr,
+                 m_read        => m_read,
+                 m_readdata    => m_readdata,
+                 m_write       => m_write,
+                 m_writedata   => m_writedata,
+                 m_waitrequest => m_waitrequest);
 
     -- stalls and flushes
 

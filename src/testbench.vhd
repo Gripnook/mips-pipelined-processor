@@ -5,6 +5,7 @@ entity testbench is
 end testbench;
 
 architecture arch of testbench is
+
     component processor is
         port(clock : in std_logic;
              reset : in std_logic);
@@ -16,6 +17,7 @@ architecture arch of testbench is
     signal reset : std_logic;
 
 begin
+
     dut : processor
         port map(clock => clock,
                  reset => reset);

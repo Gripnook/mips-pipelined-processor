@@ -34,7 +34,7 @@ vcom -2008 cache/arbiter_tb.vhd
 vsim -t ps arbiter_tb
 
 # Initialize memory
-mem load -filldata FF -fillradix hex /arbiter_tb/mem/ram_block
+mem load -filldata FFFFFFFF -fillradix hex /arbiter_tb/mem/ram_block
 
 ;# Add the waves
 AddWaves

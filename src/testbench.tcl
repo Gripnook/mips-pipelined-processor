@@ -37,7 +37,11 @@ vlib work
 
 # Compile components
 vcom mips_instruction_set.vhd
-vcom memory.vhd
+vcom cache/cache_controller.vhd
+vcom cache/cache_block.vhd
+vcom cache/cache.vhd
+vcom cache/memory.vhd
+vcom cache/arbiter.vhd
 vcom registers.vhd
 vcom alu/alu.vhd
 vcom hazards/hazard_detector.vhd
@@ -47,11 +51,8 @@ vcom testbench.vhd
 # Start simulation
 vsim -t ps testbench
 
-# Load program into the instruction memory
-mem load -infile program.txt -format bin -filldata 0 /testbench/dut/instruction_cache/ram_block
-
-# Initialize data memory with zeros
-mem load -filldata 0 /testbench/dut/data_cache/ram_block
+# Load program into main memory
+mem load -infile program.txt -format bin -filldata 0 /testbench/dut/mem/ram_block
 
 # Generate a clock with 1 ns period
 force -deposit clock 0 0 ns, 1 0.5 ns -repeat 1 ns
@@ -63,5 +64,5 @@ AddWaves
 run 10us
 
 # Save the memory and register file to files
-mem save -outfile memory.txt -format bin -wordsperline 1 -noaddress /testbench/dut/data_cache/ram_block
+mem save -outfile memory.txt -format bin -wordsperline 1 -noaddress /testbench/dut/mem/ram_block
 mem save -outfile register_file.txt -format bin -wordsperline 1 -noaddress /testbench/dut/register_file/registers

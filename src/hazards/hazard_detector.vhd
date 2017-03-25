@@ -13,6 +13,7 @@ end hazard_detector;
 
 architecture arch of hazard_detector is
 begin
+
     hazard_detection : process(id_instruction, ex_instruction, mem_instruction, wb_instruction)
 
         -- Input registers and consumption stages for each decoded instruction
@@ -28,6 +29,7 @@ begin
         variable cons_stages_left_1, cons_stages_left_2 : integer;
 
     begin
+
         decode_instruction_input(id_instruction, id_reg_in_1, id_reg_in_2, id_stage_in_1, id_stage_in_2);
         decode_instruction_output(ex_instruction, ex_reg_out, ex_stage_out);
         decode_instruction_output(mem_instruction, mem_reg_out, mem_stage_out);
@@ -67,5 +69,7 @@ begin
                 stall <= '1';
             end if;
         end if;
+        
     end process;
-end architecture arch;
+
+end arch;

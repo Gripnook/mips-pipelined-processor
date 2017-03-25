@@ -8,44 +8,36 @@ end cache_tb;
 architecture behavior of cache_tb is
 
     component cache is
-        generic(
-            CACHE_SIZE : integer := 512;
-            RAM_SIZE : integer := 32768
-        );
-        port(
-            clock         : in  std_logic;
-            reset         : in  std_logic;
-            -- Avalon interface --
-            s_addr        : in  std_logic_vector(31 downto 0);
-            s_read        : in  std_logic;
-            s_readdata    : out std_logic_vector(31 downto 0);
-            s_write       : in  std_logic;
-            s_writedata   : in  std_logic_vector(31 downto 0);
-            s_waitrequest : out std_logic;
-            m_addr        : out integer range 0 to RAM_SIZE - 1;
-            m_read        : out std_logic;
-            m_readdata    : in  std_logic_vector(7 downto 0);
-            m_write       : out std_logic;
-            m_writedata   : out std_logic_vector(7 downto 0);
-            m_waitrequest : in  std_logic
-        );
+        generic(CACHE_SIZE : integer := 512;
+                RAM_SIZE : integer := 8192);
+        port(clock         : in  std_logic;
+             reset         : in  std_logic;
+             -- Avalon interface --
+             s_addr        : in  std_logic_vector(31 downto 0);
+             s_read        : in  std_logic;
+             s_readdata    : out std_logic_vector(31 downto 0);
+             s_write       : in  std_logic;
+             s_writedata   : in  std_logic_vector(31 downto 0);
+             s_waitrequest : out std_logic;
+             m_addr        : out integer range 0 to RAM_SIZE - 1;
+             m_read        : out std_logic;
+             m_readdata    : in  std_logic_vector(31 downto 0);
+             m_write       : out std_logic;
+             m_writedata   : out std_logic_vector(31 downto 0);
+             m_waitrequest : in  std_logic);
     end component;
 
     component memory is
-        generic(
-            RAM_SIZE     : integer := 32768;
-            MEM_DELAY    : time    := 10 ns;
-            CLOCK_PERIOD : time    := 1 ns
-        );
-        port(
-            clock       : in  std_logic;
-            writedata   : in  std_logic_vector(7 downto 0);
-            address     : in  integer range 0 to RAM_SIZE - 1;
-            memwrite    : in  std_logic;
-            memread     : in  std_logic;
-            readdata    : out std_logic_vector(7 downto 0);
-            waitrequest : out std_logic
-        );
+        generic(RAM_SIZE     : integer := 8192;
+                MEM_DELAY    : time    := 10 ns;
+                CLOCK_PERIOD : time    := 1 ns);
+        port(clock       : in  std_logic;
+             writedata   : in  std_logic_vector(31 downto 0);
+             address     : in  integer range 0 to RAM_SIZE - 1;
+             memwrite    : in  std_logic;
+             memread     : in  std_logic;
+             readdata    : out std_logic_vector(31 downto 0);
+             waitrequest : out std_logic);
     end component;
 
     constant clock_period : time := 1 ns;
@@ -62,9 +54,9 @@ architecture behavior of cache_tb is
 
     signal m_addr        : integer;
     signal m_read        : std_logic;
-    signal m_readdata    : std_logic_vector(7 downto 0);
+    signal m_readdata    : std_logic_vector(31 downto 0);
     signal m_write       : std_logic;
-    signal m_writedata   : std_logic_vector(7 downto 0);
+    signal m_writedata   : std_logic_vector(31 downto 0);
     signal m_waitrequest : std_logic;
 
     function to_address(tag, block_index, block_offset : integer) return std_logic_vector is
@@ -90,33 +82,29 @@ begin
 
     --dut => Device Under Test
     dut : cache
-        port map(
-            clock         => clock,
-            reset         => reset,
-            s_addr        => s_addr,
-            s_read        => s_read,
-            s_readdata    => s_readdata,
-            s_write       => s_write,
-            s_writedata   => s_writedata,
-            s_waitrequest => s_waitrequest,
-            m_addr        => m_addr,
-            m_read        => m_read,
-            m_readdata    => m_readdata,
-            m_write       => m_write,
-            m_writedata   => m_writedata,
-            m_waitrequest => m_waitrequest
-        );
+        port map(clock         => clock,
+                 reset         => reset,
+                 s_addr        => s_addr,
+                 s_read        => s_read,
+                 s_readdata    => s_readdata,
+                 s_write       => s_write,
+                 s_writedata   => s_writedata,
+                 s_waitrequest => s_waitrequest,
+                 m_addr        => m_addr,
+                 m_read        => m_read,
+                 m_readdata    => m_readdata,
+                 m_write       => m_write,
+                 m_writedata   => m_writedata,
+                 m_waitrequest => m_waitrequest);
 
     mem : memory
-        port map(
-            clock       => clock,
-            writedata   => m_writedata,
-            address     => m_addr,
-            memwrite    => m_write,
-            memread     => m_read,
-            readdata    => m_readdata,
-            waitrequest => m_waitrequest
-        );
+        port map(clock       => clock,
+                 writedata   => m_writedata,
+                 address     => m_addr,
+                 memwrite    => m_write,
+                 memread     => m_read,
+                 readdata    => m_readdata,
+                 waitrequest => m_waitrequest);
 
     clock_process : process
     begin

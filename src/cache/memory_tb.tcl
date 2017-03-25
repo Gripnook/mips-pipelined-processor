@@ -19,7 +19,7 @@ vcom cache/memory_tb.vhd
 vsim -t ps memory_tb
 
 # Initialize memory
-mem load -filldata FF -fillradix hex /memory_tb/dut/ram_block
+mem load -filldata FFFFFFFF -fillradix hex /memory_tb/dut/ram_block
 
 ;# Generate a clock with 1 ns period
 force -deposit clock 0 0 ns, 1 0.5 ns -repeat 1 ns

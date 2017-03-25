@@ -14,6 +14,7 @@ end alu;
 
 architecture arch of alu is
 begin
+
     alu : process(a, b, opcode, shamt, funct)
     begin
         output <= (others => '0');
@@ -81,4 +82,5 @@ begin
                 null;
         end case;
     end process;
+    
 end arch;

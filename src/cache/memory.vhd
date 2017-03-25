@@ -4,24 +4,20 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity memory is
-    generic(
-        RAM_SIZE     : integer := 32768;
-        MEM_DELAY    : time    := 10 ns;
-        CLOCK_PERIOD : time    := 1 ns
-    );
-    port(
-        clock       : in  std_logic;
-        writedata   : in  std_logic_vector(7 downto 0);
-        address     : in  integer range 0 to RAM_SIZE - 1;
-        memwrite    : in  std_logic;
-        memread     : in  std_logic;
-        readdata    : out std_logic_vector(7 downto 0);
-        waitrequest : out std_logic
-    );
+    generic(RAM_SIZE     : integer := 8192;
+            MEM_DELAY    : time    := 10 ns;
+            CLOCK_PERIOD : time    := 1 ns);
+    port(clock       : in  std_logic;
+         writedata   : in  std_logic_vector(31 downto 0);
+         address     : in  integer range 0 to RAM_SIZE - 1;
+         memwrite    : in  std_logic;
+         memread     : in  std_logic;
+         readdata    : out std_logic_vector(31 downto 0);
+         waitrequest : out std_logic);
 end memory;
 
 architecture rtl of memory is
-    type ram is array(0 to RAM_SIZE - 1) of std_logic_vector(7 downto 0);
+    type ram is array(0 to RAM_SIZE - 1) of std_logic_vector(31 downto 0);
     signal ram_block         : ram;
     signal read_address_reg  : integer range 0 to RAM_SIZE - 1;
     signal write_waitreq_reg : std_logic := '1';
@@ -62,5 +58,4 @@ begin
             waitrequest <= write_waitreq_reg and read_waitreq_reg;
         end if;
     end process;
-
 end rtl;

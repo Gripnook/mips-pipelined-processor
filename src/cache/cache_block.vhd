@@ -3,23 +3,20 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity cache_block is
-    generic(
-        TAG_WIDTH : integer;
-        INDEX_WIDTH : integer
-    );
-    port(
-        clock           : in  std_logic;
-        reset           : in  std_logic;
-        read_en         : in  std_logic;
-        write_en        : in  std_logic;
-        data_in         : in  std_logic_vector(31 downto 0);
-        tag_in          : in  std_logic_vector(TAG_WIDTH - 1 downto 0);
-        block_index_in  : in  std_logic_vector(INDEX_WIDTH - 1 downto 0);
-        block_offset_in : in  std_logic_vector(1 downto 0);
-        dirty_clr       : in  std_logic;
-        data_out        : out std_logic_vector(131 downto 0);
-        tag_out         : out std_logic_vector(TAG_WIDTH - 1 downto 0);
-        valid_out       : out std_logic);
+    generic(TAG_WIDTH : integer;
+            INDEX_WIDTH : integer);
+    port(clock           : in  std_logic;
+         reset           : in  std_logic;
+         read_en         : in  std_logic;
+         write_en        : in  std_logic;
+         data_in         : in  std_logic_vector(31 downto 0);
+         tag_in          : in  std_logic_vector(TAG_WIDTH - 1 downto 0);
+         block_index_in  : in  std_logic_vector(INDEX_WIDTH - 1 downto 0);
+         block_offset_in : in  std_logic_vector(1 downto 0);
+         dirty_clr       : in  std_logic;
+         data_out        : out std_logic_vector(131 downto 0);
+         tag_out         : out std_logic_vector(TAG_WIDTH - 1 downto 0);
+         valid_out       : out std_logic);
 end cache_block;
 
 architecture a1 of cache_block is

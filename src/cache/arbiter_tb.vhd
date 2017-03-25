@@ -13,69 +13,61 @@ architecture arch of arbiter_tb is
     signal reset         : std_logic;
     signal i_addr        : integer := 0;
     signal i_read        : std_logic;
-    signal i_readdata    : std_logic_vector(7 downto 0);
+    signal i_readdata    : std_logic_vector(31 downto 0);
     signal i_write       : std_logic;
-    signal i_writedata   : std_logic_vector(7 downto 0);
+    signal i_writedata   : std_logic_vector(31 downto 0);
     signal i_waitrequest : std_logic;
     signal d_addr        : integer := 0;
     signal d_read        : std_logic;
-    signal d_readdata    : std_logic_vector(7 downto 0);
+    signal d_readdata    : std_logic_vector(31 downto 0);
     signal d_write       : std_logic;
-    signal d_writedata   : std_logic_vector(7 downto 0);
+    signal d_writedata   : std_logic_vector(31 downto 0);
     signal d_waitrequest : std_logic;
     signal m_addr        : integer := 0;
     signal m_read        : std_logic;
-    signal m_readdata    : std_logic_vector(7 downto 0);
+    signal m_readdata    : std_logic_vector(31 downto 0);
     signal m_write       : std_logic;
-    signal m_writedata   : std_logic_vector(7 downto 0);
+    signal m_writedata   : std_logic_vector(31 downto 0);
     signal m_waitrequest : std_logic;
 
     component arbiter is
-        generic(
-            RAM_SIZE : integer := 32768
-        );
-        port(
-            clock         : in  std_logic;
-            reset         : in  std_logic;
-            i_addr        : in  integer range 0 to RAM_SIZE - 1;
-            i_read        : in  std_logic;
-            i_readdata    : out std_logic_vector(7 downto 0);
-            i_write       : in  std_logic;
-            i_writedata   : in  std_logic_vector(7 downto 0);
-            i_waitrequest : out std_logic;
-            d_addr        : in  integer range 0 to RAM_SIZE - 1;
-            d_read        : in  std_logic;
-            d_readdata    : out std_logic_vector(7 downto 0);
-            d_write       : in  std_logic;
-            d_writedata   : in  std_logic_vector(7 downto 0);
-            d_waitrequest : out std_logic;
-            m_addr        : out integer range 0 to RAM_SIZE - 1;
-            m_read        : out std_logic;
-            m_readdata    : in  std_logic_vector(7 downto 0);
-            m_write       : out std_logic;
-            m_writedata   : out std_logic_vector(7 downto 0);
-            m_waitrequest : in  std_logic
-        );
+        generic(RAM_SIZE : integer := 8192);
+        port(clock         : in  std_logic;
+             reset         : in  std_logic;
+             i_addr        : in  integer range 0 to RAM_SIZE - 1;
+             i_read        : in  std_logic;
+             i_readdata    : out std_logic_vector(31 downto 0);
+             i_write       : in  std_logic;
+             i_writedata   : in  std_logic_vector(31 downto 0);
+             i_waitrequest : out std_logic;
+             d_addr        : in  integer range 0 to RAM_SIZE - 1;
+             d_read        : in  std_logic;
+             d_readdata    : out std_logic_vector(31 downto 0);
+             d_write       : in  std_logic;
+             d_writedata   : in  std_logic_vector(31 downto 0);
+             d_waitrequest : out std_logic;
+             m_addr        : out integer range 0 to RAM_SIZE - 1;
+             m_read        : out std_logic;
+             m_readdata    : in  std_logic_vector(31 downto 0);
+             m_write       : out std_logic;
+             m_writedata   : out std_logic_vector(31 downto 0);
+             m_waitrequest : in  std_logic);
     end component;
 
     component memory is
-        generic(
-            RAM_SIZE     : integer := 32768;
-            MEM_DELAY    : time    := 10 ns;
-            CLOCK_PERIOD : time    := 1 ns
-        );
-        port(
-            clock       : in  std_logic;
-            writedata   : in  std_logic_vector(7 downto 0);
-            address     : in  integer range 0 to RAM_SIZE - 1;
-            memwrite    : in  std_logic;
-            memread     : in  std_logic;
-            readdata    : out std_logic_vector(7 downto 0);
-            waitrequest : out std_logic
-        );
+        generic(RAM_SIZE     : integer := 8192;
+                MEM_DELAY    : time    := 10 ns;
+                CLOCK_PERIOD : time    := 1 ns);
+        port(clock       : in  std_logic;
+             writedata   : in  std_logic_vector(31 downto 0);
+             address     : in  integer range 0 to RAM_SIZE - 1;
+             memwrite    : in  std_logic;
+             memread     : in  std_logic;
+             readdata    : out std_logic_vector(31 downto 0);
+             waitrequest : out std_logic);
     end component;
 
-    procedure assert_equal(actual, expected : in std_logic_vector(7 downto 0); error_count : inout integer) is
+    procedure assert_equal(actual, expected : in std_logic_vector(31 downto 0); error_count : inout integer) is
     begin
         if (actual /= expected) then
             error_count := error_count + 1;
@@ -156,7 +148,7 @@ begin
         i_addr <= 0;
         wait until rising_edge(i_waitrequest);
         i_read <= '0';
-        assert_equal(i_readdata, x"FF", i_error_count);
+        assert_equal(i_readdata, x"FFFFFFFF", i_error_count);
 
         wait until falling_edge(clock);
 
@@ -164,7 +156,7 @@ begin
         i_addr <= 1;
         wait until rising_edge(i_waitrequest);
         i_read <= '0';
-        assert_equal(i_readdata, x"FF", i_error_count);
+        assert_equal(i_readdata, x"FFFFFFFF", i_error_count);
 
         wait until falling_edge(clock);
 
@@ -172,7 +164,7 @@ begin
         i_addr <= 2;
         wait until rising_edge(i_waitrequest);
         i_read <= '0';
-        assert_equal(i_readdata, x"FF", i_error_count);
+        assert_equal(i_readdata, x"FFFFFFFF", i_error_count);
 
         wait until falling_edge(clock);
 
@@ -180,7 +172,7 @@ begin
         i_addr <= 3;
         wait until rising_edge(i_waitrequest);
         i_read <= '0';
-        assert_equal(i_readdata, x"FF", i_error_count);
+        assert_equal(i_readdata, x"FFFFFFFF", i_error_count);
 
         wait until falling_edge(clock);
 
@@ -188,7 +180,7 @@ begin
         i_addr <= 4;
         wait until rising_edge(i_waitrequest);
         i_read <= '0';
-        assert_equal(i_readdata, x"FF", i_error_count);
+        assert_equal(i_readdata, x"FFFFFFFF", i_error_count);
 
         wait until falling_edge(clock);
 
@@ -196,7 +188,7 @@ begin
         i_addr <= 5;
         wait until rising_edge(i_waitrequest);
         i_read <= '0';
-        assert_equal(i_readdata, x"FF", i_error_count);
+        assert_equal(i_readdata, x"FFFFFFFF", i_error_count);
 
         wait until falling_edge(clock);
 
@@ -204,7 +196,7 @@ begin
         i_addr <= 6;
         wait until rising_edge(i_waitrequest);
         i_read <= '0';
-        assert_equal(i_readdata, x"FF", i_error_count);
+        assert_equal(i_readdata, x"FFFFFFFF", i_error_count);
 
         wait until falling_edge(clock);
 
@@ -212,7 +204,7 @@ begin
         i_addr <= 7;
         wait until rising_edge(i_waitrequest);
         i_read <= '0';
-        assert_equal(i_readdata, x"FF", i_error_count);
+        assert_equal(i_readdata, x"FFFFFFFF", i_error_count);
 
         wait until falling_edge(clock);
 
@@ -230,32 +222,32 @@ begin
         wait until falling_edge(reset);
 
         d_write <= '1';
-        d_writedata <= x"0D";
-        d_addr <= 2000;
+        d_writedata <= x"0000000D";
+        d_addr <= 500;
         wait until rising_edge(d_waitrequest);
         d_write <= '0';
 
         wait until falling_edge(clock);
 
         d_write <= '1';
-        d_writedata <= x"0A";
-        d_addr <= 2001;
+        d_writedata <= x"0000000A";
+        d_addr <= 501;
         wait until rising_edge(d_waitrequest);
         d_write <= '0';
 
         wait until falling_edge(clock);
         
         d_write <= '1';
-        d_writedata <= x"06";
-        d_addr <= 2002;
+        d_writedata <= x"00000006";
+        d_addr <= 502;
         wait until rising_edge(d_waitrequest);
         d_write <= '0';
 
         wait until falling_edge(clock);
 
         d_write <= '1';
-        d_writedata <= x"02";
-        d_addr <= 2003;
+        d_writedata <= x"00000002";
+        d_addr <= 503;
         wait until rising_edge(d_waitrequest);
         d_write <= '0';
 
@@ -264,34 +256,34 @@ begin
         wait for 50 * clock_period;
 
         d_read <= '1';
-        d_addr <= 2000;
+        d_addr <= 500;
         wait until rising_edge(d_waitrequest);
         d_read <= '0';
-        assert_equal(d_readdata, x"0D", d_error_count);
+        assert_equal(d_readdata, x"0000000D", d_error_count);
 
         wait until falling_edge(clock);
 
         d_read <= '1';
-        d_addr <= 2001;
+        d_addr <= 501;
         wait until rising_edge(d_waitrequest);
         d_read <= '0';
-        assert_equal(d_readdata, x"0A", d_error_count);
+        assert_equal(d_readdata, x"0000000A", d_error_count);
         
         wait until falling_edge(clock);
 
         d_read <= '1';
-        d_addr <= 2002;
+        d_addr <= 502;
         wait until rising_edge(d_waitrequest);
         d_read <= '0';
-        assert_equal(d_readdata, x"06", d_error_count);
+        assert_equal(d_readdata, x"00000006", d_error_count);
         
         wait until falling_edge(clock);
 
         d_read <= '1';
-        d_addr <= 2003;
+        d_addr <= 503;
         wait until rising_edge(d_waitrequest);
         d_read <= '0';
-        assert_equal(d_readdata, x"02", d_error_count);
+        assert_equal(d_readdata, x"00000002", d_error_count);
         
         wait until falling_edge(clock);
 

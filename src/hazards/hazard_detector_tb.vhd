@@ -25,12 +25,11 @@ architecture arch of hazard_detector_tb is
     constant SWR0R1      : std_logic_vector(31 downto 0) := 6x"2B" & 5x"1" & 5x"0" & 16x"4";
 
     component hazard_detector
-        port(
-            id_instruction  : in  std_logic_vector(31 downto 0);
-            ex_instruction  : in  std_logic_vector(31 downto 0);
-            mem_instruction : in  std_logic_vector(31 downto 0);
-            wb_instruction  : in  std_logic_vector(31 downto 0);
-            stall           : out std_logic);
+        port(id_instruction  : in  std_logic_vector(31 downto 0);
+             ex_instruction  : in  std_logic_vector(31 downto 0);
+             mem_instruction : in  std_logic_vector(31 downto 0);
+             wb_instruction  : in  std_logic_vector(31 downto 0);
+             stall           : out std_logic);
     end component hazard_detector;
 
     procedure assert_equal(actual, expected : in std_logic_vector(63 downto 0); error_count : inout integer) is
@@ -50,14 +49,13 @@ architecture arch of hazard_detector_tb is
     end assert_equal_bit;
 
 begin
+
     dut : hazard_detector
-        port map(
-            id_instruction  => if_id,
-            ex_instruction  => id_ex,
-            mem_instruction => ex_mem,
-            wb_instruction  => mem_wb,
-            stall           => stall
-        );
+        port map(id_instruction  => if_id,
+                 ex_instruction  => id_ex,
+                 mem_instruction => ex_mem,
+                 wb_instruction  => mem_wb,
+                 stall           => stall);
 
     test_process : process
         variable error_count : integer := 0;
@@ -515,4 +513,5 @@ begin
 
         wait;
     end process;
-end architecture arch;
+
+end arch;

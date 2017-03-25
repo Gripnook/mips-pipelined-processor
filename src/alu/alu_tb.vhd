@@ -6,7 +6,6 @@ entity alu_tb is
 end entity alu_tb;
 
 architecture arch of alu_tb is
-    -- test signals
 
     signal a          : std_logic_vector(31 downto 0);
     signal b          : std_logic_vector(31 downto 0);
@@ -33,6 +32,7 @@ architecture arch of alu_tb is
     end assert_equal;
 
 begin
+
     dut : alu
         port map(
             a      => a,
