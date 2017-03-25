@@ -34,25 +34,33 @@ entity cache_controller is
         word_en        : out std_logic;
         word_clr       : out std_logic;
         byte_en        : out std_logic;
-        byte_clr       : out std_logic);
+        byte_clr       : out std_logic;
+        -- Input registers
+        input_reg_en   : out std_logic;
+        s_addr_sel     : out std_logic
+    );
 end cache_controller;
 
 architecture arch of cache_controller is
-    type state_type is (S0, S1, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11);
+    type state_type is (S0, S1, S3, S4, S5, S6, S7, S8, S9, S10, S11);
     signal state : state_type := S0;
 begin
     state_transition_process : process(clock, reset)
     begin
         if (reset = '1') then
             state <= S0;
+        elsif (falling_edge(clock)) then
+            if (state = S0) then
+                if s_read = '1' or s_write = '1' then
+                    state <= S1;
+                else
+                    state <= S0;
+                end if;
+            elsif (state = S7) then
+                state <= S1;
+            end if;
         elsif rising_edge(clock) then
             case state is
-                when S0 =>
-                    if s_read = '1' or s_write = '1' then
-                        state <= S1;
-                    else
-                        state <= S0;
-                    end if;
                 when S1 =>
                     if valid = '0' then
                         state <= S3;
@@ -68,11 +76,9 @@ begin
                                 end if;
                             end if;
                         else
-                            state <= S2;
+                            state <= S0;
                         end if;
                     end if;
-                when S2 =>
-                    state <= S0;
                 when S3 =>
                     if m_waitrequest = '1' then
                         state <= S3;
@@ -93,8 +99,6 @@ begin
                     state <= S4;
                 when S6 =>
                     state <= S7;
-                when S7 =>
-                    state <= S1;
                 when S8 =>
                     if m_waitrequest = '1' then
                         state <= S8;
@@ -123,6 +127,8 @@ begin
                     end if;
                 when S11 =>
                     state <= S3;
+                when others =>
+                    null;
             end case;
         end if;
     end process;
@@ -144,20 +150,25 @@ begin
         word_clr       <= '0';
         byte_en        <= '0';
         byte_clr       <= '0';
+        input_reg_en   <= '0';
+        s_addr_sel     <= '0';
 
         case state is
             when S0 =>
                 if s_read = '1' or s_write = '1' then
                     s_waitrequest <= '1';
                     c_read        <= '1';
+                    input_reg_en  <= '1';
                 end if;
             when S1 =>
                 s_waitrequest <= '1';
                 if valid = '1' then
                     if tag_hit = '1' then
+                        s_waitrequest <= '0';
                         if s_write = '1' then
                             c_write     <= '1';
                             c_write_sel <= '1';
+                            s_addr_sel  <= '1';
                         end if;
                     else
                         word_sel <= '1';
@@ -176,7 +187,6 @@ begin
                     word_sel <= '1';
                     m_read   <= '1';
                 end if;
-            when S2 =>
             when S3 =>
                 s_waitrequest <= '1';
                 word_sel      <= '1';

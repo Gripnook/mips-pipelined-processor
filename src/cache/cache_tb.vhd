@@ -148,6 +148,7 @@ begin
         s_write     <= '1';
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
         s_write <= '0';
 
         -----------------------------------------------------
@@ -161,6 +162,7 @@ begin
         s_read <= '1';
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
         s_read <= '0';
 
         assert_equal(s_readdata, x"FFFFFFFF", error_count);
@@ -177,6 +179,7 @@ begin
         s_write     <= '1';
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
         s_write <= '0';
 
         -----------------------------------------------------
@@ -190,6 +193,7 @@ begin
         s_read <= '1';
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
         s_read <= '0';
 
         assert_equal(s_readdata, x"00000057", error_count);
@@ -207,16 +211,19 @@ begin
         s_writedata <= x"00000058";
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         s_addr      <= to_address(1, 1, 2);
         s_writedata <= x"00000059";
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         s_addr      <= to_address(1, 1, 3);
         s_writedata <= x"0000005A";
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         s_write <= '0';
 
@@ -232,24 +239,28 @@ begin
         s_addr <= to_address(1, 1, 0);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         assert_equal(s_readdata, x"00000057", error_count);
 
         s_addr <= to_address(1, 1, 1);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         assert_equal(s_readdata, x"00000058", error_count);
 
         s_addr <= to_address(1, 1, 2);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         assert_equal(s_readdata, x"00000059", error_count);
 
         s_addr <= to_address(1, 1, 3);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         assert_equal(s_readdata, x"0000005A", error_count);
 
@@ -269,21 +280,25 @@ begin
         s_writedata <= x"0000002C";
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         s_addr      <= to_address(2, 1, 1);
         s_writedata <= x"0000002D";
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         s_addr      <= to_address(2, 1, 2);
         s_writedata <= x"0000002E";
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         s_addr      <= to_address(2, 1, 3);
         s_writedata <= x"0000002F";
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         s_write <= '0';
 
@@ -299,24 +314,28 @@ begin
         s_addr <= to_address(1, 1, 0);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         assert_equal(s_readdata, x"00000057", error_count);
 
         s_addr <= to_address(1, 1, 1);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         assert_equal(s_readdata, x"00000058", error_count);
 
         s_addr <= to_address(1, 1, 2);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         assert_equal(s_readdata, x"00000059", error_count);
 
         s_addr <= to_address(1, 1, 3);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         assert_equal(s_readdata, x"0000005A", error_count);
 
@@ -334,24 +353,28 @@ begin
         s_addr <= to_address(2, 1, 0);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         assert_equal(s_readdata, x"0000002C", error_count);
 
         s_addr <= to_address(2, 1, 1);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         assert_equal(s_readdata, x"0000002D", error_count);
 
         s_addr <= to_address(2, 1, 2);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         assert_equal(s_readdata, x"0000002E", error_count);
 
         s_addr <= to_address(2, 1, 3);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         assert_equal(s_readdata, x"0000002F", error_count);
 
@@ -371,21 +394,25 @@ begin
         s_writedata <= x"000003B1";
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         s_addr      <= to_address(3, 1, 1);
         s_writedata <= x"000003B2";
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         s_addr      <= to_address(3, 1, 2);
         s_writedata <= x"000003B3";
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         s_addr      <= to_address(3, 1, 3);
         s_writedata <= x"000003B4";
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         s_write <= '0';
 
@@ -402,24 +429,28 @@ begin
         s_addr <= to_address(3, 1, 0);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         assert_equal(s_readdata, x"000003B1", error_count);
 
         s_addr <= to_address(3, 1, 1);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         assert_equal(s_readdata, x"000003B2", error_count);
 
         s_addr <= to_address(3, 1, 2);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         assert_equal(s_readdata, x"000003B3", error_count);
 
         s_addr <= to_address(3, 1, 3);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         assert_equal(s_readdata, x"000003B4", error_count);
 
@@ -437,24 +468,28 @@ begin
         s_addr <= to_address(2, 1, 0);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         assert_equal(s_readdata, x"0000002C", error_count);
 
         s_addr <= to_address(2, 1, 1);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         assert_equal(s_readdata, x"0000002D", error_count);
 
         s_addr <= to_address(2, 1, 2);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         assert_equal(s_readdata, x"0000002E", error_count);
 
         s_addr <= to_address(2, 1, 3);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         assert_equal(s_readdata, x"0000002F", error_count);
 
@@ -474,6 +509,7 @@ begin
         s_writedata <= x"000003B0";
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         s_write <= '0';
 
@@ -491,6 +527,7 @@ begin
         s_writedata <= x"00000555";
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         s_write <= '0';
 
@@ -506,6 +543,7 @@ begin
         s_addr <= to_address(2, 1, 0);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         assert_equal(s_readdata, x"000003B0", error_count);
 
@@ -523,6 +561,7 @@ begin
         s_addr <= to_address(4, 1, 0);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         assert_equal(s_readdata, x"00000555", error_count);
 
@@ -541,6 +580,7 @@ begin
         s_addr <= to_address(0, 0, 0);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         assert_equal(s_readdata, x"FFFFFFFF", error_count);
 
@@ -558,46 +598,55 @@ begin
         s_writedata <= x"11111111";
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         s_addr      <= to_address(6, 4, 1);
         s_writedata <= x"22222222";
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         s_addr      <= to_address(7, 8, 2);
         s_writedata <= x"33333333";
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         s_addr      <= to_address(8, 12, 3);
         s_writedata <= x"44444444";
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         s_addr      <= to_address(9, 16, 0);
         s_writedata <= x"55555555";
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         s_addr      <= to_address(10, 20, 1);
         s_writedata <= x"66666666";
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         s_addr      <= to_address(11, 24, 2);
         s_writedata <= x"77777777";
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         s_addr      <= to_address(12, 28, 3);
         s_writedata <= x"88888888";
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         s_addr      <= to_address(13, 31, 0);
         s_writedata <= x"99999999";
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         s_write <= '0';
 
@@ -614,46 +663,55 @@ begin
         s_writedata <= x"AAAAAAAA";
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         s_addr      <= to_address(15, 4, 0);
         s_writedata <= x"BBBBBBBB";
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         s_addr      <= to_address(16, 8, 0);
         s_writedata <= x"CCCCCCCC";
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         s_addr      <= to_address(17, 12, 0);
         s_writedata <= x"DDDDDDDD";
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         s_addr      <= to_address(18, 16, 0);
         s_writedata <= x"EEEEEEEE";
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         s_addr      <= to_address(19, 20, 0);
         s_writedata <= x"FFFFFFFF";
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         s_addr      <= to_address(20, 24, 0);
         s_writedata <= x"01234567";
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         s_addr      <= to_address(21, 28, 0);
         s_writedata <= x"89ABCDEF";
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         s_addr      <= to_address(22, 31, 0);
         s_writedata <= x"AAAAAAAA";
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         s_write <= '0';
 
@@ -669,54 +727,63 @@ begin
         s_addr <= to_address(5, 2, 0);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         assert_equal(s_readdata, x"11111111", error_count);
 
         s_addr <= to_address(6, 4, 1);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         assert_equal(s_readdata, x"22222222", error_count);
 
         s_addr <= to_address(7, 8, 2);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         assert_equal(s_readdata, x"33333333", error_count);
 
         s_addr <= to_address(8, 12, 3);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         assert_equal(s_readdata, x"44444444", error_count);
 
         s_addr <= to_address(9, 16, 0);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         assert_equal(s_readdata, x"55555555", error_count);
 
         s_addr <= to_address(10, 20, 1);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         assert_equal(s_readdata, x"66666666", error_count);
 
         s_addr <= to_address(11, 24, 2);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         assert_equal(s_readdata, x"77777777", error_count);
 
         s_addr <= to_address(12, 28, 3);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         assert_equal(s_readdata, x"88888888", error_count);
 
         s_addr <= to_address(13, 31, 0);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         assert_equal(s_readdata, x"99999999", error_count);
 
@@ -733,54 +800,63 @@ begin
         s_addr <= to_address(14, 2, 0);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         assert_equal(s_readdata, x"AAAAAAAA", error_count);
 
         s_addr <= to_address(15, 4, 0);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         assert_equal(s_readdata, x"BBBBBBBB", error_count);
 
         s_addr <= to_address(16, 8, 0);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         assert_equal(s_readdata, x"CCCCCCCC", error_count);
 
         s_addr <= to_address(17, 12, 0);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         assert_equal(s_readdata, x"DDDDDDDD", error_count);
 
         s_addr <= to_address(18, 16, 0);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         assert_equal(s_readdata, x"EEEEEEEE", error_count);
 
         s_addr <= to_address(19, 20, 0);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         assert_equal(s_readdata, x"FFFFFFFF", error_count);
 
         s_addr <= to_address(20, 24, 0);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         assert_equal(s_readdata, x"01234567", error_count);
 
         s_addr <= to_address(21, 28, 0);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         assert_equal(s_readdata, x"89ABCDEF", error_count);
 
         s_addr <= to_address(22, 31, 0);
         wait until rising_edge(s_waitrequest);
         wait until falling_edge(s_waitrequest);
+        wait until rising_edge(clock);
 
         assert_equal(s_readdata, x"AAAAAAAA", error_count);
 

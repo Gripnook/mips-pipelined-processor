@@ -32,6 +32,12 @@ architecture arch of cache is
     constant TAG_WIDTH : integer := integer(ceil(log2(real(RAM_SIZE / CACHE_SIZE))));
     constant INDEX_WIDTH : integer := integer(ceil(log2(real(CACHE_SIZE / 16))));
 
+    signal input_reg_en    : std_logic;
+    signal s_addr_reg      : std_logic_vector(31 downto 0);
+    signal s_writedata_reg : std_logic_vector(31 downto 0);
+    signal s_addr_sel      : std_logic;
+    signal s_addr_internal : std_logic_vector(31 downto 0);
+
     signal tag_hit, byte_done, word_done        : std_logic;
     signal tag_sel, word_sel                    : std_logic;
     signal word_en, word_clr, byte_en, byte_clr : std_logic;
@@ -85,7 +91,11 @@ architecture arch of cache is
             word_en        : out std_logic;
             word_clr       : out std_logic;
             byte_en        : out std_logic;
-            byte_clr       : out std_logic);
+            byte_clr       : out std_logic;
+            -- Input registers
+            input_reg_en   : out std_logic;
+            s_addr_sel     : out std_logic
+        );
     end component;
 
     component cache_block is
@@ -136,7 +146,9 @@ begin
             word_en        => word_en,
             word_clr       => word_clr,
             byte_en        => byte_en,
-            byte_clr       => byte_clr
+            byte_clr       => byte_clr,
+            input_reg_en   => input_reg_en,
+            s_addr_sel     => s_addr_sel
         );
 
     cache_memory : cache_block
@@ -159,17 +171,34 @@ begin
             valid_out       => valid
         );
 
-    tag_hit <= '1' when (s_addr(TAG_WIDTH + INDEX_WIDTH + 3 downto INDEX_WIDTH + 4) = tag_out) else '0';
+    input_regs : process(clock, reset)
+    begin
+        if (reset = '1') then
+            s_addr_reg      <= (others => '0');
+            s_writedata_reg <= (others => '0');
+        elsif (falling_edge(clock)) then
+            if (input_reg_en = '1') then
+                s_addr_reg      <= s_addr;
+                s_writedata_reg <= s_writedata;
+            end if;
+        end if;
+    end process;
+
+    with s_addr_sel select s_addr_internal <=
+        s_addr_reg when '1',
+        s_addr     when others;
+
+    tag_hit <= '1' when (s_addr_internal(TAG_WIDTH + INDEX_WIDTH + 3 downto INDEX_WIDTH + 4) = tag_out) else '0';
 
     with tag_sel select tag <=
         tag_out when '1',
-        s_addr(TAG_WIDTH + INDEX_WIDTH + 3 downto INDEX_WIDTH + 4) when others;
+        s_addr_internal(TAG_WIDTH + INDEX_WIDTH + 3 downto INDEX_WIDTH + 4) when others;
 
-    block_index <= s_addr(INDEX_WIDTH + 3 downto 4);
+    block_index <= s_addr_internal(INDEX_WIDTH + 3 downto 4);
     
     with word_sel select block_offset <=
         word_cnt when '1',
-        s_addr(3 downto 2) when others;
+        s_addr_internal(3 downto 2) when others;
     
     byte_offset <= byte_cnt;
 
@@ -256,7 +285,7 @@ begin
     end process;
 
     with c_write_sel select data_in <=
-        s_writedata when '1',
+        s_writedata_reg when '1',
         reg4 & reg3 & reg2 & reg1 when others;
 
     dirty <= (data_out(0) or data_out(33) or data_out(66) or data_out(99));
