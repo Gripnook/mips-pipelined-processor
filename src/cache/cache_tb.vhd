@@ -9,6 +9,7 @@ architecture behavior of cache_tb is
 
     component cache is
         generic(
+            CACHE_SIZE : integer := 512;
             RAM_SIZE : integer := 32768
         );
         port(

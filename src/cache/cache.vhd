@@ -1,10 +1,12 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use ieee.math_real.all;
 
 entity cache is
     generic(
-        RAM_SIZE : integer := 32768
+        CACHE_SIZE : integer;
+        RAM_SIZE : integer
     );
     port(
         clock         : in  std_logic;
@@ -26,11 +28,15 @@ entity cache is
 end cache;
 
 architecture arch of cache is
+
+    constant TAG_WIDTH : integer := integer(ceil(log2(real(RAM_SIZE / CACHE_SIZE))));
+    constant INDEX_WIDTH : integer := integer(ceil(log2(real(CACHE_SIZE / 16))));
+
     signal tag_hit, byte_done, word_done        : std_logic;
     signal tag_sel, word_sel                    : std_logic;
     signal word_en, word_clr, byte_en, byte_clr : std_logic;
-    signal tag_out, tag                         : std_logic_vector(5 downto 0) := (others => '0');
-    signal block_index                          : std_logic_vector(4 downto 0) := (others => '0');
+    signal tag_out, tag                         : std_logic_vector(TAG_WIDTH - 1 downto 0)   := (others => '0');
+    signal block_index                          : std_logic_vector(INDEX_WIDTH - 1 downto 0) := (others => '0');
     signal word_cnt                             : std_logic_vector(1 downto 0) := (others => '0');
     signal block_offset                         : std_logic_vector(1 downto 0) := (others => '0');
     signal byte_cnt                             : std_logic_vector(1 downto 0) := (others => '0');
@@ -83,22 +89,27 @@ architecture arch of cache is
     end component;
 
     component cache_block is
+        generic(
+            TAG_WIDTH : integer;
+            INDEX_WIDTH : integer
+        );
         port(
             clock           : in  std_logic;
             reset           : in  std_logic;
             read_en         : in  std_logic;
             write_en        : in  std_logic;
             data_in         : in  std_logic_vector(31 downto 0);
-            tag_in          : in  std_logic_vector(5 downto 0);
-            block_index_in  : in  std_logic_vector(4 downto 0);
+            tag_in          : in  std_logic_vector(TAG_WIDTH - 1 downto 0);
+            block_index_in  : in  std_logic_vector(INDEX_WIDTH - 1 downto 0);
             block_offset_in : in  std_logic_vector(1 downto 0);
             dirty_clr       : in  std_logic;
             data_out        : out std_logic_vector(131 downto 0);
-            tag_out         : out std_logic_vector(5 downto 0);
+            tag_out         : out std_logic_vector(TAG_WIDTH - 1 downto 0);
             valid_out       : out std_logic);
     end component;
 
 begin
+
     controller : cache_controller
         port map(
             clock          => clock,
@@ -129,6 +140,10 @@ begin
         );
 
     cache_memory : cache_block
+        generic map(
+            TAG_WIDTH => TAG_WIDTH,
+            INDEX_WIDTH => INDEX_WIDTH
+        )
         port map(
             clock           => clock,
             reset           => reset,
@@ -144,15 +159,18 @@ begin
             valid_out       => valid
         );
 
-    tag_hit <= '1' when (s_addr(14 downto 9) = tag_out) else '0';
+    tag_hit <= '1' when (s_addr(TAG_WIDTH + INDEX_WIDTH + 3 downto INDEX_WIDTH + 4) = tag_out) else '0';
 
     with tag_sel select tag <=
         tag_out when '1',
-        s_addr(14 downto 9) when others;
-    block_index                       <= s_addr(8 downto 4);
+        s_addr(TAG_WIDTH + INDEX_WIDTH + 3 downto INDEX_WIDTH + 4) when others;
+
+    block_index <= s_addr(INDEX_WIDTH + 3 downto 4);
+    
     with word_sel select block_offset <=
         word_cnt when '1',
         s_addr(3 downto 2) when others;
+    
     byte_offset <= byte_cnt;
 
     word_done <= (word_cnt(1) and word_cnt(0));
