@@ -20,6 +20,7 @@ proc AddWaves {} {
     add wave -position end sim:/arbiter_tb/m_write
     add wave -position end sim:/arbiter_tb/m_writedata
     add wave -position end sim:/arbiter_tb/m_waitrequest
+    add wave -position end sim:/arbiter_tb/dut/state
 }
 
 vlib work
