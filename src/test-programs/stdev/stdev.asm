@@ -7,39 +7,41 @@
 #when the mean is an integer.
 
 
+addi $7, $0, 2000 #Start of data memory address
+
 #########################
 addi $1, $0, 8 #Enter dataset size here
-sw $1, 0($0)
+sw $1, 0($7)   #Store the size of the dataset in $r1
 #########################
 
 #######Dataset#######
 addi $1, $0, 1
-sw $1, 4($0)
+sw $1, 4($7)
 
 addi $1, $0, 2
-sw $1, 8($0)
+sw $1, 8($7)
 
 addi $1, $0, 3
-sw $1, 12($0)
+sw $1, 12($7)
 
 addi $1, $0, 4
-sw $1, 16($0)
+sw $1, 16($7)
 
 addi $1, $0, 5
-sw $1, 20($0)
+sw $1, 20($7)
 
 addi $1, $0, 6
-sw $1, 24($0)
+sw $1, 24($7)
 
 addi $1, $0, 7
-sw $1, 28($0)
+sw $1, 28($7)
 
 addi $1, $0, 12
-sw $1, 32($0)
+sw $1, 32($7)
 #########################
 
-start: lw $1, 0($0)     #load dataset size into $1
-    addi $2, $0, 4      #initialize offset
+start: lw $1, 0($7)     #load dataset size into $1
+    addi $2, $7, 4      #initialize offset
     addi $3, $0, 0      #initialize counter
     jal sum             #Sums together all data points and stores result in $r5
     jal div             #Divides result in $r5 by the dataset size and store result in $r6. $r6 is the mean
@@ -52,7 +54,7 @@ start: lw $1, 0($0)     #load dataset size into $1
 
 
 #########################
-sum: addi $2, $0, 4
+sum: addi $2, $7, 4
     addi $3, $0, 0
 
 sumloop: beq $1, $3, sumreturn
@@ -76,7 +78,7 @@ div: div $5, $1
 
 
 #########################
-sub: addi $2, $0, 4
+sub: addi $2, $7, 4
     addi $3, $0, 0
 
 subloop: beq $1, $3, subreturn
@@ -92,7 +94,7 @@ subreturn: jr $31
 
 
 #########################
-square: addi $2, $0, 4
+square: addi $2, $7, 4
     addi $3, $0, 0
 
 sqrloop: beq $1, $3, sqrreturn
