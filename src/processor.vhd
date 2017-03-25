@@ -98,6 +98,9 @@ architecture arch of processor is
              m_waitrequest : in  std_logic);
     end component;
 
+    constant INSTRUCTION_CACHE_SIZE : integer := 16;
+    constant DATA_CACHE_SIZE        : integer := 16;
+
     -- pc
     signal pc        : std_logic_vector(31 downto 0) := (others => '0');
     signal pc_enable : std_logic;
@@ -105,7 +108,7 @@ architecture arch of processor is
     -- if
     signal if_instruction : std_logic_vector(31 downto 0);
     signal if_npc         : std_logic_vector(31 downto 0);
-    signal if_address     : std_logic_vector(31 downto 0);
+    signal if_address     : std_logic_vector(31 downto 0) := (others => '0');
     signal if_read_en     : std_logic;
     signal if_waitrequest : std_logic;
 
@@ -159,7 +162,7 @@ architecture arch of processor is
     signal mem_rt_fwd      : std_logic_vector(31 downto 0);
     signal mem_alu_result  : std_logic_vector(31 downto 0) := (others => '0');
     signal mem_memory_load : std_logic_vector(31 downto 0);
-    signal mem_address     : std_logic_vector(31 downto 0);
+    signal mem_address     : std_logic_vector(31 downto 0) := (others => '0');
     signal mem_write_en    : std_logic;
     signal mem_read_en     : std_logic;
     signal mem_waitrequest : std_logic;
@@ -219,13 +222,17 @@ architecture arch of processor is
     signal fwd_wb_ready   : std_logic;
 
     -- performance counters
-    signal memory_access_stall_count : integer := 0;
-    signal data_hazard_stall_count   : integer := 0;
-    signal branch_hazard_stall_count : integer := 0;
+    signal instruction_count           : integer := 0;
+    signal i_memory_access_stall_count : integer := 0;
+    signal d_memory_access_stall_count : integer := 0;
+    signal data_hazard_stall_count     : integer := 0;
+    signal branch_hazard_stall_count   : integer := 0;
 
     -- bookkeeping
     signal id_done : std_logic := '0';
     signal wb_done : std_logic := '0';
+
+    signal clear_cache_count : integer := 0;
 
 begin
 
@@ -245,7 +252,7 @@ begin
     -- if
 
     instruction_cache : cache
-        generic map(CACHE_SIZE => 64)
+        generic map(CACHE_SIZE => INSTRUCTION_CACHE_SIZE)
         port map(clock         => clock,
                  reset         => reset,
                  s_addr        => if_address,
@@ -521,7 +528,7 @@ begin
     end process;
 
     data_cache : cache
-        generic map(CACHE_SIZE => 64)
+        generic map(CACHE_SIZE => DATA_CACHE_SIZE)
         port map(clock         => clock,
                  reset         => reset,
                  s_addr        => mem_address,
@@ -536,7 +543,8 @@ begin
                  m_write       => d_write,
                  m_writedata   => d_writedata,
                  m_waitrequest => d_waitrequest);
-    mem_address <= mem_alu_result(31 downto 2) & "00";
+    mem_address <= mem_alu_result(31 downto 2) & "00" when wb_done = '0' else
+        std_logic_vector(to_unsigned(clear_cache_count, 28) & "0000");
 
     with mem_opcode select mem_write_en <=
         '1' when OP_SW,
@@ -544,7 +552,7 @@ begin
 
     with mem_opcode select mem_read_en <=
         '1' when OP_LW,
-        '0' when others;
+        wb_done when others;
 
     -- mem/wb
 
@@ -721,16 +729,22 @@ begin
     stall_counter : process(clock, reset)
     begin
         if (reset = '1') then
-            memory_access_stall_count <= 0;
-            data_hazard_stall_count   <= 0;
-            branch_hazard_stall_count <= 0;
+            instruction_count           <= 0;
+            i_memory_access_stall_count <= 0;
+            d_memory_access_stall_count <= 0;
+            data_hazard_stall_count     <= 0;
+            branch_hazard_stall_count   <= 0;
         elsif (rising_edge(clock)) then
-            if (if_waitrequest = '1' or mem_waitrequest = '1') then
-                memory_access_stall_count <= memory_access_stall_count + 1;
-            elsif (data_hazard_stall = '1') then
+            if (wb_done = '0' and mem_waitrequest = '1') then
+                d_memory_access_stall_count <= d_memory_access_stall_count + 1;
+            elsif (id_done = '0' and if_waitrequest = '1') then
+                i_memory_access_stall_count <= i_memory_access_stall_count + 1;
+            elsif (id_done = '0' and data_hazard_stall = '1') then
                 data_hazard_stall_count <= data_hazard_stall_count + 1;
             elsif (id_done = '0' and id_branch_taken = '1') then
                 branch_hazard_stall_count <= branch_hazard_stall_count + 1;
+            elsif (wb_done = '0') then
+                instruction_count <= instruction_count + 1;
             end if;
         end if;
     end process;
@@ -757,6 +771,19 @@ begin
             -- The program is done if an infinite loop using BEQ reaches WB
             if (wb_opcode = OP_BEQ and wb_rs_addr = wb_rt_addr and wb_immediate = x"FFFF") then
                 wb_done <= '1';
+            end if;
+        end if;
+    end process;
+
+    -- Flushes D$ after the program is completed by reading instructions into D$
+    clear_cache_counter : process(clock, reset)
+    begin
+        if (reset = '1') then
+            clear_cache_count <= 0;
+        elsif (rising_edge(clock)) then
+            if (wb_done = '1' and mem_waitrequest = '0' and
+                clear_cache_count /= DATA_CACHE_SIZE / 4) then
+                clear_cache_count <= clear_cache_count + 1;
             end if;
         end if;
     end process;

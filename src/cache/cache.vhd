@@ -26,14 +26,14 @@ end cache;
 architecture arch of cache is
 
     constant TAG_WIDTH : integer := integer(ceil(log2(real(RAM_SIZE / CACHE_SIZE))));
-    constant INDEX_WIDTH : integer := integer(ceil(log2(real(CACHE_SIZE / 16))));
+    constant INDEX_WIDTH : integer := integer(ceil(log2(real(CACHE_SIZE / 4))));
 
     signal input_reg_en    : std_logic;
     signal s_addr_reg      : std_logic_vector(31 downto 0);
     signal s_writedata_reg : std_logic_vector(31 downto 0);
     signal s_write_reg     : std_logic;
-    signal s_addr_sel      : std_logic;
-    signal s_addr_internal : std_logic_vector(31 downto 0);
+    signal s_addr_sel      : std_logic := '0';
+    signal s_addr_internal : std_logic_vector(31 downto 0) := (others => '0');
 
     signal tag_hit      : std_logic;
     signal word_done    : std_logic;

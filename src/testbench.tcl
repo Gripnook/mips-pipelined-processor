@@ -28,7 +28,9 @@ proc AddWaves {} {
     add wave -position end sim:/testbench/dut/fwd_wb_ready
     add wave -position end sim:/testbench/dut/fwd_wb_result
     # Performance counters
-    add wave -position end -radix 10 sim:/testbench/dut/memory_access_stall_count
+    add wave -position end -radix 10 sim:/testbench/dut/instruction_count
+    add wave -position end -radix 10 sim:/testbench/dut/i_memory_access_stall_count
+    add wave -position end -radix 10 sim:/testbench/dut/d_memory_access_stall_count
     add wave -position end -radix 10 sim:/testbench/dut/data_hazard_stall_count
     add wave -position end -radix 10 sim:/testbench/dut/branch_hazard_stall_count
 }
@@ -51,14 +53,14 @@ vcom testbench.vhd
 # Start simulation
 vsim -t ps testbench
 
-# Load program into main memory
-mem load -infile program.txt -format bin -filldata 0 /testbench/dut/mem/ram_block
-
 # Generate a clock with 1 ns period
 force -deposit clock 0 0 ns, 1 0.5 ns -repeat 1 ns
 
 # Add the waves
 AddWaves
+
+# Load program into main memory
+mem load -infile program.txt -format bin -filldata 0 /testbench/dut/mem/ram_block
 
 # Run
 run 10us

@@ -28,7 +28,7 @@ vsim -t ps testbench
 force -deposit clock 0 0 ns, 1 0.5 ns -repeat 1 ns
 
 # Print performance counter header
-echo Program,Memory Stall Count,Data Hazard Stall Count,Branch Hazard Stall Count
+echo Program,Instruction Count,I\$ Stall Count,D\$ Stall Count,Data Hazard Stall Count,Branch Hazard Stall Count
 
 foreach program $programs {
     # Set up the results directory
@@ -48,7 +48,7 @@ foreach program $programs {
     mem save -outfile results/$program/register_file.txt -format bin -wordsperline 1 -noaddress /testbench/dut/register_file/registers
 
     # Print performance counters
-    echo $program,[examine -radix dec /testbench/dut/memory_access_stall_count],[examine -radix dec /testbench/dut/data_hazard_stall_count],[examine -radix dec /testbench/dut/branch_hazard_stall_count]
+    echo $program,[examine -radix dec /testbench/dut/instruction_count],[examine -radix dec /testbench/dut/i_memory_access_stall_count],[examine -radix dec /testbench/dut/d_memory_access_stall_count],[examine -radix dec /testbench/dut/data_hazard_stall_count],[examine -radix dec /testbench/dut/branch_hazard_stall_count]
 }
 
 # Compare results
