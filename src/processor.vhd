@@ -98,8 +98,8 @@ architecture arch of processor is
              m_waitrequest : in  std_logic);
     end component;
 
-    constant INSTRUCTION_CACHE_SIZE : integer := 16;
-    constant DATA_CACHE_SIZE        : integer := 16;
+    constant INSTRUCTION_CACHE_SIZE : integer := 32;
+    constant DATA_CACHE_SIZE        : integer := 32;
 
     -- pc
     signal pc        : std_logic_vector(31 downto 0) := (others => '0');
