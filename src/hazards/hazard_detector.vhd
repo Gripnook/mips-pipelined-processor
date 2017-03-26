@@ -12,6 +12,9 @@ entity hazard_detector is
 end hazard_detector;
 
 architecture arch of hazard_detector is
+
+    constant FORWARDING : std_logic := '1'; -- Enables data forwarding
+
 begin
 
     hazard_detection : process(id_instruction, ex_instruction, mem_instruction, wb_instruction)
@@ -38,34 +41,34 @@ begin
         cons_stages_left_1 := id_stage_in_1 - STAGE_ID;
         cons_stages_left_2 := id_stage_in_2 - STAGE_ID;
 
-        stall <= '0';                   -- default output
+        stall <= '0'; -- default output
 
         if (ex_reg_out /= "00000") then
             prod_stages_left := ex_stage_out - STAGE_EX;
-            if (ex_reg_out = id_reg_in_1 and prod_stages_left > cons_stages_left_1) then
+            if (ex_reg_out = id_reg_in_1 and (FORWARDING = '0' or prod_stages_left > cons_stages_left_1)) then
                 stall <= '1';
             end if;
-            if (ex_reg_out = id_reg_in_2 and prod_stages_left > cons_stages_left_2) then
+            if (ex_reg_out = id_reg_in_2 and (FORWARDING = '0' or prod_stages_left > cons_stages_left_2)) then
                 stall <= '1';
             end if;
         end if;
 
         if (mem_reg_out /= "00000") then
             prod_stages_left := mem_stage_out - STAGE_MEM;
-            if (mem_reg_out = id_reg_in_1 and prod_stages_left > cons_stages_left_1) then
+            if (mem_reg_out = id_reg_in_1 and (FORWARDING = '0' or prod_stages_left > cons_stages_left_1)) then
                 stall <= '1';
             end if;
-            if (mem_reg_out = id_reg_in_2 and prod_stages_left > cons_stages_left_2) then
+            if (mem_reg_out = id_reg_in_2 and (FORWARDING = '0' or prod_stages_left > cons_stages_left_2)) then
                 stall <= '1';
             end if;
         end if;
 
         if (wb_reg_out /= "00000") then
             prod_stages_left := wb_stage_out - STAGE_WB;
-            if (wb_reg_out = id_reg_in_1 and prod_stages_left > cons_stages_left_1) then
+            if (wb_reg_out = id_reg_in_1 and (FORWARDING = '0' or prod_stages_left > cons_stages_left_1)) then
                 stall <= '1';
             end if;
-            if (wb_reg_out = id_reg_in_2 and prod_stages_left > cons_stages_left_2) then
+            if (wb_reg_out = id_reg_in_2 and (FORWARDING = '0' or prod_stages_left > cons_stages_left_2)) then
                 stall <= '1';
             end if;
         end if;
