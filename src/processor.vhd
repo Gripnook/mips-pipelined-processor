@@ -2,6 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use work.mips_instruction_set.all;
+use work.branch_prediction.all;
 
 entity processor is
     port(clock : in std_logic;
@@ -112,6 +113,12 @@ architecture arch of processor is
     signal if_read_en     : std_logic;
     signal if_waitrequest : std_logic;
 
+    signal if_prediction    : std_logic;
+    signal if_branch        : std_logic;
+    signal if_jump          : std_logic;
+    signal if_branch_target : std_logic_vector(31 downto 0);
+    signal if_pc_plus_four  : std_logic_vector(31 downto 0);
+
     -- if/id
     signal if_id_reset, if_id_enable : std_logic;
 
@@ -122,7 +129,7 @@ architecture arch of processor is
     signal id_target        : std_logic_vector(25 downto 0);
     signal id_rs_addr       : std_logic_vector(4 downto 0);
     signal id_rt_addr       : std_logic_vector(4 downto 0);
-    signal id_npc           : std_logic_vector(31 downto 0);
+    signal id_pc_plus_four  : std_logic_vector(31 downto 0);
     signal id_rs            : std_logic_vector(31 downto 0);
     signal id_rs_fwd        : std_logic_vector(31 downto 0);
     signal id_rt            : std_logic_vector(31 downto 0);
@@ -130,8 +137,17 @@ architecture arch of processor is
     signal id_rs_output     : std_logic_vector(31 downto 0);
     signal id_rt_output     : std_logic_vector(31 downto 0);
     signal id_immediate     : std_logic_vector(31 downto 0);
+    
+    signal id_jump_reg      : std_logic;
     signal id_branch_taken  : std_logic;
     signal id_branch_target : std_logic_vector(31 downto 0);
+    
+    signal id_previous_pc            : std_logic_vector(31 downto 0);
+    signal id_made_prediction        : std_logic;
+    signal id_previous_prediction    : std_logic;
+    signal id_previous_branch_target : std_logic_vector(31 downto 0);
+    signal id_prediction_correct     : std_logic;
+    signal id_prediction_incorrect   : std_logic;
 
     -- id/ex
     signal id_ex_reset, id_ex_enable : std_logic;
@@ -268,25 +284,72 @@ begin
     if_address <= pc(31 downto 2) & "00";
     if_read_en <= '1';
 
-    with id_branch_taken select if_npc <=
-        std_logic_vector(unsigned(pc) + 4) when '0', -- predict taken
-        id_branch_target when others;
+    if_pc_plus_four <= std_logic_vector(unsigned(pc) + 4);
+
+    branch_prediction_resolution : process(if_pc_plus_four, if_instruction)
+    begin
+        if_branch        <= '0';
+        if_jump          <= '0';
+        if_branch_target <= (others => '0');
+        case if_instruction(31 downto 26) is
+            when OP_J =>
+                if_jump          <= '1';
+                if_branch_target <= if_pc_plus_four(31 downto 28) & if_instruction(25 downto 0) & "00";
+            when OP_JAL =>
+                if_jump          <= '1';
+                if_branch_target <= if_pc_plus_four(31 downto 28) & if_instruction(25 downto 0) & "00";
+            when OP_BEQ =>
+                if_branch        <= '1';
+                if_branch_target <= std_logic_vector(signed(if_pc_plus_four) + signed(if_instruction(15 downto 0) & "00"));
+            when OP_BNE =>
+                if_branch        <= '1';
+                if_branch_target <= std_logic_vector(signed(if_pc_plus_four) + signed(if_instruction(15 downto 0) & "00"));
+            when others =>
+                null;
+        end case;
+    end process;
+
+    if_npc <= id_branch_target when (id_prediction_incorrect = '1') else
+              if_branch_target when (if_jump = '1' or (if_branch = '1' and if_prediction = '1')) else
+              if_pc_plus_four;
+
+    branch_predictor : bp_predict_not_taken
+        port map (clock               => clock,
+                  reset               => reset,
+                  pc                  => pc,
+                  update              => id_made_prediction,
+                  previous_pc         => id_previous_pc,
+                  previous_prediction => id_previous_prediction,
+                  prediction_correct  => id_prediction_correct,
+                  prediction          => if_prediction);
 
     -- if/id
 
     if_id_pipeline_register : process(clock, reset)
     begin
         if (reset = '1') then
-            id_instruction <= (others => '0');
-            id_npc         <= (others => '0');
+            id_instruction            <= (others => '0');
+            id_pc_plus_four           <= (others => '0');
+            id_previous_pc            <= (others => '0');
+            id_made_prediction        <= '0';
+            id_previous_prediction    <= '0';
+            id_previous_branch_target <= (others => '0');
         elsif (rising_edge(clock)) then
             if (if_id_enable = '1') then
                 if (if_id_reset = '1') then
-                    id_instruction <= (others => '0');
-                    id_npc         <= (others => '0');
+                    id_instruction            <= (others => '0');
+                    id_pc_plus_four           <= (others => '0');
+                    id_previous_pc            <= (others => '0');
+                    id_made_prediction        <= '0';
+                    id_previous_prediction    <= '0';
+                    id_previous_branch_target <= (others => '0');
                 else
-                    id_instruction <= if_instruction;
-                    id_npc         <= if_npc;
+                    id_instruction            <= if_instruction;
+                    id_pc_plus_four           <= if_pc_plus_four;
+                    id_previous_pc            <= pc;
+                    id_made_prediction        <= if_branch;
+                    id_previous_prediction    <= if_prediction;
+                    id_previous_branch_target <= if_branch_target;
                 end if;
             end if;
         end if;
@@ -340,8 +403,8 @@ begin
     end process;
 
     with id_opcode select id_rs_output <=
-        id_npc when OP_JAL,
-        id_rs_fwd when others;
+        id_pc_plus_four when OP_JAL,
+        id_rs_fwd       when others;
     id_rt_output <= id_rt_fwd;
 
     immediate_extend : process(id_opcode, id_instruction)
@@ -354,36 +417,38 @@ begin
         end case;
     end process;
 
-    branch_resolution : process(id_opcode, id_funct, id_target, id_npc, id_rs_fwd, id_rt_fwd, id_immediate)
+    branch_resolution : process(id_opcode, id_funct, id_pc_plus_four, id_previous_branch_target, id_rs_fwd, id_rt_fwd)
     begin
+        id_jump_reg      <= '0';
         id_branch_taken  <= '0';
-        id_branch_target <= (others => '0');
+        id_branch_target <= id_pc_plus_four;
         case id_opcode is
             when OP_R_TYPE =>
                 if (id_funct = FUNCT_JR) then
+                    id_jump_reg      <= '1';
                     id_branch_taken  <= '1';
                     id_branch_target <= id_rs_fwd;
                 end if;
-            when OP_J =>
+            when OP_J | OP_JAL =>
                 id_branch_taken  <= '1';
-                id_branch_target <= id_npc(31 downto 28) & id_target & "00";
-            when OP_JAL =>
-                id_branch_taken  <= '1';
-                id_branch_target <= id_npc(31 downto 28) & id_target & "00";
+                id_branch_target <= id_previous_branch_target;
             when OP_BEQ =>
                 if (id_rs_fwd = id_rt_fwd) then
                     id_branch_taken  <= '1';
-                    id_branch_target <= std_logic_vector(signed(id_npc) + signed(id_immediate(29 downto 0) & "00"));
+                    id_branch_target <= id_previous_branch_target;
                 end if;
             when OP_BNE =>
                 if (id_rs_fwd /= id_rt_fwd) then
                     id_branch_taken  <= '1';
-                    id_branch_target <= std_logic_vector(signed(id_npc) + signed(id_immediate(29 downto 0) & "00"));
+                    id_branch_target <= id_previous_branch_target;
                 end if;
             when others =>
                 null;
         end case;
     end process;
+
+    id_prediction_incorrect <= id_jump_reg or (id_made_prediction and (id_branch_taken xor id_previous_prediction));
+    id_prediction_correct   <= not id_prediction_incorrect;
 
     -- id/ex
 
@@ -670,7 +735,7 @@ begin
 
     pc_enable     <= (not if_waitrequest) and (not mem_waitrequest) and (not data_hazard_stall);
     if_id_enable  <= (not if_waitrequest) and (not mem_waitrequest) and (not data_hazard_stall);
-    if_id_reset   <= id_branch_taken;
+    if_id_reset   <= id_prediction_incorrect;
     id_ex_enable  <= not mem_waitrequest;
     id_ex_reset   <= if_waitrequest or data_hazard_stall;
     ex_mem_enable <= not mem_waitrequest;
@@ -741,9 +806,9 @@ begin
                 i_memory_access_stall_count <= i_memory_access_stall_count + 1;
             elsif (id_done = '0' and data_hazard_stall = '1') then
                 data_hazard_stall_count <= data_hazard_stall_count + 1;
-            elsif (id_done = '0' and id_branch_taken = '1') then
+            elsif (id_done = '0' and id_prediction_incorrect = '1') then
                 branch_hazard_stall_count <= branch_hazard_stall_count + 1;
-            elsif (wb_done = '0') then
+            elsif (id_done = '0') then
                 instruction_count <= instruction_count + 1;
             end if;
         end if;
@@ -756,7 +821,7 @@ begin
         if (reset = '1') then
             id_done <= '0';
         elsif (rising_edge(clock)) then
-            -- No more branch hazards can occur if an infinite loop using BEQ reaches ID 
+            -- No more branch hazards can occur if an infinite loop using BEQ reaches ID
             if (id_opcode = OP_BEQ and id_rs_addr = id_rt_addr and id_immediate = x"FFFFFFFF") then
                 id_done <= '1';
             end if;
