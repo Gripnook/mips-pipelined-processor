@@ -249,6 +249,8 @@ architecture arch of processor is
 
     signal clear_cache_count : integer := 0;
 
+    signal done : std_logic := '0';
+
 begin
 
     -- pc
@@ -814,27 +816,23 @@ begin
 
     -- bookkeeping
 
-    branch_termination : process(clock, reset)
+    branch_termination_latch : process(reset, id_opcode, id_rs_addr, id_rt_addr, id_immediate)
     begin
         if (reset = '1') then
             id_done <= '0';
-        elsif (rising_edge(clock)) then
+        elsif (id_opcode = OP_BEQ and id_rs_addr = id_rt_addr and id_immediate = x"FFFFFFFF") then
             -- No more branch hazards can occur if an infinite loop using BEQ reaches ID
-            if (id_opcode = OP_BEQ and id_rs_addr = id_rt_addr and id_immediate = x"FFFFFFFF") then
-                id_done <= '1';
-            end if;
+            id_done <= '1';
         end if;
     end process;
 
-    program_termination : process(clock, reset)
+    program_termination_latch : process(reset, wb_opcode, wb_rs_addr, wb_rt_addr, wb_immediate)
     begin
         if (reset = '1') then
             wb_done <= '0';
-        elsif (rising_edge(clock)) then
+        elsif (wb_opcode = OP_BEQ and wb_rs_addr = wb_rt_addr and wb_immediate = x"FFFF") then
             -- The program is done if an infinite loop using BEQ reaches WB
-            if (wb_opcode = OP_BEQ and wb_rs_addr = wb_rt_addr and wb_immediate = x"FFFF") then
-                wb_done <= '1';
-            end if;
+            wb_done <= '1';
         end if;
     end process;
 
@@ -842,11 +840,15 @@ begin
     clear_cache_counter : process(clock, reset)
     begin
         if (reset = '1') then
+            done <= '0';
             clear_cache_count <= 0;
         elsif (rising_edge(clock)) then
-            if (wb_done = '1' and mem_waitrequest = '0' and
-                clear_cache_count /= DATA_CACHE_SIZE / 4) then
-                clear_cache_count <= clear_cache_count + 1;
+            if (wb_done = '1' and mem_waitrequest = '0') then
+                if (clear_cache_count /= DATA_CACHE_SIZE / 4) then
+                    clear_cache_count <= clear_cache_count + 1;
+                else
+                    done <= '1';
+                end if;
             end if;
         end if;
     end process;
