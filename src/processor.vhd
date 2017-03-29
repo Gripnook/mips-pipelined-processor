@@ -108,6 +108,9 @@ architecture arch of processor is
 
     -- if
     signal if_instruction : std_logic_vector(31 downto 0);
+    signal if_opcode      : std_logic_vector(5 downto 0);
+    signal if_immediate   : std_logic_vector(15 downto 0);
+    signal if_target      : std_logic_vector(25 downto 0);
     signal if_npc         : std_logic_vector(31 downto 0);
     signal if_address     : std_logic_vector(31 downto 0) := (others => '0');
     signal if_read_en     : std_logic;
@@ -126,7 +129,6 @@ architecture arch of processor is
     signal id_instruction   : std_logic_vector(31 downto 0);
     signal id_opcode        : std_logic_vector(5 downto 0);
     signal id_funct         : std_logic_vector(5 downto 0);
-    signal id_target        : std_logic_vector(25 downto 0);
     signal id_rs_addr       : std_logic_vector(4 downto 0);
     signal id_rt_addr       : std_logic_vector(4 downto 0);
     signal id_pc_plus_four  : std_logic_vector(31 downto 0);
@@ -297,24 +299,28 @@ begin
                   prediction_incorrect => id_prediction_incorrect,
                   prediction           => if_prediction);
 
-    branch_prediction_resolution : process(if_pc_plus_four, if_instruction)
+    if_opcode    <= if_instruction(31 downto 26);
+    if_immediate <= if_instruction(15 downto 0);
+    if_target    <= if_instruction(25 downto 0);
+
+    branch_prediction_resolution : process(if_pc_plus_four, if_opcode, if_immediate, if_target)
     begin
         if_branch        <= '0';
         if_jump          <= '0';
         if_branch_target <= (others => '0');
-        case if_instruction(31 downto 26) is
+        case if_opcode is
             when OP_J =>
                 if_jump          <= '1';
-                if_branch_target <= if_pc_plus_four(31 downto 28) & if_instruction(25 downto 0) & "00";
+                if_branch_target <= if_pc_plus_four(31 downto 28) & if_target & "00";
             when OP_JAL =>
                 if_jump          <= '1';
-                if_branch_target <= if_pc_plus_four(31 downto 28) & if_instruction(25 downto 0) & "00";
+                if_branch_target <= if_pc_plus_four(31 downto 28) & if_target & "00";
             when OP_BEQ =>
                 if_branch        <= '1';
-                if_branch_target <= std_logic_vector(signed(if_pc_plus_four) + signed(if_instruction(15 downto 0) & "00"));
+                if_branch_target <= std_logic_vector(signed(if_pc_plus_four) + signed(if_immediate & "00"));
             when OP_BNE =>
                 if_branch        <= '1';
-                if_branch_target <= std_logic_vector(signed(if_pc_plus_four) + signed(if_instruction(15 downto 0) & "00"));
+                if_branch_target <= std_logic_vector(signed(if_pc_plus_four) + signed(if_immediate & "00"));
             when others =>
                 null;
         end case;
@@ -360,7 +366,6 @@ begin
 
     id_opcode  <= id_instruction(31 downto 26);
     id_funct   <= id_instruction(5 downto 0);
-    id_target  <= id_instruction(25 downto 0);
     id_rs_addr <= id_instruction(25 downto 21);
     id_rt_addr <= id_instruction(20 downto 16);
 
