@@ -31,7 +31,7 @@ architecture arch of processor is
              opcode : in  std_logic_vector(5 downto 0);
              shamt  : in  std_logic_vector(4 downto 0);
              funct  : in  std_logic_vector(5 downto 0);
-             output : out std_logic_vector(63 downto 0));
+             result : out std_logic_vector(63 downto 0));
     end component;
 
     component hazard_detector is
@@ -531,7 +531,7 @@ begin
                  opcode => ex_opcode,
                  shamt  => ex_shamt,
                  funct  => ex_funct,
-                 output => ex_alu_result);
+                 result => ex_alu_result);
 
     hi_lo_registers : process(clock, reset)
     begin

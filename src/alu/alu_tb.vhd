@@ -12,7 +12,7 @@ architecture arch of alu_tb is
     signal opcode     : std_logic_vector(5 downto 0);
     signal shamt      : std_logic_vector(4 downto 0);
     signal funct      : std_logic_vector(5 downto 0);
-    signal alu_output : std_logic_vector(63 downto 0);
+    signal alu_result : std_logic_vector(63 downto 0);
 
     component alu is
         port(a      : in  std_logic_vector(31 downto 0);
@@ -20,7 +20,7 @@ architecture arch of alu_tb is
              opcode : in  std_logic_vector(5 downto 0);
              shamt  : in  std_logic_vector(4 downto 0);
              funct  : in  std_logic_vector(5 downto 0);
-             output : out std_logic_vector(63 downto 0));
+             result : out std_logic_vector(63 downto 0));
     end component alu;
 
     procedure assert_equal(actual, expected : in std_logic_vector(63 downto 0); error_count : inout integer) is
@@ -40,7 +40,7 @@ begin
             opcode => opcode,
             shamt  => shamt,
             funct  => funct,
-            output => alu_output
+            result => alu_result
         );
 
     test_process : process
@@ -61,7 +61,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, std_logic_vector(to_signed(89, 64)), error_count);
+        assert_equal(alu_result, std_logic_vector(to_signed(89, 64)), error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -76,7 +76,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, std_logic_vector(to_signed(2147483647, 64)), error_count);
+        assert_equal(alu_result, std_logic_vector(to_signed(2147483647, 64)), error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -91,7 +91,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, std_logic_vector(32x"0" & to_signed(-2147483648, 32)), error_count);
+        assert_equal(alu_result, std_logic_vector(32x"0" & to_signed(-2147483648, 32)), error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -106,7 +106,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, std_logic_vector(32x"0" & to_signed(-2147483648, 32)), error_count);
+        assert_equal(alu_result, std_logic_vector(32x"0" & to_signed(-2147483648, 32)), error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -121,7 +121,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, std_logic_vector(32x"0" & to_signed(2147483647, 32)), error_count);
+        assert_equal(alu_result, std_logic_vector(32x"0" & to_signed(2147483647, 32)), error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -136,7 +136,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, std_logic_vector(32x"0" & to_signed(-811591, 32)), error_count);
+        assert_equal(alu_result, std_logic_vector(32x"0" & to_signed(-811591, 32)), error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -151,7 +151,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, std_logic_vector(32x"0" & to_signed(-280889, 32)), error_count);
+        assert_equal(alu_result, std_logic_vector(32x"0" & to_signed(-280889, 32)), error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -166,7 +166,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, std_logic_vector(32x"0" & to_signed(-20, 32)), error_count);
+        assert_equal(alu_result, std_logic_vector(32x"0" & to_signed(-20, 32)), error_count);
         -----------------------------------------------------
 
 
@@ -182,7 +182,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, std_logic_vector(to_signed(2147483647, 64)), error_count);
+        assert_equal(alu_result, std_logic_vector(to_signed(2147483647, 64)), error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -197,7 +197,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, std_logic_vector(32x"0" & to_signed(-2147483648, 32)), error_count);
+        assert_equal(alu_result, std_logic_vector(32x"0" & to_signed(-2147483648, 32)), error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -212,7 +212,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, std_logic_vector(32x"0" & to_signed(2147483647, 32)), error_count);
+        assert_equal(alu_result, std_logic_vector(32x"0" & to_signed(2147483647, 32)), error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -227,7 +227,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, std_logic_vector(32x"0" & to_signed(-2147483648, 32)), error_count);
+        assert_equal(alu_result, std_logic_vector(32x"0" & to_signed(-2147483648, 32)), error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -242,7 +242,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, std_logic_vector(32x"0" & to_signed(-811591, 32)), error_count);
+        assert_equal(alu_result, std_logic_vector(32x"0" & to_signed(-811591, 32)), error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -257,7 +257,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, std_logic_vector(to_signed(89, 64)), error_count);
+        assert_equal(alu_result, std_logic_vector(to_signed(89, 64)), error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -272,7 +272,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, std_logic_vector(to_signed(2147483647, 64)), error_count);
+        assert_equal(alu_result, std_logic_vector(to_signed(2147483647, 64)), error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -287,7 +287,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, std_logic_vector(32x"0" & to_signed(-2147483648, 32)), error_count);
+        assert_equal(alu_result, std_logic_vector(32x"0" & to_signed(-2147483648, 32)), error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -302,7 +302,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, std_logic_vector(32x"0" & to_signed(-2147483648, 32)), error_count);
+        assert_equal(alu_result, std_logic_vector(32x"0" & to_signed(-2147483648, 32)), error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -317,7 +317,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, std_logic_vector(32x"0" & to_signed(2147483647, 32)), error_count);
+        assert_equal(alu_result, std_logic_vector(32x"0" & to_signed(2147483647, 32)), error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -332,7 +332,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, std_logic_vector(32x"0" & to_signed(-811591, 32)), error_count);
+        assert_equal(alu_result, std_logic_vector(32x"0" & to_signed(-811591, 32)), error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -347,7 +347,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, std_logic_vector(to_signed(-366169160, 64)), error_count);
+        assert_equal(alu_result, std_logic_vector(to_signed(-366169160, 64)), error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -362,7 +362,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, 32x"0" & std_logic_vector(to_signed(366169160, 32)), error_count);
+        assert_equal(alu_result, 32x"0" & std_logic_vector(to_signed(366169160, 32)), error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -377,7 +377,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, std_logic_vector(to_signed(2147483340, 64)), error_count);
+        assert_equal(alu_result, std_logic_vector(to_signed(2147483340, 64)), error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -392,7 +392,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, std_logic_vector(to_signed(2147483646, 64)), error_count);
+        assert_equal(alu_result, std_logic_vector(to_signed(2147483646, 64)), error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -407,7 +407,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, std_logic_vector(to_signed(-2147483646, 64)), error_count);
+        assert_equal(alu_result, std_logic_vector(to_signed(-2147483646, 64)), error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -422,7 +422,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, std_logic_vector(to_signed(81795, 32) & to_signed(5509, 32)), error_count);
+        assert_equal(alu_result, std_logic_vector(to_signed(81795, 32) & to_signed(5509, 32)), error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -437,7 +437,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, std_logic_vector(to_signed(81795, 32) & to_signed(-5509, 32)), error_count);
+        assert_equal(alu_result, std_logic_vector(to_signed(81795, 32) & to_signed(-5509, 32)), error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -452,7 +452,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, std_logic_vector(to_signed(-81795, 32) & to_signed(-5509, 32)), error_count);
+        assert_equal(alu_result, std_logic_vector(to_signed(-81795, 32) & to_signed(-5509, 32)), error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -467,7 +467,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, std_logic_vector(to_signed(2, 32) & to_signed(-2, 32)), error_count);
+        assert_equal(alu_result, std_logic_vector(to_signed(2, 32) & to_signed(-2, 32)), error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -482,7 +482,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, std_logic_vector(to_signed(-2, 32) & to_signed(-2, 32)), error_count);
+        assert_equal(alu_result, std_logic_vector(to_signed(-2, 32) & to_signed(-2, 32)), error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -497,7 +497,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, std_logic_vector(to_signed(1, 32) & to_signed(0, 32)), error_count);
+        assert_equal(alu_result, std_logic_vector(to_signed(1, 32) & to_signed(0, 32)), error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -512,7 +512,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, 64x"1", error_count);
+        assert_equal(alu_result, 64x"1", error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -527,7 +527,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, 64x"0", error_count);
+        assert_equal(alu_result, 64x"0", error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -542,7 +542,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, 64x"1", error_count);
+        assert_equal(alu_result, 64x"1", error_count);
         -----------------------------------------------------
 
         ----------------- Logical instructions---------------
@@ -560,7 +560,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, 64x"1", error_count);
+        assert_equal(alu_result, 64x"1", error_count);
         -----------------------------------------------------
         
         -----------------------------------------------------
@@ -575,7 +575,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, 32x"0" & "10101010101010101010101010101011", error_count);
+        assert_equal(alu_result, 32x"0" & "10101010101010101010101010101011", error_count);
         -----------------------------------------------------
         
         -----------------------------------------------------
@@ -590,7 +590,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, 64x"0", error_count);
+        assert_equal(alu_result, 64x"0", error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -605,7 +605,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, x"00000000FFFFFFFF", error_count);
+        assert_equal(alu_result, x"00000000FFFFFFFF", error_count);
         -----------------------------------------------------
         
         -----------------------------------------------------
@@ -620,7 +620,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, 32x"0" & 32x"ffffffff", error_count);
+        assert_equal(alu_result, 32x"0" & 32x"ffffffff", error_count);
         -----------------------------------------------------
         
         -----------------------------------------------------
@@ -635,7 +635,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, 64x"0", error_count);
+        assert_equal(alu_result, 64x"0", error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -650,7 +650,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, 64x"0", error_count);
+        assert_equal(alu_result, 64x"0", error_count);
         -----------------------------------------------------
         
         -----------------------------------------------------
@@ -665,7 +665,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, 64x"0", error_count);
+        assert_equal(alu_result, 64x"0", error_count);
         -----------------------------------------------------
         
         -----------------------------------------------------
@@ -680,7 +680,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, 48x"0" & 16x"ffff" , error_count);
+        assert_equal(alu_result, 48x"0" & 16x"ffff" , error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -695,7 +695,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, x"00000000FFFFFFFF", error_count);
+        assert_equal(alu_result, x"00000000FFFFFFFF", error_count);
         -----------------------------------------------------
         
         ---------------------Test#11-2 xor---------------------
@@ -709,7 +709,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, 64x"0", error_count);
+        assert_equal(alu_result, 64x"0", error_count);
         -----------------------------------------------------
         
         ---------------------Test#11-3: xor---------------------
@@ -723,7 +723,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, 64x"0", error_count);
+        assert_equal(alu_result, 64x"0", error_count);
         -----------------------------------------------------
         
         ---------------------Test#11-4: xor---------------------
@@ -737,7 +737,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, x"00000000FFFFFFFF", error_count);
+        assert_equal(alu_result, x"00000000FFFFFFFF", error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -752,7 +752,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, 64x"0", error_count);
+        assert_equal(alu_result, 64x"0", error_count);
         -----------------------------------------------------
         
         -----------------------------------------------------
@@ -767,7 +767,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, 32x"0" & 32x"0000ffff", error_count);
+        assert_equal(alu_result, 32x"0" & 32x"0000ffff", error_count);
         -----------------------------------------------------
         
         -----------------------------------------------------
@@ -782,7 +782,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, 64x"0", error_count);
+        assert_equal(alu_result, 64x"0", error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -797,7 +797,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, x"00000000FFFFFFFF", error_count);
+        assert_equal(alu_result, x"00000000FFFFFFFF", error_count);
         -----------------------------------------------------
         
         -----------------------------------------------------
@@ -812,7 +812,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, 64x"0", error_count);
+        assert_equal(alu_result, 64x"0", error_count);
         -----------------------------------------------------
         
         -----------------------------------------------------
@@ -827,7 +827,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, 32x"0" & 32x"ffffffff", error_count);
+        assert_equal(alu_result, 32x"0" & 32x"ffffffff", error_count);
         -----------------------------------------------------
         
         -----------------------------------------------------
@@ -842,7 +842,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, 32x"0" & 32x"ffffffff", error_count);
+        assert_equal(alu_result, 32x"0" & 32x"ffffffff", error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -857,7 +857,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, x"00000000FFFFFFFF", error_count);
+        assert_equal(alu_result, x"00000000FFFFFFFF", error_count);
         -----------------------------------------------------
         
         -----------------------------------------------------
@@ -872,7 +872,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, 64x"0", error_count);
+        assert_equal(alu_result, 64x"0", error_count);
         -----------------------------------------------------
         
         -----------------------------------------------------
@@ -887,7 +887,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, 64x"0", error_count);
+        assert_equal(alu_result, 64x"0", error_count);
         -----------------------------------------------------
         
         -----------------------------------------------------
@@ -902,7 +902,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, x"00000000FFFFFFFF", error_count);
+        assert_equal(alu_result, x"00000000FFFFFFFF", error_count);
         -----------------------------------------------------
 
         ----------------- Transfer instructions--------------
@@ -919,7 +919,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, x"0000000000010000", error_count);
+        assert_equal(alu_result, x"0000000000010000", error_count);
         -----------------------------------------------------
         
         ---------------------Test#15-2: lui---------------------
@@ -932,7 +932,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, 32x"0" & 32x"ffff0000", error_count);
+        assert_equal(alu_result, 32x"0" & 32x"ffff0000", error_count);
         -----------------------------------------------------
 
         ----------------- Shift instructions-----------------
@@ -949,7 +949,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, 64x"8", error_count);
+        assert_equal(alu_result, 64x"8", error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -963,7 +963,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, 32x"0" & 32x"f0000000", error_count);
+        assert_equal(alu_result, 32x"0" & 32x"f0000000", error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -977,7 +977,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, 32x"0" & 32x"abffff00", error_count);
+        assert_equal(alu_result, 32x"0" & 32x"abffff00", error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -991,7 +991,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, 64x"2", error_count);
+        assert_equal(alu_result, 64x"2", error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -1005,7 +1005,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, 32x"0" & 32x"0fffffff", error_count);
+        assert_equal(alu_result, 32x"0" & 32x"0fffffff", error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -1019,7 +1019,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, 32x"0" & 32x"ffffffff", error_count);
+        assert_equal(alu_result, 32x"0" & 32x"ffffffff", error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -1033,7 +1033,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_output, 32x"0" & 32x"00ffffff", error_count);
+        assert_equal(alu_result, 32x"0" & 32x"00ffffff", error_count);
         -----------------------------------------------------
 
         report "Done. Found " & integer'image(error_count) & " error(s).";

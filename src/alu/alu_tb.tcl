@@ -5,7 +5,7 @@ proc AddWaves {} {
     add wave -position end sim:/alu_tb/opcode
     add wave -position end sim:/alu_tb/shamt
     add wave -position end sim:/alu_tb/funct
-    add wave -position end sim:/alu_tb/alu_output
+    add wave -position end sim:/alu_tb/alu_result
 }
 
 vlib work
