@@ -1,7 +1,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-entity bp_predict_not_taken is
+entity bp_predict_taken is
     port (
         clock                : in  std_logic;
         reset                : in  std_logic;
@@ -12,11 +12,11 @@ entity bp_predict_not_taken is
         prediction_incorrect : in  std_logic; -- '1' if prediction was incorrect, '0' otherwise
         prediction           : out std_logic  -- '1' = predict taken, '0' = predict not taken
     );
-end bp_predict_not_taken;
+end bp_predict_taken;
 
-architecture arch of bp_predict_not_taken is
+architecture arch of bp_predict_taken is
 begin
 
-    prediction <= '0';
+    prediction <= '1';
 
 end architecture;

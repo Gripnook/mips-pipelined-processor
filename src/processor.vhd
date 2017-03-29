@@ -146,7 +146,6 @@ architecture arch of processor is
     signal id_made_prediction        : std_logic;
     signal id_previous_prediction    : std_logic;
     signal id_previous_branch_target : std_logic_vector(31 downto 0);
-    signal id_prediction_correct     : std_logic;
     signal id_prediction_incorrect   : std_logic;
 
     -- id/ex
@@ -286,6 +285,16 @@ begin
 
     if_pc_plus_four <= std_logic_vector(unsigned(pc) + 4);
 
+    branch_predictor : bp_predict_not_taken
+        port map (clock                => clock,
+                  reset                => reset,
+                  pc                   => pc,
+                  update               => id_made_prediction,
+                  previous_pc          => id_previous_pc,
+                  previous_prediction  => id_previous_prediction,
+                  prediction_incorrect => id_prediction_incorrect,
+                  prediction           => if_prediction);
+
     branch_prediction_resolution : process(if_pc_plus_four, if_instruction)
     begin
         if_branch        <= '0';
@@ -312,16 +321,6 @@ begin
     if_npc <= id_branch_target when (id_prediction_incorrect = '1') else
               if_branch_target when (if_jump = '1' or (if_branch = '1' and if_prediction = '1')) else
               if_pc_plus_four;
-
-    branch_predictor : bp_predict_not_taken
-        port map (clock               => clock,
-                  reset               => reset,
-                  pc                  => pc,
-                  update              => id_made_prediction,
-                  previous_pc         => id_previous_pc,
-                  previous_prediction => id_previous_prediction,
-                  prediction_correct  => id_prediction_correct,
-                  prediction          => if_prediction);
 
     -- if/id
 
@@ -448,7 +447,6 @@ begin
     end process;
 
     id_prediction_incorrect <= id_jump_reg or (id_made_prediction and (id_branch_taken xor id_previous_prediction));
-    id_prediction_correct   <= not id_prediction_incorrect;
 
     -- id/ex
 
