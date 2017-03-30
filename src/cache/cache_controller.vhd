@@ -3,45 +3,43 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity cache_controller is
-    port(clock          : in  std_logic;
-         reset          : in  std_logic;
+    port(clock         : in  std_logic;
+         reset         : in  std_logic;
          -- Avalon interface
-         s_read         : in  std_logic;
-         s_write        : in  std_logic;
-         m_waitrequest  : in  std_logic;
+         s_read        : in  std_logic;
+         s_write       : in  std_logic;
+         m_waitrequest : in  std_logic;
          -- Cache logic interface 
-         tag_hit        : in  std_logic;
-         word_done      : in  std_logic;
+         tag_hit       : in  std_logic;
+         word_done     : in  std_logic;
          -- Cache storage interface
-         valid          : in  std_logic;
-         dirty          : in  std_logic;
-         dirty_data     : in  std_logic;
+         valid         : in  std_logic;
+         dirty         : in  std_logic;
+         dirty_data    : in  std_logic;
          -- Avalon interface
-         m_read         : out std_logic;
-         m_write        : out std_logic;
-         s_waitrequest  : out std_logic;
+         m_read        : out std_logic;
+         m_write       : out std_logic;
+         s_waitrequest : out std_logic;
          -- Cache storage interface
-         c_read         : out std_logic;
-         c_write        : out std_logic;
-         c_write_sel    : out std_logic;
-         c_dirty_clr    : out std_logic;
+         c_read        : out std_logic;
+         c_write       : out std_logic;
+         c_write_sel   : out std_logic;
+         c_dirty_clr   : out std_logic;
          -- Cache Logic interface
-         tag_sel        : out std_logic;
-         word_sel       : out std_logic;
-         word_en        : out std_logic;
+         tag_sel       : out std_logic;
+         word_sel      : out std_logic;
+         word_en       : out std_logic;
          -- Input registers
-         s_write_reg    : in  std_logic;
-         input_reg_en   : out std_logic;
-         s_addr_sel     : out std_logic);
+         s_write_reg   : in  std_logic;
+         input_reg_en  : out std_logic;
+         s_addr_sel    : out std_logic);
 end cache_controller;
 
 architecture arch of cache_controller is
-
     type state_type is (S0, S1, S3, S5, S7, S8, S10, S11);
     signal state : state_type := S0;
 
 begin
-
     state_transition_process : process(clock, reset)
     begin
         if (reset = '1') then
@@ -119,18 +117,18 @@ begin
     output_process : process(s_read, s_write, s_write_reg, m_waitrequest, tag_hit, valid, dirty, dirty_data, state)
     begin
         -- Default outputs
-        m_read         <= '0';
-        m_write        <= '0';
-        s_waitrequest  <= '0';
-        c_read         <= '0';
-        c_write        <= '0';
-        c_write_sel    <= '0';
-        c_dirty_clr    <= '0';
-        tag_sel        <= '0';
-        word_sel       <= '0';
-        word_en        <= '0';
-        input_reg_en   <= '0';
-        s_addr_sel     <= '0';
+        m_read        <= '0';
+        m_write       <= '0';
+        s_waitrequest <= '0';
+        c_read        <= '0';
+        c_write       <= '0';
+        c_write_sel   <= '0';
+        c_dirty_clr   <= '0';
+        tag_sel       <= '0';
+        word_sel      <= '0';
+        word_en       <= '0';
+        input_reg_en  <= '0';
+        s_addr_sel    <= '0';
 
         case state is
             when S0 =>
@@ -168,7 +166,7 @@ begin
                 s_waitrequest <= '1';
                 word_sel      <= '1';
                 if m_waitrequest = '1' then
-                    m_read      <= '1';
+                    m_read <= '1';
                 else
                     c_write     <= '1';
                     c_dirty_clr <= '1';

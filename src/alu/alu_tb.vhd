@@ -6,7 +6,6 @@ entity alu_tb is
 end entity alu_tb;
 
 architecture arch of alu_tb is
-
     signal a          : std_logic_vector(31 downto 0);
     signal b          : std_logic_vector(31 downto 0);
     signal opcode     : std_logic_vector(5 downto 0);
@@ -32,7 +31,6 @@ architecture arch of alu_tb is
     end assert_equal;
 
 begin
-
     dut : alu
         port map(
             a      => a,
@@ -562,7 +560,7 @@ begin
 
         assert_equal(alu_result, 64x"1", error_count);
         -----------------------------------------------------
-        
+
         -----------------------------------------------------
         ---------------------Test#8-2: and---------------------
         --This test performs the and operation on the alu
@@ -577,7 +575,7 @@ begin
 
         assert_equal(alu_result, 32x"0" & "10101010101010101010101010101011", error_count);
         -----------------------------------------------------
-        
+
         -----------------------------------------------------
         ---------------------Test#8-3: and---------------------
         --This test performs the and operation on the alu
@@ -607,7 +605,7 @@ begin
 
         assert_equal(alu_result, x"00000000FFFFFFFF", error_count);
         -----------------------------------------------------
-        
+
         -----------------------------------------------------
         ---------------------Test#9-2: or---------------------
         --This test performs the or operation on the alu
@@ -622,7 +620,7 @@ begin
 
         assert_equal(alu_result, 32x"0" & 32x"ffffffff", error_count);
         -----------------------------------------------------
-        
+
         -----------------------------------------------------
         ---------------------Test#9-3: or---------------------
         --This test performs the or operation on the alu
@@ -652,7 +650,7 @@ begin
 
         assert_equal(alu_result, 64x"0", error_count);
         -----------------------------------------------------
-        
+
         -----------------------------------------------------
         ---------------------Test#10-2: nor---------------------
         --This test performs the nor operation on the alu
@@ -667,7 +665,7 @@ begin
 
         assert_equal(alu_result, 64x"0", error_count);
         -----------------------------------------------------
-        
+
         -----------------------------------------------------
         ---------------------Test#10-3: nor---------------------
         --This test performs the nor operation on the alu
@@ -680,7 +678,7 @@ begin
 
         wait for 1 ns;
 
-        assert_equal(alu_result, 48x"0" & 16x"ffff" , error_count);
+        assert_equal(alu_result, 48x"0" & 16x"ffff", error_count);
         -----------------------------------------------------
 
         -----------------------------------------------------
@@ -697,7 +695,7 @@ begin
 
         assert_equal(alu_result, x"00000000FFFFFFFF", error_count);
         -----------------------------------------------------
-        
+
         ---------------------Test#11-2 xor---------------------
         --This test performs the xor operation on the alu
         report "Test#11-2: xor";
@@ -711,7 +709,7 @@ begin
 
         assert_equal(alu_result, 64x"0", error_count);
         -----------------------------------------------------
-        
+
         ---------------------Test#11-3: xor---------------------
         --This test performs the xor operation on the alu
         report "Test#11-3: xor";
@@ -725,7 +723,7 @@ begin
 
         assert_equal(alu_result, 64x"0", error_count);
         -----------------------------------------------------
-        
+
         ---------------------Test#11-4: xor---------------------
         --This test performs the xor operation on the alu
         report "Test#11-4: xor";
@@ -754,7 +752,7 @@ begin
 
         assert_equal(alu_result, 64x"0", error_count);
         -----------------------------------------------------
-        
+
         -----------------------------------------------------
         ---------------------Test#12-2: andi---------------------
         --This test performs the andi operation on the alu
@@ -769,7 +767,7 @@ begin
 
         assert_equal(alu_result, 32x"0" & 32x"0000ffff", error_count);
         -----------------------------------------------------
-        
+
         -----------------------------------------------------
         ---------------------Test#12-3: andi---------------------
         --This test performs the andi operation on the alu
@@ -799,7 +797,7 @@ begin
 
         assert_equal(alu_result, x"00000000FFFFFFFF", error_count);
         -----------------------------------------------------
-        
+
         -----------------------------------------------------
         ---------------------Test#13-2: ori---------------------
         --This test performs the ori operation on the alu
@@ -814,7 +812,7 @@ begin
 
         assert_equal(alu_result, 64x"0", error_count);
         -----------------------------------------------------
-        
+
         -----------------------------------------------------
         ---------------------Test#13-3: ori---------------------
         --This test performs the ori operation on the alu
@@ -829,7 +827,7 @@ begin
 
         assert_equal(alu_result, 32x"0" & 32x"ffffffff", error_count);
         -----------------------------------------------------
-        
+
         -----------------------------------------------------
         ---------------------Test#13-4: ori---------------------
         --This test performs the ori operation on the alu
@@ -859,7 +857,7 @@ begin
 
         assert_equal(alu_result, x"00000000FFFFFFFF", error_count);
         -----------------------------------------------------
-        
+
         -----------------------------------------------------
         ---------------------Test#14-2: xori---------------------
         --This test performs the xori operation on the alu
@@ -874,7 +872,7 @@ begin
 
         assert_equal(alu_result, 64x"0", error_count);
         -----------------------------------------------------
-        
+
         -----------------------------------------------------
         ---------------------Test#14-3: xori---------------------
         --This test performs the xori operation on the alu
@@ -889,7 +887,7 @@ begin
 
         assert_equal(alu_result, 64x"0", error_count);
         -----------------------------------------------------
-        
+
         -----------------------------------------------------
         ---------------------Test#14-4: xori---------------------
         --This test performs the xori operation on the alu
@@ -921,7 +919,7 @@ begin
 
         assert_equal(alu_result, x"0000000000010000", error_count);
         -----------------------------------------------------
-        
+
         ---------------------Test#15-2: lui---------------------
         --This test performs the lui operation on the alu
         report "Test#15-2: lui";

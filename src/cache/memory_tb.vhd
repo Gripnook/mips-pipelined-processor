@@ -6,7 +6,6 @@ entity memory_tb is
 end memory_tb;
 
 architecture behaviour of memory_tb is
-
     component memory is
         generic(RAM_SIZE     : integer := 8192;
                 MEM_DELAY    : time    := 10 ns;
@@ -25,7 +24,7 @@ architecture behaviour of memory_tb is
     --all the input signals with initial values
     signal clock       : std_logic := '0';
     signal writedata   : std_logic_vector(31 downto 0);
-    signal address     : integer := 0;
+    signal address     : integer   := 0;
     signal memwrite    : std_logic := '0';
     signal memread     : std_logic := '0';
     signal readdata    : std_logic_vector(31 downto 0);
@@ -35,12 +34,12 @@ begin
 
     --dut => Device Under Test
     dut : memory
-        port map(clock => clock,
-                 writedata => writedata,
-                 address => address,
-                 memwrite => memwrite,
-                 memread => memread,
-                 readdata => readdata,
+        port map(clock       => clock,
+                 writedata   => writedata,
+                 address     => address,
+                 memwrite    => memwrite,
+                 memread     => memread,
+                 readdata    => readdata,
                  waitrequest => waitrequest);
 
     clock_process : process

@@ -6,7 +6,6 @@ entity hazard_detector_tb is
 end entity hazard_detector_tb;
 
 architecture arch of hazard_detector_tb is
-
     signal if_id  : std_logic_vector(31 downto 0);
     signal id_ex  : std_logic_vector(31 downto 0);
     signal ex_mem : std_logic_vector(31 downto 0);
@@ -49,7 +48,6 @@ architecture arch of hazard_detector_tb is
     end assert_equal_bit;
 
 begin
-
     dut : hazard_detector
         port map(id_instruction  => if_id,
                  ex_instruction  => id_ex,

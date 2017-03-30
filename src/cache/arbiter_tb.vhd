@@ -6,7 +6,6 @@ entity arbiter_tb is
 end entity arbiter_tb;
 
 architecture arch of arbiter_tb is
-
     constant clock_period : time := 1 ns;
 
     signal clock         : std_logic;
@@ -84,7 +83,6 @@ architecture arch of arbiter_tb is
     end assert_equal_bit;
 
 begin
-
     dut : arbiter
         port map(
             clock         => clock,
@@ -111,12 +109,12 @@ begin
 
     mem : memory
         port map(
-            clock => clock,
-            writedata => m_writedata,
-            address => m_addr,
-            memwrite => m_write,
-            memread => m_read,
-            readdata => m_readdata,
+            clock       => clock,
+            writedata   => m_writedata,
+            address     => m_addr,
+            memwrite    => m_write,
+            memread     => m_read,
+            readdata    => m_readdata,
             waitrequest => m_waitrequest
         );
 
@@ -139,7 +137,7 @@ begin
     i_cache_process : process
         variable i_error_count : integer := 0;
     begin
-        i_read <= '0';
+        i_read  <= '0';
         i_write <= '0';
 
         wait until falling_edge(reset);
@@ -216,38 +214,38 @@ begin
     d_cache_process : process
         variable d_error_count : integer := 0;
     begin
-        d_read <= '0';
+        d_read  <= '0';
         d_write <= '0';
 
         wait until falling_edge(reset);
 
-        d_write <= '1';
+        d_write     <= '1';
         d_writedata <= x"0000000D";
-        d_addr <= 500;
+        d_addr      <= 500;
         wait until rising_edge(d_waitrequest);
         d_write <= '0';
 
         wait until falling_edge(clock);
 
-        d_write <= '1';
+        d_write     <= '1';
         d_writedata <= x"0000000A";
-        d_addr <= 501;
+        d_addr      <= 501;
         wait until rising_edge(d_waitrequest);
         d_write <= '0';
 
         wait until falling_edge(clock);
-        
-        d_write <= '1';
+
+        d_write     <= '1';
         d_writedata <= x"00000006";
-        d_addr <= 502;
+        d_addr      <= 502;
         wait until rising_edge(d_waitrequest);
         d_write <= '0';
 
         wait until falling_edge(clock);
 
-        d_write <= '1';
+        d_write     <= '1';
         d_writedata <= x"00000002";
-        d_addr <= 503;
+        d_addr      <= 503;
         wait until rising_edge(d_waitrequest);
         d_write <= '0';
 
@@ -268,7 +266,7 @@ begin
         wait until rising_edge(d_waitrequest);
         d_read <= '0';
         assert_equal(d_readdata, x"0000000A", d_error_count);
-        
+
         wait until falling_edge(clock);
 
         d_read <= '1';
@@ -276,7 +274,7 @@ begin
         wait until rising_edge(d_waitrequest);
         d_read <= '0';
         assert_equal(d_readdata, x"00000006", d_error_count);
-        
+
         wait until falling_edge(clock);
 
         d_read <= '1';
@@ -284,7 +282,7 @@ begin
         wait until rising_edge(d_waitrequest);
         d_read <= '0';
         assert_equal(d_readdata, x"00000002", d_error_count);
-        
+
         wait until falling_edge(clock);
 
         report "Done. Found " & integer'image(d_error_count) & " data access error(s).";

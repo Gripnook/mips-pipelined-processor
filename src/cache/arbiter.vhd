@@ -26,12 +26,10 @@ entity arbiter is
 end arbiter;
 
 architecture arch of arbiter is
-
     type state_type is (IDLE, I_CACHE, D_CACHE);
     signal state : state_type := IDLE;
 
 begin
-
     i_readdata <= m_readdata;
     d_readdata <= m_readdata;
 

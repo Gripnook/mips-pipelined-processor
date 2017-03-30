@@ -6,10 +6,9 @@ entity cache_tb is
 end cache_tb;
 
 architecture behavior of cache_tb is
-
     component cache is
         generic(CACHE_SIZE : integer := 512;
-                RAM_SIZE : integer := 8192);
+                RAM_SIZE   : integer := 8192);
         port(clock         : in  std_logic;
              reset         : in  std_logic;
              -- Avalon interface --

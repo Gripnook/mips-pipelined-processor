@@ -17,7 +17,7 @@ entity memory is
 end memory;
 
 architecture rtl of memory is
-    type ram is array(0 to RAM_SIZE - 1) of std_logic_vector(31 downto 0);
+    type ram is array (0 to RAM_SIZE - 1) of std_logic_vector(31 downto 0);
     signal ram_block         : ram;
     signal read_address_reg  : integer range 0 to RAM_SIZE - 1;
     signal write_waitreq_reg : std_logic := '1';
