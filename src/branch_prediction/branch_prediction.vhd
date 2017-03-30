@@ -4,7 +4,7 @@ package branch_prediction is
     constant DEFAULT_BHT_BITS : integer := 12;
 
     component bp_2bit_predictor is
-        generic(BHT_BITS : integer);
+        generic(BHT_BITS : integer := DEFAULT_BHT_BITS);
         port(
             clock                : in  std_logic;
             reset                : in  std_logic;
@@ -18,7 +18,7 @@ package branch_prediction is
     end component bp_2bit_predictor;
 
     component bp_1bit_predictor is
-        generic(BHT_BITS : integer);
+        generic(BHT_BITS : integer := DEFAULT_BHT_BITS);
         port(
             clock                : in  std_logic;
             reset                : in  std_logic;

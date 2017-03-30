@@ -25,8 +25,7 @@ architecture arch of bp_2bit_predictor is
     constant NotTaken1 : std_logic_vector(1 downto 0) := "11";
 
     signal bht_table           : bht_element_type;
-    signal prediction_internal : std_logic                    := '0';
-    signal state               : std_logic_vector(1 downto 0) := NotTaken1;
+    signal prediction_internal : std_logic := '0';
 
 begin
     prediction <= prediction_internal;
@@ -35,38 +34,31 @@ begin
         variable idx : integer;
     begin
         if reset = '1' then
-            state <= NotTaken1;
             for i in 0 to 2 ** BHT_BITS loop
                 bht_table(i) <= NotTaken1;
             end loop;
         elsif rising_edge(clock) then
             if update = '1' then
                 idx := to_integer(unsigned(previous_pc(BHT_BITS + 1 downto 2)));
-                case state is
+                case bht_table(idx) is
                     when NotTaken0 =>
                         if prediction_incorrect = '1' then
-                            state          <= Taken1;
                             bht_table(idx) <= Taken1;
                         else
-                            state          <= NotTaken1;
                             bht_table(idx) <= NotTaken1;
                         end if;
                     when NotTaken1 =>
                         if prediction_incorrect = '1' then
-                            state          <= NotTaken0;
                             bht_table(idx) <= NotTaken0;
                         end if;
                     when Taken0 =>
                         if prediction_incorrect = '1' then
-                            state          <= NotTaken1;
                             bht_table(idx) <= NotTaken1;
                         else
-                            state          <= Taken1;
                             bht_table(idx) <= Taken1;
                         end if;
                     when Taken1 =>
                         if prediction_incorrect = '1' then
-                            state          <= Taken0;
                             bht_table(idx) <= Taken0;
                         end if;
                     when others =>

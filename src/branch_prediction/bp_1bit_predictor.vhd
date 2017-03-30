@@ -24,7 +24,6 @@ architecture arch of bp_1bit_predictor is
 
     signal bht_table           : bht_element_type;
     signal prediction_internal : std_logic := '0';
-    signal state               : std_logic := NotTaken;
 
 begin
     prediction <= prediction_internal;
@@ -33,23 +32,20 @@ begin
         variable idx : integer;
     begin
         if reset = '1' then
-            state <= NotTaken;
             for i in 0 to 2 ** BHT_BITS loop
-                bht_table(i) <= '0';
+                bht_table(i) <= NotTaken;
             end loop;
         elsif rising_edge(clock) then
             if update = '1' then
                 idx := to_integer(unsigned(previous_pc(BHT_BITS + 1 downto 2)));
-                case state is
+                case bht_table(idx) is
                     when NotTaken =>
                         if prediction_incorrect = '1' then
-                            state          <= Taken;
-                            bht_table(idx) <= NotTaken;
+                            bht_table(idx) <= Taken;
                         end if;
                     when Taken =>
                         if prediction_incorrect = '1' then
-                            state          <= NotTaken;
-                            bht_table(idx) <= Taken;
+                            bht_table(idx) <= NotTaken;
                         end if;
                     when others =>
                         null;
