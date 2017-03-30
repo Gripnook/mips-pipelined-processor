@@ -14,38 +14,39 @@ entity bp_1bit_predictor is
         prediction_incorrect : in  std_logic; -- '1' if prediction was incorrect, '0' otherwise
         prediction           : out std_logic -- '1' = predict taken, '0' = predict not taken
     );
-end entity bp_1bit_predictor;
+end bp_1bit_predictor;
 
 architecture arch of bp_1bit_predictor is
-    type bht_element_type is array (0 to 2 ** BHT_BITS) of std_logic;
+    type bht_type is array (0 to 2 ** BHT_BITS - 1) of std_logic;
 
-    constant Taken    : std_logic := '0';
-    constant NotTaken : std_logic := '1';
+    constant Taken    : std_logic := '1';
+    constant NotTaken : std_logic := '0';
 
-    signal bht_table           : bht_element_type;
+    signal bht                 : bht_type;
     signal prediction_internal : std_logic := '0';
 
 begin
     prediction <= prediction_internal;
 
-    state_update : process(clock, reset) is
+    state_update : process(clock, reset)
         variable idx : integer;
     begin
         if reset = '1' then
-            for i in 0 to 2 ** BHT_BITS loop
-                bht_table(i) <= NotTaken;
+            for i in 0 to 2 ** BHT_BITS - 1 loop
+                bht(i) <= NotTaken;
             end loop;
         elsif rising_edge(clock) then
             if update = '1' then
+                -- We ignore the lower two bits since the PC is word aligned
                 idx := to_integer(unsigned(previous_pc(BHT_BITS + 1 downto 2)));
-                case bht_table(idx) is
+                case bht(idx) is
                     when NotTaken =>
                         if prediction_incorrect = '1' then
-                            bht_table(idx) <= Taken;
+                            bht(idx) <= Taken;
                         end if;
                     when Taken =>
                         if prediction_incorrect = '1' then
-                            bht_table(idx) <= NotTaken;
+                            bht(idx) <= NotTaken;
                         end if;
                     when others =>
                         null;
@@ -54,18 +55,19 @@ begin
         end if;
     end process;
 
-    output : process(clock, reset) is
-        variable s : std_logic;
+    output : process(clock, reset)
+        variable state : std_logic;
     begin
         if reset = '1' then
             prediction_internal <= '0';
         elsif falling_edge(clock) then
-            s := bht_table(to_integer(unsigned(pc(BHT_BITS + 1 downto 2))));
-            if s = Taken then
+            -- We ignore the lower two bits since the PC is word aligned
+            state := bht(to_integer(unsigned(pc(BHT_BITS + 1 downto 2))));
+            if state = Taken then
                 prediction_internal <= '1';
-            elsif s = NotTaken then
+            else
                 prediction_internal <= '0';
             end if;
         end if;
     end process;
-end architecture arch;
+end architecture;

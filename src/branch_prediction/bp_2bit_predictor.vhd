@@ -14,52 +14,53 @@ entity bp_2bit_predictor is
         prediction_incorrect : in  std_logic; -- '1' if prediction was incorrect, '0' otherwise
         prediction           : out std_logic -- '1' = predict taken, '0' = predict not taken
     );
-end entity bp_2bit_predictor;
+end bp_2bit_predictor;
 
 architecture arch of bp_2bit_predictor is
-    type bht_element_type is array (0 to 2 ** BHT_BITS) of std_logic_vector(1 downto 0);
+    type bht_type is array (0 to 2 ** BHT_BITS - 1) of std_logic_vector(1 downto 0);
 
-    constant Taken0    : std_logic_vector(1 downto 0) := "00";
-    constant Taken1    : std_logic_vector(1 downto 0) := "01";
-    constant NotTaken0 : std_logic_vector(1 downto 0) := "10";
-    constant NotTaken1 : std_logic_vector(1 downto 0) := "11";
+    constant Taken0    : std_logic_vector(1 downto 0) := "10";
+    constant Taken1    : std_logic_vector(1 downto 0) := "11";
+    constant NotTaken0 : std_logic_vector(1 downto 0) := "01";
+    constant NotTaken1 : std_logic_vector(1 downto 0) := "00";
 
-    signal bht_table           : bht_element_type;
+    signal bht                 : bht_type;
     signal prediction_internal : std_logic := '0';
 
 begin
     prediction <= prediction_internal;
 
-    state_update : process(clock, reset) is
+    state_update : process(clock, reset)
         variable idx : integer;
     begin
         if reset = '1' then
-            for i in 0 to 2 ** BHT_BITS loop
-                bht_table(i) <= NotTaken1;
+            for i in 0 to 2 ** BHT_BITS - 1 loop
+                bht(i) <= NotTaken1;
             end loop;
         elsif rising_edge(clock) then
             if update = '1' then
+                -- We ignore the lower two bits since the PC is word aligned
                 idx := to_integer(unsigned(previous_pc(BHT_BITS + 1 downto 2)));
-                case bht_table(idx) is
+                case bht(idx) is
                     when NotTaken0 =>
                         if prediction_incorrect = '1' then
-                            bht_table(idx) <= Taken1;
+                            bht(idx) <= Taken0;
                         else
-                            bht_table(idx) <= NotTaken1;
+                            bht(idx) <= NotTaken1;
                         end if;
                     when NotTaken1 =>
                         if prediction_incorrect = '1' then
-                            bht_table(idx) <= NotTaken0;
+                            bht(idx) <= NotTaken0;
                         end if;
                     when Taken0 =>
                         if prediction_incorrect = '1' then
-                            bht_table(idx) <= NotTaken1;
+                            bht(idx) <= NotTaken0;
                         else
-                            bht_table(idx) <= Taken1;
+                            bht(idx) <= Taken1;
                         end if;
                     when Taken1 =>
                         if prediction_incorrect = '1' then
-                            bht_table(idx) <= Taken0;
+                            bht(idx) <= Taken0;
                         end if;
                     when others =>
                         null;
@@ -68,18 +69,19 @@ begin
         end if;
     end process;
 
-    output : process(clock, reset) is
-        variable s : std_logic_vector(1 downto 0);
+    output : process(clock, reset)
+        variable state : std_logic_vector(1 downto 0);
     begin
         if reset = '1' then
             prediction_internal <= '0';
         elsif falling_edge(clock) then
-            s := bht_table(to_integer(unsigned(pc(BHT_BITS + 1 downto 2))));
-            if s = Taken0 or s = Taken1 then
+            -- We ignore the lower two bits since the PC is word aligned
+            state := bht(to_integer(unsigned(pc(BHT_BITS + 1 downto 2))));
+            if state = Taken0 or state = Taken1 then
                 prediction_internal <= '1';
-            elsif s = NotTaken0 or s = NotTaken1 then
+            else
                 prediction_internal <= '0';
             end if;
         end if;
     end process;
-end architecture arch;
+end architecture;
