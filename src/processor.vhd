@@ -289,8 +289,8 @@ begin
 
     if_pc_plus_four <= std_logic_vector(unsigned(pc) + 4);
 
-    branch_predictor : bp_1bit_predictor
-        generic map(BHT_BITS => 12)
+    branch_predictor : bp_2bit_predictor
+        generic map(BHT_BITS => DEFAULT_BHT_BITS)
         port map(clock                => clock,
                  reset                => reset,
                  pc                   => pc,

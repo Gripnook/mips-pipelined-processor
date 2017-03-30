@@ -12,6 +12,7 @@ vcom cache/cache.vhd
 vcom cache/memory.vhd
 vcom cache/arbiter.vhd
 vcom branch_prediction/bp_1bit_predictor.vhd
+vcom branch_prediction/bp_2bit_predictor.vhd
 vcom branch_prediction/bp_predict_not_taken.vhd
 vcom branch_prediction/bp_predict_taken.vhd
 vcom branch_prediction/branch_prediction.vhd
