@@ -44,14 +44,14 @@ architecture arch of processor is
 
     component cache is
         generic(CACHE_SIZE : integer;
-                RAM_SIZE : integer := 8192);
+                RAM_SIZE   : integer := 8192);
         port(clock         : in  std_logic;
              reset         : in  std_logic;
              -- Avalon interface --
              s_addr        : in  std_logic_vector(31 downto 0);
              s_read        : in  std_logic;
              s_readdata    : out std_logic_vector(31 downto 0);
-             s_write       : in  std_logic := '0';
+             s_write       : in  std_logic                     := '0';
              s_writedata   : in  std_logic_vector(31 downto 0) := (others => '0');
              s_waitrequest : out std_logic;
              m_addr        : out integer range 0 to RAM_SIZE - 1;
@@ -126,24 +126,24 @@ architecture arch of processor is
     signal if_id_reset, if_id_enable : std_logic;
 
     -- id
-    signal id_instruction   : std_logic_vector(31 downto 0);
-    signal id_opcode        : std_logic_vector(5 downto 0);
-    signal id_funct         : std_logic_vector(5 downto 0);
-    signal id_rs_addr       : std_logic_vector(4 downto 0);
-    signal id_rt_addr       : std_logic_vector(4 downto 0);
-    signal id_pc_plus_four  : std_logic_vector(31 downto 0);
-    signal id_rs            : std_logic_vector(31 downto 0);
-    signal id_rs_fwd        : std_logic_vector(31 downto 0);
-    signal id_rt            : std_logic_vector(31 downto 0);
-    signal id_rt_fwd        : std_logic_vector(31 downto 0);
-    signal id_rs_output     : std_logic_vector(31 downto 0);
-    signal id_rt_output     : std_logic_vector(31 downto 0);
-    signal id_immediate     : std_logic_vector(31 downto 0);
-    
+    signal id_instruction  : std_logic_vector(31 downto 0);
+    signal id_opcode       : std_logic_vector(5 downto 0);
+    signal id_funct        : std_logic_vector(5 downto 0);
+    signal id_rs_addr      : std_logic_vector(4 downto 0);
+    signal id_rt_addr      : std_logic_vector(4 downto 0);
+    signal id_pc_plus_four : std_logic_vector(31 downto 0);
+    signal id_rs           : std_logic_vector(31 downto 0);
+    signal id_rs_fwd       : std_logic_vector(31 downto 0);
+    signal id_rt           : std_logic_vector(31 downto 0);
+    signal id_rt_fwd       : std_logic_vector(31 downto 0);
+    signal id_rs_output    : std_logic_vector(31 downto 0);
+    signal id_rt_output    : std_logic_vector(31 downto 0);
+    signal id_immediate    : std_logic_vector(31 downto 0);
+
     signal id_jump_reg      : std_logic;
     signal id_branch_taken  : std_logic;
     signal id_branch_target : std_logic_vector(31 downto 0);
-    
+
     signal id_previous_pc            : std_logic_vector(31 downto 0);
     signal id_made_prediction        : std_logic;
     signal id_previous_prediction    : std_logic;
@@ -289,15 +289,16 @@ begin
 
     if_pc_plus_four <= std_logic_vector(unsigned(pc) + 4);
 
-    branch_predictor : bp_predict_not_taken
-        port map (clock                => clock,
-                  reset                => reset,
-                  pc                   => pc,
-                  update               => id_made_prediction,
-                  previous_pc          => id_previous_pc,
-                  previous_prediction  => id_previous_prediction,
-                  prediction_incorrect => id_prediction_incorrect,
-                  prediction           => if_prediction);
+    branch_predictor : bp_1bit_predictor
+        generic map(BHT_BITS => 12)
+        port map(clock                => clock,
+                 reset                => reset,
+                 pc                   => pc,
+                 update               => id_made_prediction,
+                 previous_pc          => id_previous_pc,
+                 previous_prediction  => id_previous_prediction,
+                 prediction_incorrect => id_prediction_incorrect,
+                 prediction           => if_prediction);
 
     if_opcode    <= if_instruction(31 downto 26);
     if_immediate <= if_instruction(15 downto 0);
@@ -326,9 +327,7 @@ begin
         end case;
     end process;
 
-    if_npc <= id_branch_target when (id_prediction_incorrect = '1') else
-              if_branch_target when (if_jump = '1' or (if_branch = '1' and if_prediction = '1')) else
-              if_pc_plus_four;
+    if_npc <= id_branch_target when (id_prediction_incorrect = '1') else if_branch_target when (if_jump = '1' or (if_branch = '1' and if_prediction = '1')) else if_pc_plus_four;
 
     -- if/id
 
@@ -410,7 +409,7 @@ begin
 
     with id_opcode select id_rs_output <=
         id_pc_plus_four when OP_JAL,
-        id_rs_fwd       when others;
+        id_rs_fwd when others;
     id_rt_output <= id_rt_fwd;
 
     immediate_extend : process(id_opcode, id_instruction)
@@ -613,8 +612,7 @@ begin
                  m_write       => d_write,
                  m_writedata   => d_writedata,
                  m_waitrequest => d_waitrequest);
-    mem_address <= mem_alu_result(31 downto 2) & "00" when wb_done = '0' else
-        std_logic_vector(to_unsigned(clear_cache_count, 28) & "0000");
+    mem_address <= mem_alu_result(31 downto 2) & "00" when wb_done = '0' else std_logic_vector(to_unsigned(clear_cache_count, 28) & "0000");
 
     with mem_opcode select mem_write_en <=
         '1' when OP_SW,
@@ -658,7 +656,7 @@ begin
 
     write_en_mux : process(wb_opcode, wb_funct)
     begin
-        wb_write_en <= '1'; -- default value
+        wb_write_en <= '1';             -- default value
         case wb_opcode is
             when OP_R_TYPE =>
                 case wb_funct is
@@ -845,7 +843,7 @@ begin
     clear_cache_counter : process(clock, reset)
     begin
         if (reset = '1') then
-            done <= '0';
+            done              <= '0';
             clear_cache_count <= 0;
         elsif (rising_edge(clock)) then
             if (wb_done = '1' and mem_waitrequest = '0') then
