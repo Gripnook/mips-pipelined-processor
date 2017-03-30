@@ -121,6 +121,7 @@ architecture arch of processor is
     signal if_jump          : std_logic;
     signal if_branch_target : std_logic_vector(31 downto 0);
     signal if_pc_plus_four  : std_logic_vector(31 downto 0);
+    signal if_bp_update     : std_logic;
 
     -- if/id
     signal if_id_reset, if_id_enable : std_logic;
@@ -293,11 +294,12 @@ begin
         port map(clock                => clock,
                  reset                => reset,
                  pc                   => pc,
-                 update               => id_made_prediction,
+                 update               => if_bp_update,
                  previous_pc          => id_previous_pc,
                  previous_prediction  => id_previous_prediction,
                  prediction_incorrect => id_prediction_incorrect,
                  prediction           => if_prediction);
+    if_bp_update <= id_made_prediction and if_id_enable;
 
     if_opcode    <= if_instruction(31 downto 26);
     if_immediate <= if_instruction(15 downto 0);
