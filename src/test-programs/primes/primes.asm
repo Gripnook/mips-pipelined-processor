@@ -4,7 +4,7 @@
 
         addi $16, $0, 2000      # Initializing the beginning of Data Section address in memory
         addi $23, $16, 0        # Address of current prime
-        addi $17, $0, 10        # Number of primes to generate
+        addi $17, $0, 64        # Number of primes to generate
         addi $18, $0, 0         # Number of primes generated so far
 
         addi $19, $0, 2         # 2 is a special case
@@ -32,10 +32,10 @@ EoP:    beq  $0, $0, EoP        # End of program (infinite loop)
 # Returns value in $2
 prime:  addi $2, $0, 1          # Default is true
 L2:     lw   $8, 0($5)          # Load next prime
+        addi $5, $5, 4          # Increment address
         div  $4, $8             # Divide candidate by prime
         mfhi $8                 # Get remainder
         beq  $8, $0, L3         # If divisible by prime, then not prime
-        addi $5, $5, 4          # Increment address
         beq  $5, $6, return     # Reached the end of primes
         j    L2                 # Loop again
 L3:     addi $2, $0, 0          # Set return value to not prime

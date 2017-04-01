@@ -3,6 +3,7 @@ proc AddWaves {} {
     add wave -position end sim:/testbench/clock
     add wave -position end sim:/testbench/reset
     # Processor state
+    add wave -position end sim:/testbench/dut/done
     add wave -position end sim:/testbench/dut/pc
     add wave -position end sim:/testbench/dut/if_npc
     add wave -position end sim:/testbench/dut/id_opcode
@@ -68,7 +69,7 @@ AddWaves
 mem load -infile program.txt -format bin -filldata 0 /testbench/dut/mem/ram_block
 
 # Run
-run 10us
+run 100us
 
 # Save the memory and register file to files
 mem save -outfile memory.txt -format bin -wordsperline 1 -noaddress /testbench/dut/mem/ram_block
