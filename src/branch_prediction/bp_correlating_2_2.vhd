@@ -33,60 +33,47 @@ begin
         elsif rising_edge(clock) then
             if update = '1' then
                 table_index := to_integer(unsigned(previous_pc(BHT_BITS + 1 downto 2)));
+                case branch_predictor_table(table_index)(to_integer(unsigned(global_last))) is
+                    when "00" =>
+                        if prediction_incorrect = '1' then
+                            branch_predictor_table(table_index)(to_integer(unsigned(global_last))) <= "01";
+                        else
+                            branch_predictor_table(table_index)(to_integer(unsigned(global_last))) <= "00";
+                        end if;
+                    when "01" =>
+                        if prediction_incorrect = '1' then
+                            branch_predictor_table(table_index)(to_integer(unsigned(global_last))) <= "11";
+                        else
+                            branch_predictor_table(table_index)(to_integer(unsigned(global_last))) <= "00";
+                        end if;
+                    when "11" =>
+                        if prediction_incorrect = '1' then
+                            branch_predictor_table(table_index)(to_integer(unsigned(global_last))) <= "10";
+                        else
+                            branch_predictor_table(table_index)(to_integer(unsigned(global_last))) <= "11";
+                        end if;
+                    when others =>
+                        if prediction_incorrect = '1' then
+                            branch_predictor_table(table_index)(to_integer(unsigned(global_last))) <= "00";
+                        else
+                            branch_predictor_table(table_index)(to_integer(unsigned(global_last))) <= "11";
+                        end if;
+                end case;
+            end if;
+        end if;
+    end process;
+
+    global_shift : process(clock, reset) is
+    begin
+        if reset = '1' then
+            global_last <= "00";
+        elsif rising_edge(clock) then
+            if update = '1' then
+                global_last(1) <= global_last(0);
                 if prediction_incorrect = '1' then
-                    case branch_predictor_table(table_index)(to_integer(unsigned(global_last))) is
-                        when "00" =>
-                            if previous_prediction = '1' then
-                                branch_predictor_table(table_index)(to_integer(unsigned(global_last))) <= "00";
-                            else
-                                branch_predictor_table(table_index)(to_integer(unsigned(global_last))) <= "01";
-                            end if;
-                        when "01" =>
-                            if previous_prediction = '1' then
-                                branch_predictor_table(table_index)(to_integer(unsigned(global_last))) <= "00";
-                            else
-                                branch_predictor_table(table_index)(to_integer(unsigned(global_last))) <= "11";
-                            end if;
-                        when "11" =>
-                            if previous_prediction = '1' then
-                                branch_predictor_table(table_index)(to_integer(unsigned(global_last))) <= "10";
-                            else
-                                branch_predictor_table(table_index)(to_integer(unsigned(global_last))) <= "11";
-                            end if;
-                        when others =>
-                            if previous_prediction = '1' then
-                                branch_predictor_table(table_index)(to_integer(unsigned(global_last))) <= "00";
-                            else
-                                branch_predictor_table(table_index)(to_integer(unsigned(global_last))) <= "11";
-                            end if;
-                    end case;
+                    global_last(0) <= not previous_prediction;
                 else
-                    case branch_predictor_table(table_index)(to_integer(unsigned(global_last))) is
-                        when "00" =>
-                            if previous_prediction = '1' then
-                                branch_predictor_table(table_index)(to_integer(unsigned(global_last))) <= "01";
-                            else
-                                branch_predictor_table(table_index)(to_integer(unsigned(global_last))) <= "00";
-                            end if;
-                        when "01" =>
-                            if previous_prediction = '1' then
-                                branch_predictor_table(table_index)(to_integer(unsigned(global_last))) <= "11";
-                            else
-                                branch_predictor_table(table_index)(to_integer(unsigned(global_last))) <= "00";
-                            end if;
-                        when "11" =>
-                            if previous_prediction = '1' then
-                                branch_predictor_table(table_index)(to_integer(unsigned(global_last))) <= "11";
-                            else
-                                branch_predictor_table(table_index)(to_integer(unsigned(global_last))) <= "10";
-                            end if;
-                        when others =>
-                            if previous_prediction = '1' then
-                                branch_predictor_table(table_index)(to_integer(unsigned(global_last))) <= "11";
-                            else
-                                branch_predictor_table(table_index)(to_integer(unsigned(global_last))) <= "00";
-                            end if;
-                    end case;
+                    global_last(0) <= previous_prediction;
                 end if;
             end if;
         end if;
@@ -98,13 +85,6 @@ begin
         if reset = '1' then
             prediction_internal <= '0';
         elsif falling_edge(clock) then
-            global_last(1) <= global_last(0);
-            if prediction_incorrect = '1' then
-                global_last(0) <= not previous_prediction;
-            else
-                global_last(0) <= previous_prediction;
-            end if;
-            
             table_index := to_integer(unsigned(pc(BHT_BITS + 1 downto 2)));
             case branch_predictor_table(table_index)(to_integer(unsigned(global_last))) is
                 when "00" | "01" =>
@@ -112,7 +92,6 @@ begin
                 when others =>
                     prediction_internal <= '1';
             end case;
-            
         end if;
     end process;
 

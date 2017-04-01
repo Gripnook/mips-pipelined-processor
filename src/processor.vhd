@@ -290,7 +290,7 @@ begin
 
     if_pc_plus_four <= std_logic_vector(unsigned(pc) + 4);
 
-    branch_predictor : bp_2bit_predictor
+    branch_predictor : bp_tournament_2_2
         port map(clock                => clock,
                  reset                => reset,
                  pc                   => pc,

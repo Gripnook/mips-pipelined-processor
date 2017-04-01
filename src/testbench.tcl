@@ -49,6 +49,8 @@ vcom branch_prediction/bp_predict_not_taken.vhd
 vcom branch_prediction/bp_predict_taken.vhd
 vcom branch_prediction/bp_1bit_predictor.vhd
 vcom branch_prediction/bp_2bit_predictor.vhd
+vcom branch_prediction/bp_correlating_2_2.vhd
+vcom branch_prediction/bp_tournament_2_2.vhd
 vcom branch_prediction/branch_prediction.vhd
 vcom registers.vhd
 vcom alu/alu.vhd

@@ -73,7 +73,7 @@ package branch_prediction is
     end component;
 
     component bp_tournament_2_2 is
-        generic(BHT_BITS : integer);
+        generic(BHT_BITS : integer := DEFAULT_BHT_BITS);
         port(
             clock                : in  std_logic;
             reset                : in  std_logic;
