@@ -205,7 +205,7 @@ begin
         if reset = '1' then
             prediction_internal <= '0';
         elsif falling_edge(clock) then
-            table_index := to_integer(unsigned(previous_pc(BHT_BITS + 1 downto 2)));
+            table_index := to_integer(unsigned(pc(BHT_BITS + 1 downto 2)));
             if prediction_table(table_index)(1) = '0' then
                 pred_type := '0';
             else
