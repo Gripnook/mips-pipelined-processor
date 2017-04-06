@@ -3,11 +3,11 @@
 #is stored in memory at address 3500. The first 2 words stored are the dimensions of
 #the resulting matrix and the proceeding data is the multiplication result
 
-    addi $1, $0, 100 #Start of data memory address
-    addi $2, $0, 500 #Start of Matrix data A
-    addi $3, $0, 1000 #start of Matrix data B
-    addi $4, $0, 1500 #start of Result Matrix
-    addi $5, $0, 2000 #start of scratch space
+    addi $1, $0, 2000 #Start of data memory address
+    addi $2, $0, 2500 #Start of Matrix data A
+    addi $3, $0, 3000 #start of Matrix data B
+    addi $4, $0, 3500 #start of Result Matrix
+    addi $5, $0, 4000 #start of scratch space
     add $6, $0, $0 #number of elements in A
     add $7, $0, $0 #number of elements in B
 
