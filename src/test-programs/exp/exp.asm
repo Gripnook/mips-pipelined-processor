@@ -11,6 +11,7 @@ addi $6, $0, 2000           # Initializing the beginning of Data Section address
 addi $5, $0, 1              # Constant 1
 
 # Prepare arguments
+# ------------------------------------------------------------------------------
 addi $2, $0, 4              # Input y = 4
 addi $3, $0, 15             # Input x = 15
 jal exp                     # Jump to function
@@ -18,12 +19,47 @@ sw $1, 0($6)                # Save the result in memory
 
 addi $10, $1, 0             # Save result to reg 10
 
+# ------------------------------------------------------------------------------
 addi $2, $0, 11             # Input y = 11
 addi $3, $0, 7              # Input x = 7
 jal exp                     # Jump to function
 sw $1, 4($6)                # Save the result in memory
 
 addi $11, $1, 0             # Save result to reg 11
+
+# ------------------------------------------------------------------------------
+addi $2, $0, 8              # Input y = 8
+addi $3, $0, 3              # Input x = 3
+jal exp                     # Jump to function
+sw $1, 8($6)                # Save the result in memory
+
+addi $12, $1, 0             # Save result to reg 12
+
+# ------------------------------------------------------------------------------
+addi $2, $0, 9              # Input y = 9
+addi $3, $0, 8              # Input x = 8
+jal exp                     # Jump to function
+sw $1, 12($6)               # Save the result in memory
+
+addi $13, $1, 0             # Save result to reg 13
+
+# ------------------------------------------------------------------------------
+addi $2, $0, 9              # Input y = 9
+addi $3, $0, 23             # Input x = 23
+jal exp                     # Jump to function
+sw $1, 16($6)               # Save the result in memory
+
+addi $14, $1, 0             # Save result to reg 14
+
+# ------------------------------------------------------------------------------
+addi $2, $0, 20             # Input y = 20
+addi $3, $0, 3              # Input x = 3
+jal exp                     # Jump to function
+sw $1, 20($6)               # Save the result in memory
+
+addi $15, $1, 0             # Save result to reg 15
+
+# ------------------------------------------------------------------------------
 
 EoP:    beq  $0, $0, EoP    # End of program (infinite loop)
 

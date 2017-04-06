@@ -16,17 +16,49 @@ addi $5, $0, 32             # Constant 32
 addi $8, $0, 1              # Constant 1
 
 # Prepare arguments
+# ------------------------------------------------------------------------------
 addi $1, $0, 96             # Input x = 96
 jal bitcnt                  # Jump to function
 sw $3, 0($20)               # Save the result in memory
 
 addi $10, $3, 0             # Save result to reg 10
 
+# ------------------------------------------------------------------------------
 addi $1, $0, 7              # Input x = 7
 jal bitcnt                  # Jump to function
 sw $3, 4($20)               # Save the result in memory
 
 addi $11, $3, 0             # Save result to reg 11
+
+# ------------------------------------------------------------------------------
+addi $1, $0, 345            # Input x = 345
+jal bitcnt                  # Jump to function
+sw $3, 8($20)               # Save the result in memory
+
+addi $12, $3, 0             # Save result to reg 12
+
+# ------------------------------------------------------------------------------
+addi $1, $0, 23422          # Input x = 23422
+jal bitcnt                  # Jump to function
+sw $3, 12($20)              # Save the result in memory
+
+addi $13, $3, 0             # Save result to reg 13
+
+# ------------------------------------------------------------------------------
+addi $1, $0, 20             # Input x = 20
+jal bitcnt                  # Jump to function
+sw $3, 16($20)              # Save the result in memory
+
+addi $14, $3, 0             # Save result to reg 14
+
+# ------------------------------------------------------------------------------
+addi $1, $0, 18978          # Input x = 18978
+jal bitcnt                  # Jump to function
+sw $3, 20($20)              # Save the result in memory
+
+addi $15, $3, 0             # Save result to reg 15
+
+# ------------------------------------------------------------------------------
 
 EoP:    beq  $0, $0, EoP    # End of program (infinite loop)
 
