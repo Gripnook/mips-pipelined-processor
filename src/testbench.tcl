@@ -71,7 +71,7 @@ AddWaves
 mem load -infile program.txt -format bin -filldata 0 /testbench/dut/mem/ram_block
 
 # Run
-run 10us
+run 20us
 
 # Save the memory and register file to files
 mem save -outfile memory.txt -format bin -wordsperline 1 -noaddress /testbench/dut/mem/ram_block
