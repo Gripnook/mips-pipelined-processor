@@ -1,7 +1,7 @@
 # This program fills an n by n matrix A with Fibonacci numbers, then computes the matrix product A*A.
 
             addi $4,  $0,  4    # size of square matrix
-            
+
             # number of generating Fibonacci-numbers
             mult $4,  $4
             mflo $16
@@ -15,7 +15,7 @@
 loop:       addi $3,  $2,  0    # temp = Fib(n-1)
             add  $2,  $2,  $1   # Fib(n)=Fib(n-1)+Fib(n-2)
             addi $1,  $3,  0    # Fib(n-2)=temp=Fib(n-1)
-            mult $10, $15       # $lo=4*$10, for word alignment 
+            mult $10, $15       # $lo=4*$10, for word alignment
             mflo $12            # assume small numbers
             add  $13, $11, $12  # Make data pointer [2000+($10)*4]
             sw   $2, -4($13)    # Mem[$10+2000-4] <-- Fib(n)
@@ -35,7 +35,7 @@ EoP:        beq  $0, $0, EoP    # End of program (infinite loop)
 # &a = $5
 # &b = $6
 # &c = $7
-# 
+#
 # Pseudo-code:
 # for (int i = 0; i < n; ++i) {
 #   for (int j = 0; j < n; ++j) {
@@ -53,7 +53,7 @@ loop2:      beq  $9,  $16, end2
             addi $10, $0,  0    # k = 0
             addi $11, $0,  0    # c[i][j] = 0
 loop3:      beq  $10, $16, end3
-            
+
             # Compute &a[i][k]
             mult $10, $4
             mflo $13
