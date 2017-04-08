@@ -18,13 +18,13 @@ end bp_tournament_2_2;
 
 architecture arch of bp_tournament_2_2 is
     type global_predict_entry is array (0 to 3) of std_logic_vector(1 downto 0);
-    type global_predict       is array (0 to 2 ** BHT_BITS - 1) of global_predict_entry;
-    type local_predict        is array (0 to 2 ** BHT_BITS - 1) of std_logic_vector(1 downto 0);
-    type predict_type         is array (0 to 2 ** BHT_BITS - 1) of std_logic_vector(1 downto 0);
-    signal global_table        : global_predict               := (others => (others => (others => '0')));
-    signal local_table         : local_predict                := (others => (others => '0'));
-    signal prediction_table    : predict_type                 := (others => (others => '0'));
-    signal global_last         : std_logic_vector(1 downto 0) := "00";
+    type global_predict is array (0 to 2 ** BHT_BITS - 1) of global_predict_entry;
+    type local_predict is array (0 to 2 ** BHT_BITS - 1) of std_logic_vector(1 downto 0);
+    type predict_type is array (0 to 2 ** BHT_BITS - 1) of std_logic_vector(1 downto 0);
+    signal global_table     : global_predict               := (others => (others => (others => '0')));
+    signal local_table      : local_predict                := (others => (others => '0'));
+    signal prediction_table : predict_type                 := (others => (others => '0'));
+    signal global_last      : std_logic_vector(1 downto 0) := "00";
 begin
     update_global : process(clock, reset)
         variable table_index : integer;
@@ -226,7 +226,6 @@ begin
                     prediction <= '1';
                 end if;
             end if;
-
         end if;
     end process;
 
