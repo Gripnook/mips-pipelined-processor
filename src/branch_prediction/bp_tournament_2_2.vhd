@@ -24,11 +24,8 @@ architecture arch of bp_tournament_2_2 is
     signal global_table        : global_predict               := (others => (others => (others => '0')));
     signal local_table         : local_predict                := (others => (others => '0'));
     signal prediction_table    : predict_type                 := (others => (others => '0'));
-    signal prediction_internal : std_logic                    := '0';
     signal global_last         : std_logic_vector(1 downto 0) := "00";
 begin
-    prediction <= prediction_internal;
-
     update_global : process(clock, reset)
         variable table_index : integer;
         variable prev_res    : std_logic;
@@ -43,6 +40,7 @@ begin
                     prev_res := previous_prediction;
                 end if;
 
+                -- We ignore the lower two bits since the PC is word aligned
                 table_index := to_integer(unsigned(previous_pc(BHT_BITS + 1 downto 2)));
                 case global_table(table_index)(to_integer(unsigned(global_last))) is
                     when "00" =>
@@ -88,6 +86,7 @@ begin
                     prev_res := previous_prediction;
                 end if;
 
+                -- We ignore the lower two bits since the PC is word aligned
                 table_index := to_integer(unsigned(previous_pc(BHT_BITS + 1 downto 2)));
                 case local_table(table_index) is
                     when "00" =>
@@ -135,6 +134,7 @@ begin
                     prev_res := previous_prediction;
                 end if;
 
+                -- We ignore the lower two bits since the PC is word aligned
                 table_index := to_integer(unsigned(previous_pc(BHT_BITS + 1 downto 2)));
                 if global_table(table_index)(to_integer(unsigned(global_last)))(1) = prev_res then
                     prev_glob_pred_right := '1';
@@ -181,8 +181,8 @@ begin
             end if;
         end if;
     end process;
-    
-    global_shift : process(clock, reset) is
+
+    global_shift : process(clock, reset)
     begin
         if reset = '1' then
             global_last <= "00";
@@ -203,8 +203,9 @@ begin
         variable pred_type   : std_logic;
     begin
         if reset = '1' then
-            prediction_internal <= '0';
+            prediction <= '0';
         elsif falling_edge(clock) then
+            -- We ignore the lower two bits since the PC is word aligned
             table_index := to_integer(unsigned(pc(BHT_BITS + 1 downto 2)));
             if prediction_table(table_index)(1) = '0' then
                 pred_type := '0';
@@ -214,15 +215,15 @@ begin
 
             if pred_type = '0' then
                 if local_table(table_index)(1) = '0' then
-                    prediction_internal <= '0';
+                    prediction <= '0';
                 else
-                    prediction_internal <= '1';
+                    prediction <= '1';
                 end if;
             else
                 if global_table(table_index)(to_integer(unsigned(global_last)))(1) = '0' then
-                    prediction_internal <= '0';
+                    prediction <= '0';
                 else
-                    prediction_internal <= '1';
+                    prediction <= '1';
                 end if;
             end if;
 

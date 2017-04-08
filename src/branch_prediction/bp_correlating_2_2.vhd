@@ -20,18 +20,16 @@ architecture arch of bp_correlating_2_2 is
     type global is array (0 to 3) of std_logic_vector(1 downto 0);
     type predictor_table is array (0 to ((2 ** BHT_BITS) - 1)) of global;
     signal branch_predictor_table : predictor_table              := (others => (others => (others => '0')));
-    signal prediction_internal    : std_logic                    := '0';
     signal global_last            : std_logic_vector(1 downto 0) := "00";
 begin
-    prediction <= prediction_internal;
-
-    state_update : process(clock, reset) is
+    state_update : process(clock, reset)
         variable table_index : integer;
     begin
         if reset = '1' then
             branch_predictor_table <= (others => (others => (others => '0')));
         elsif rising_edge(clock) then
             if update = '1' then
+                -- We ignore the lower two bits since the PC is word aligned
                 table_index := to_integer(unsigned(previous_pc(BHT_BITS + 1 downto 2)));
                 case branch_predictor_table(table_index)(to_integer(unsigned(global_last))) is
                     when "00" =>
@@ -63,7 +61,7 @@ begin
         end if;
     end process;
 
-    global_shift : process(clock, reset) is
+    global_shift : process(clock, reset)
     begin
         if reset = '1' then
             global_last <= "00";
@@ -79,18 +77,19 @@ begin
         end if;
     end process;
 
-    output : process(clock, reset) is
+    output : process(clock, reset)
         variable table_index : integer;
     begin
         if reset = '1' then
-            prediction_internal <= '0';
+            prediction <= '0';
         elsif falling_edge(clock) then
+            -- We ignore the lower two bits since the PC is word aligned
             table_index := to_integer(unsigned(pc(BHT_BITS + 1 downto 2)));
             case branch_predictor_table(table_index)(to_integer(unsigned(global_last))) is
                 when "00" | "01" =>
-                    prediction_internal <= '0';
+                    prediction <= '0';
                 when others =>
-                    prediction_internal <= '1';
+                    prediction <= '1';
             end case;
         end if;
     end process;
