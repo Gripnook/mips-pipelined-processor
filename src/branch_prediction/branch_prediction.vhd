@@ -2,7 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 package branch_prediction is
-    constant DEFAULT_BHT_BITS : integer := 12;
+    constant DEFAULT_BHT_BITS : integer := 4;
 
     component bp_predict_not_taken is
         port(

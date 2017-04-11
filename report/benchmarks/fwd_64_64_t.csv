@@ -1,0 +1,8 @@
+Program,Instruction Count,I$ Stall Count,D$ Stall Count,Data Hazard Stall Count,Branch Hazard Stall Count
+bitcnt,1628,528,96,388,226
+exp,241,576,96,24,41
+gcd,125,480,410,11,17
+matrix-multiply,1382,709,395,84,86
+primes,1312,384,192,145,322
+sqrt,69,192,48,8,8
+stdev,326,975,177,38,45
