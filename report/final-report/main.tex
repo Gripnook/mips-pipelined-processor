@@ -1,27 +1,23 @@
-\documentclass[conference, hidelinks]{IEEEtran}
+\documentclass[conference,hidelinks]{IEEEtran}
 
 % Warn about obsolete LaTeX commands
 \RequirePackage[l2tabu, orthodox]{nag}
-\usepackage{graphicx}
 
 % Reduce size
 \pdfminorversion=5
 \pdfcompresslevel=9
 \pdfobjcompresslevel=2
 
-\usepackage{microtype}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage{lmodern}
-\usepackage{indentfirst}
-\usepackage{listings}
-\usepackage{graphicx}
 \usepackage[
   pdftitle={MIPS Pipelined Processor},
   pdfauthor={Andrei Purcarus, Vladislav Gulevich, Sebastian Pilarski and Carlos Bosco},
-  pdfsubject={ECSE-425 -- Computer Organization and Architecture}]{hyperref}
-\usepackage{standalone}
-\usepackage{multirow}
+  pdfsubject={ECSE-425 -- Computer Organization and Architecture}
+]{hyperref}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage[all]{hypcap}
 \usepackage[english]{babel}
 \usepackage{csquotes}
 \usepackage{cleveref}
@@ -42,9 +38,6 @@
 \sloppy
 
 \maketitle
-\thispagestyle{plain}
-\pagestyle{plain}
-\pagenumbering{arabic}
 
 \begin{abstract}
 
@@ -128,14 +121,14 @@ We first measured the effect on performance of data forwarding. We display the r
 
 \begin{figure}[!htb]
   \centering
-  \includegraphics[width=0.775\columnwidth]{plots/forwarding_stalls.eps}
+  \includegraphics[width=0.8\columnwidth]{plots/forwarding_stalls.eps}
   \caption{Normalized stalls caused by data hazards with data forwarding enabled and disabled. Lower is better.}
   \label{fig:fwd_stalls}
 \end{figure}
 
 \begin{figure}[!htb]
   \centering
-  \includegraphics[width=0.775\columnwidth]{plots/forwarding_cpi.eps}
+  \includegraphics[width=0.8\columnwidth]{plots/forwarding_cpi.eps}
   \caption{CPI of the benchmark programs with data forwarding enabled and disabled. Lower is better.}
   \label{fig:fwd_cpi}
 \end{figure}
@@ -148,14 +141,14 @@ We next measured the effect of different instruction cache sizes on performance.
 
 \begin{figure}[!htb]
   \centering
-  \includegraphics[width=0.775\columnwidth]{plots/instruction_cache_stalls.eps}
+  \includegraphics[width=0.8\columnwidth]{plots/instruction_cache_stalls.eps}
   \caption{Normalized stalls caused by instruction memory accesses for different I\$ sizes. Lower is better.}
   \label{fig:instruction_cache_stalls}
 \end{figure}
 
 \begin{figure}[!htb]
   \centering
-  \includegraphics[width=0.775\columnwidth]{plots/instruction_cache_cpi.eps}
+  \includegraphics[width=0.8\columnwidth]{plots/instruction_cache_cpi.eps}
   \caption{CPI of the benchmark programs for different I\$ sizes. Lower is better.}
   \label{fig:instruction_cache_cpi}
 \end{figure}
@@ -170,14 +163,14 @@ We then measured the effect of different data cache sizes on performance. The re
 
 \begin{figure}[!htb]
   \centering
-  \includegraphics[width=0.775\columnwidth]{plots/data_cache_stalls.eps}
+  \includegraphics[width=0.8\columnwidth]{plots/data_cache_stalls.eps}
   \caption{Normalized stalls caused by data memory accesses for different D\$ sizes. Lower is better.}
   \label{fig:data_cache_stalls}
 \end{figure}
 
 \begin{figure}[!htb]
   \centering
-  \includegraphics[width=0.775\columnwidth]{plots/data_cache_cpi.eps}
+  \includegraphics[width=0.8\columnwidth]{plots/data_cache_cpi.eps}
   \caption{CPI of the benchmark programs for different D\$ sizes. Lower is better.}
   \label{fig:data_cache_cpi}
 \end{figure}
@@ -190,19 +183,19 @@ We finally evaluated the effects of different implementation of branch predictor
 
 \begin{figure}[!htb]
   \centering
-  \includegraphics[width=0.775\columnwidth]{plots/bp_stalls.eps}
+  \includegraphics[width=0.8\columnwidth]{plots/bp_stalls.eps}
   \caption{Normalized stalls caused by branch hazards for different branch predictor implementations. Lower is better.}
   \label{fig:bp_stalls}
 \end{figure}
 
 \begin{figure}[!htb]
   \centering
-  \includegraphics[width=0.775\columnwidth]{plots/bp_cpi.eps}
+  \includegraphics[width=0.8\columnwidth]{plots/bp_cpi.eps}
   \caption{CPI of the benchmark programs for different branch predictor implementations. Lower is better.}
   \label{fig:bp_cpi}
 \end{figure}
 
-These results show that branch predictor performance is highly dependent on the particular program being executed. The only exception is the predict taken implementation, which perform the worst of all across all benchmarks. To properly compare the different predictors, the geometric mean of the inverse of the CPI over all benchmarks was computed and normalized to the predict not taken performance. The results are shown in \Cref{tab:bp_performance}. This table shows that the two-bit local predictor performs best on average, with a performance ratio of 1.0084. It is followed closely by the tournament predictor with a ratio of 1.0082, which is expected since the tournament predictor uses a two-bit predictor internally.
+These results show that branch predictor performance is highly dependent on the particular program being executed. The only exception is the predict taken implementation, which perform the worst of all across all benchmarks. To properly compare the different predictors, the geometric mean of the inverse of the CPI over all benchmarks was computed and normalized to the predict not taken performance. The results \newpage \noindent are shown in \Cref{tab:bp_performance}. This table shows that the two-bit local predictor performs best on average, with a performance ratio of 1.0084. It is followed closely by the tournament predictor with a ratio of 1.0082, which is expected since the tournament predictor uses a two-bit predictor internally.
 
 \begin{table}[!htb]
 \small
